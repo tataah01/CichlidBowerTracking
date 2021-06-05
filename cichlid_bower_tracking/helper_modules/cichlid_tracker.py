@@ -122,7 +122,8 @@ class CichlidTracker:
                 if self.device == 'kinect':
                     freenect.sync_stop()
                     freenect.shutdown(self.a)
-            except:
+            except as e:
+                print(e)
                 self._print('ErrorStopping kinect')
                 
          
@@ -282,32 +283,38 @@ class CichlidTracker:
         for i in range(0,3): # Try to autheticate three times before failing
             try:
                 gs = gspread.authorize(credentials)
-            except:
+            except as e:
+                print(e)
                 continue
             try:
                 self.controllerGS = gs.open('Controller')
                 pi_ws = self.controllerGS.worksheet('RaspberryPi')
-            except:
+            except as e:
+                print(e)
                 continue
             try:
                 headers = pi_ws.row_values(1)
-            except:
+            except as e:
+                print(e)
                 continue
             column = headers.index('RaspberryPiID') + 1
             try:
                 pi_ws.col_values(column).index(platform.node())
                 return True
-            except ValueError:
+            except ValueError as e:
+                print(e)
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.connect(("8.8.8.8", 80))
                 ip = s.getsockname()[0]
                 s.close()
                 try:
                     pi_ws.append_row([platform.node(),ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
-                except:
+                except as e:
+                    print(e)
                     continue
                 return True
-            except:
+            except as e:
+                print(e)
                 continue    
             time.sleep(2)
         return False
@@ -378,7 +385,8 @@ class CichlidTracker:
     def _initError(self, message):
         try:
             self._modifyPiGS(command = 'None', status = 'Stopped', error = 'InitError: ' + message)
-        except:
+        except as e:
+            print(e)
             pass
         self._print('InitError: ' + message)
         raise TypeError
@@ -392,7 +400,8 @@ class CichlidTracker:
     def _print(self, text):
         try:
             print(text, file = self.lf, flush = True)
-        except:
+        except as e:
+            print(e)
             pass
         print(text, file = sys.stderr, flush = True)
 

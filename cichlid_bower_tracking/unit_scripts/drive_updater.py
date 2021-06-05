@@ -63,13 +63,6 @@ class DriveUpdater:
         ax4.set_title('Total Change\n'+t_change)
         ax5.set_title('Last 24 hours change\n'+d_change)
         ax6.set_title('Last 1 hour change\n'+h_change)
-        
-
-        print(np.histogram(dpth_3[~np.isnan(dpth_3)]))
-        print(np.nanmin(dpth_3))
-        print(np.nanmax(dpth_3))
-        print(np.nanmin(dpth_4-dpth_3))
-        print(np.nanmax(dpth_4-dpth_3))
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
