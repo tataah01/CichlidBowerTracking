@@ -4,7 +4,9 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 from picamera import PiCamera
 import numpy as np
-np.seterr(all="ignore") # silence annoying warnings
+import warnings
+with warnings.catch_warnings():
+    warnings.filterwarnings('ignore', r'Mean of empty slice')
 from PIL import Image
 from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
