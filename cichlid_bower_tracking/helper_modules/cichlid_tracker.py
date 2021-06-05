@@ -123,7 +123,7 @@ class CichlidTracker:
                 if self.device == 'kinect':
                     freenect.sync_stop()
                     freenect.shutdown(self.a)
-            except as e:
+            except Exception as e:
                 self.googlePrint(e)
                 self._print('ErrorStopping kinect')
                 
@@ -285,18 +285,18 @@ class CichlidTracker:
         for i in range(0,3): # Try to autheticate three times before failing
             try:
                 gs = gspread.authorize(credentials)
-            except as e:
+            except Exception as e:
                 self.googlePrint(e)
                 continue
             try:
                 self.controllerGS = gs.open('Controller')
                 pi_ws = self.controllerGS.worksheet('RaspberryPi')
-            except as e:
+            except Exception as e:
                 self.googlePrint(e)
                 continue
             try:
                 headers = pi_ws.row_values(1)
-            except as e:
+            except Exception as e:
                 self.googlePrint(e)
                 continue
             column = headers.index('RaspberryPiID') + 1
@@ -311,11 +311,11 @@ class CichlidTracker:
                 s.close()
                 try:
                     pi_ws.append_row([platform.node(),ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
-                except as e:
+                except Exception as e:
                     self.googlePrint(e)
                     continue
                 return True
-            except as e:
+            except Exception as e:
                 self.googlePrint(e)
                 continue    
             time.sleep(2)
@@ -368,7 +368,7 @@ class CichlidTracker:
                 try:
                     row = pi_ws.col_values(raPiID_col).index(platform.node()) + 1
                     break
-                except as e:
+                except Exception as e:
                     self.googlePrint(e)
                     continue
             col = headers.index('TankID')
@@ -378,7 +378,7 @@ class CichlidTracker:
                     try:
                         self._modifyPiGS(capability = 'Device=' + self.device + ',Camera=' + str(self.piCamera), status = 'AwaitingCommand')
                         return
-                    except as e:
+                    except Exception as e:
                         self.googlePrint(e)
                         continue
                 return
@@ -389,7 +389,7 @@ class CichlidTracker:
     def _initError(self, message):
         try:
             self._modifyPiGS(command = 'None', status = 'Stopped', error = 'InitError: ' + message)
-        except as e:
+        except Exception as e:
             self.googlePrint(e)
             pass
         self._print('InitError: ' + message)
@@ -404,7 +404,7 @@ class CichlidTracker:
     def _print(self, text):
         try:
             print(text, file = self.lf, flush = True)
-        except as e:
+        except Exception as e:
             self.googlePrint(e)
             pass
         print(text, file = sys.stderr, flush = True)
@@ -412,7 +412,7 @@ class CichlidTracker:
     def _googlePrint(self, text):
         try:
             print(text, file = self.g_lf, flush = True)
-        except as e:
+        except Exception as e:
             self.googlePrint(e)
             pass
         print(text, file = sys.stderr, flush = True)
