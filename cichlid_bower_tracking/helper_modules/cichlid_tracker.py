@@ -4,12 +4,13 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 from picamera import PiCamera
 import numpy as np
+np.seterr(all="ignore") # silence annoying warnings
 from PIL import Image
 from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
 
-sys.path.append(sys.path[0] + '/unit_scripts')
-sys.path.append(sys.path[0] + '/helper_modules')
+#sys.path.append(sys.path[0] + '/unit_scripts')
+#sys.path.append(sys.path[0] + '/helper_modules')
 
 class CichlidTracker:
     def __init__(self):
