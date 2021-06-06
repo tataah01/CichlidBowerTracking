@@ -34,7 +34,6 @@ else:
 # To run analysis efficiently, we download and upload data in the background while the main script runs
 uploadProcesses = [] # Keep track of all of the processes still uploading so we don't quit before they finish
 print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
-pdb.set_trace()
 
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID)])
 for i, projectID in enumerate(projectIDs):
