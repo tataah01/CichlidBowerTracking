@@ -15,6 +15,8 @@ class ProjectPreparer():
 
 	def __init__(self, projectID = None, modelID = None, workers = None):
 		self.projectID = projectID
+		if modelID == 'None':
+			modelID = None
 		self.fileManager = FM(projectID = projectID, modelID = modelID)
 		self.modelID = modelID
 		if not self._checkProjectID():

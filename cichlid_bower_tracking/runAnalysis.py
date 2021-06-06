@@ -36,7 +36,7 @@ uploadProcesses = [] # Keep track of all of the processes still uploading so we 
 print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
 pdb.set_trace()
 
-subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', args.ModelID])
+subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID)])
 for i, projectID in enumerate(projectIDs):
 	print('Running: ' + projectID + ' ' + str(datetime.datetime.now()))
 
