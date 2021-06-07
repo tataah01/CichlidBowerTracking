@@ -6,7 +6,7 @@ from picamera import PiCamera
 import numpy as np
 import warnings
 with warnings.catch_warnings():
-    warnings.filterwarnings('ignore', r'Mean of empty slice')
+    warnings.filterwarnings('ignore', message = 'Degrees of freedom <= 0 for slice.')
 from PIL import Image
 from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
