@@ -4,15 +4,16 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 from picamera import PiCamera
 import numpy as np
+np.seterr(all="ignore")
+
 import warnings
 with warnings.catch_warnings():
     warnings.filterwarnings('ignore', message = 'Degrees of freedom <= 0 for slice.')
+    warnings.filterwarnings('ignore', message = 'Mean of empty slice')
+    
 from PIL import Image
 from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
-
-#sys.path.append(sys.path[0] + '/unit_scripts')
-#sys.path.append(sys.path[0] + '/helper_modules')
 
 class CichlidTracker:
     def __init__(self):
@@ -28,7 +29,6 @@ class CichlidTracker:
 
         # 3: Create file manager
         self.fileManager = FM()
-
 
         # 4: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialSpreadsheet)
