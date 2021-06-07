@@ -4,12 +4,14 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 from picamera import PiCamera
 import numpy as np
-np.seterr(all="ignore")
 
 import warnings
-with warnings.catch_warnings():
-    warnings.filterwarnings('ignore', message = 'Degrees of freedom <= 0 for slice.')
-    warnings.filterwarnings('ignore', message = 'Mean of empty slice')
+warnings.filterwarnings('ignore')
+
+
+#with warnings.catch_warnings():
+#    warnings.filterwarnings('ignore', message = 'Degrees of freedom <= 0 for slice.')
+#    warnings.filterwarnings('ignore', message = 'Mean of empty slice')
     
 from PIL import Image
 from oauth2client.service_account import ServiceAccountCredentials
