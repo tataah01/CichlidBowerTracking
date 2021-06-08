@@ -225,7 +225,7 @@ class CichlidTracker:
         # Capture data
         self.captureFrames()
     
-    def captureFrames(self, frame_delta = 5, background_delta = 5, max_frames = 20, stdev_threshold = 20):
+    def captureFrames(self, frame_delta = 5, background_delta = 5):
 
         current_background_time = datetime.datetime.now()
         current_frame_time = current_background_time + datetime.timedelta(seconds = 60 * frame_delta)
@@ -257,17 +257,17 @@ class CichlidTracker:
             
             if now > current_background_time:
                 if command == 'Snapshots':
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold, snapshots = True)
+                    out = self._captureFrame(current_frame_time, snapshots = True)
                 else:
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold)
+                    out = self._captureFrame(current_frame_time)
                 if out is not None:
                     current_background_time += datetime.timedelta(seconds = 60 * background_delta)
                 subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
             else:
                 if command == 'Snapshots':
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold, snapshots = True)
+                    out = self._captureFrame(current_frame_time, snapshots = True)
                 else:    
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold)
+                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
             self._modifyPiGS(status = 'Running')
@@ -502,7 +502,7 @@ class CichlidTracker:
         except gspread.exceptions.RequestError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
         except TypeError:
-            self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly')
+            self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly...' + str(e))
     
     def _video_recording(self):
         if datetime.datetime.now().hour >= 8 and datetime.datetime.now().hour <= 18:
