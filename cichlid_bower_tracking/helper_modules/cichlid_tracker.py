@@ -521,7 +521,7 @@ class CichlidTracker:
             # Start streaming
             self.pipeline.start(config)
         
-            frames = self.pipeline.wait_for_frames()
+            frames = self.pipeline.wait_for_frames(1000)
             depth = frames.get_depth_frame()
             self.r = (0,0,depth.width,depth.height)
 
