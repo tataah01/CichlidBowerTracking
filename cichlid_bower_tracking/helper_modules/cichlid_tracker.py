@@ -428,7 +428,7 @@ class CichlidTracker:
             out = freenect.sync_get_video()[0]
             
         if self.device == 'realsense':
-            frames = self.pipeline.wait_for_frames()
+            frames = self.pipeline.wait_for_frames(1000)
             color_frame = frames.get_color_frame()
             out = np.asanyarray(color_frame.get_data())
 
@@ -445,7 +445,7 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
         
         if self.device == 'realsense':
-            depth_frame = self.pipeline.wait_for_frames().get_depth_frame().as_depth_frame()
+            depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
             data = np.asanyarray(depth_frame.data)*depth_frame.get_units() # Convert to meters
             data[data==0] = np.nan # 0 indicates bad data from RealSense
             data[data>1] = np.nan # Anything further away than 1 m is a mistake
@@ -555,7 +555,7 @@ class CichlidTracker:
     
     def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = .05, snapshots = False):
         # Captures time averaged frame of depth data
-        
+        self._print('Grabbing frame')
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
         stds = np.zeros(shape = (self.r[3], self.r[2]))
@@ -606,6 +606,7 @@ class CichlidTracker:
         matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
         
         self.frameCounter += 1
+        self._print('Done')
 
         return med
 
