@@ -45,6 +45,8 @@ class CichlidTracker:
         self._modifyPiGS(error = '')
         
         # 6: Start PiCamera
+        print('Camera')
+
         self.camera = PiCamera()
         self.camera.resolution = (1296, 972)
         self.camera.framerate = 30
@@ -60,6 +62,7 @@ class CichlidTracker:
             self.r = (0,0,640,480)
 
         # 9: Await instructions
+        print('Monitoring')
         self.monitorCommands()
         
     def __del__(self):
