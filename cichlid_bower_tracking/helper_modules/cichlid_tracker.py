@@ -33,12 +33,15 @@ class CichlidTracker:
         self.fileManager = FM()
 
         # 4: Download credential files
+        print('Identifying')
         self.fileManager.downloadData(self.fileManager.localCredentialSpreadsheet)
         self.fileManager.downloadData(self.fileManager.localCredentialDrive)
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
 
         # 5: Connect to Google Spreadsheets
+        print('Authenticating')
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
+        print('Modifying')
         self._modifyPiGS(error = '')
         
         # 6: Start PiCamera
