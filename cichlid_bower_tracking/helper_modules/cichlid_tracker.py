@@ -135,7 +135,7 @@ class CichlidTracker:
                     freenect.sync_stop()
                     freenect.shutdown(self.a)
             except Exception as e:
-                self.googlePrint(e)
+                self._googlePrint(e)
                 self._print('ErrorStopping kinect')
                 
          
@@ -297,25 +297,25 @@ class CichlidTracker:
             try:
                 gs = gspread.authorize(credentials)
             except Exception as e:
-                self.googlePrint(e)
+                self._googlePrint(e)
                 continue
             try:
                 self.controllerGS = gs.open('Controller')
                 pi_ws = self.controllerGS.worksheet('RaspberryPi')
             except Exception as e:
-                self.googlePrint(e)
+                self._googlePrint(e)
                 continue
             try:
                 headers = pi_ws.row_values(1)
             except Exception as e:
-                self.googlePrint(e)
+                self._googlePrint(e)
                 continue
             column = headers.index('RaspberryPiID') + 1
             try:
                 pi_ws.col_values(column).index(platform.node())
                 return True
             except ValueError as e:
-                self.googlePrint(e)
+                self._googlePrint(e)
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.connect(("8.8.8.8", 80))
                 ip = s.getsockname()[0]
@@ -323,11 +323,11 @@ class CichlidTracker:
                 try:
                     pi_ws.append_row([platform.node(),ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
                 except Exception as e:
-                    self.googlePrint(e)
+                    self._googlePrint(e)
                     continue
                 return True
             except Exception as e:
-                self.googlePrint(e)
+                self._googlePrint(e)
                 continue    
             time.sleep(2)
         return False
@@ -380,7 +380,7 @@ class CichlidTracker:
                     row = pi_ws.col_values(raPiID_col).index(platform.node()) + 1
                     break
                 except Exception as e:
-                    self.googlePrint(e)
+                    self._googlePrint(e)
                     continue
             col = headers.index('TankID')
             if pi_ws.row_values(row)[col] not in ['None','']:
@@ -390,7 +390,7 @@ class CichlidTracker:
                         self._modifyPiGS(capability = 'Device=' + self.device + ',Camera=' + str(self.piCamera), status = 'AwaitingCommand')
                         return
                     except Exception as e:
-                        self.googlePrint(e)
+                        self._googlePrint(e)
                         continue
                 return
             else:
@@ -401,7 +401,7 @@ class CichlidTracker:
         try:
             self._modifyPiGS(command = 'None', status = 'Stopped', error = 'InitError: ' + message)
         except Exception as e:
-            self.googlePrint(e)
+            self._googlePrint(e)
             pass
         self._print('InitError: ' + message)
         raise TypeError
@@ -416,7 +416,7 @@ class CichlidTracker:
         try:
             print(text, file = self.lf, flush = True)
         except Exception as e:
-            self.googlePrint(e)
+            self._googlePrint(e)
             pass
         print(text, file = sys.stderr, flush = True)
 
@@ -424,7 +424,7 @@ class CichlidTracker:
         try:
             print(text, file = self.g_lf, flush = True)
         except Exception as e:
-            self.googlePrint(e)
+            self._googlePrint(e)
             pass
         print(text, file = sys.stderr, flush = True)
 
