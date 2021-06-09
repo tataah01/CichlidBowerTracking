@@ -190,8 +190,8 @@ class CichlidTracker:
             if self.system != logObj.system or self.device != logObj.device or self.piCamera != logObj.camera:
                 self._reinstructError('Restart error. System, device, or camera does not match what is in logfile')
                 
-        self.lf = open(self.loggerFile, 'a')
-        self.g_lf = open(self.googleErrorFile, 'a')
+        self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
+        self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
         self._modifyPiGS(start = str(self.masterStart))
 
         if command in ['New', 'Rewrite']:
@@ -568,6 +568,7 @@ class CichlidTracker:
         
         current_time = datetime.datetime.now()
         if current_time >= endtime:
+            self._print('Frame without data')
             return
 
         counter = 1
@@ -576,6 +577,7 @@ class CichlidTracker:
         all_data[:] = np.nan
         
         for i in range(0, max_frames):
+            self._print(i)
             all_data[i] = self._returnDepth()
             current_time = datetime.datetime.now()
 
@@ -604,6 +606,7 @@ class CichlidTracker:
         med[counts < 3] = np.nan
         std[counts < 3] = np.nan
 
+        self._print('Getting color data')
         color = self._returnRegColor()                        
         
         self._print('FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,GP: ' + str(np.count_nonzero(~np.isnan(med))))
