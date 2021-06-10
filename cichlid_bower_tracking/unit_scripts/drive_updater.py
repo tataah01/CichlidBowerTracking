@@ -1,4 +1,4 @@
-import argparse, datetime, gspread
+import argparse, datetime, gspread, time
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 import matplotlib
@@ -66,10 +66,10 @@ class DriveUpdater:
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
-        ax3.imshow(dpth_3, vmin = 0, vmax = 1)
-        ax4.imshow(dpth_4 - dpth_3, vmin = -0.05, vmax = .05)
-        ax5.imshow(dpth_5 - dpth_3, vmin = -0.05, vmax = .05)
-        ax6.imshow(dpth_6 - dpth_3, vmin = -0.05, vmax = .05)
+        ax3.imshow(dpth_3)
+        ax4.imshow(dpth_4 - dpth_3, vmin = -5, vmax = 5)
+        ax5.imshow(dpth_5 - dpth_3, vmin = -5, vmax = 5)
+        ax6.imshow(dpth_6 - dpth_3, vmin = -5, vmax = 5)
         
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')

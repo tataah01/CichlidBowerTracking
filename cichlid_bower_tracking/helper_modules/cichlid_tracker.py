@@ -420,13 +420,13 @@ class CichlidTracker:
             pass
         print(text, file = sys.stderr, flush = True)
 
-    def _googlePrint(self, text):
+    def _googlePrint(self, e):
         try:
-            print(text, file = self.g_lf, flush = True)
+            print(str(datetime.datetime.now()) + ': ' + type(e) + ': ' + e, file = self.g_lf, flush = True)
         except Exception as e:
             self._googlePrint(e)
             pass
-        print(text, file = sys.stderr, flush = True)
+#        print(e, file = sys.stderr, flush = True)
 
     def _returnRegColor(self, crop = True):
         # This function returns a registered color array
@@ -559,9 +559,8 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = .05, snapshots = False):
+    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 20, snapshots = False):
         # Captures time averaged frame of depth data
-        self._print('Grabbing frame')
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
         stds = np.zeros(shape = (self.r[3], self.r[2]))
@@ -577,7 +576,6 @@ class CichlidTracker:
         all_data[:] = np.nan
         
         for i in range(0, max_frames):
-            self._print(i)
             all_data[i] = self._returnDepth()
             current_time = datetime.datetime.now()
 
@@ -606,7 +604,6 @@ class CichlidTracker:
         med[counts < 3] = np.nan
         std[counts < 3] = np.nan
 
-        self._print('Getting color data')
         color = self._returnRegColor()                        
         
         self._print('FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,GP: ' + str(np.count_nonzero(~np.isnan(med))))
@@ -615,7 +612,6 @@ class CichlidTracker:
         matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
         
         self.frameCounter += 1
-        self._print('Done')
 
         return med
 
