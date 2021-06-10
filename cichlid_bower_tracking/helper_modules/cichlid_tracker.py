@@ -418,7 +418,7 @@ class CichlidTracker:
     def _googlePrint(self, e):
         try:
             print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), file = self.g_lf, flush = True)
-        except NameError as e: # log file not created yet so just print to stderr
+        except AttributeError as e: # log file not created yet so just print to stderr
             print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), flush = True)
 
     def _returnRegColor(self, crop = True):
