@@ -42,7 +42,6 @@ class CichlidTracker:
         self._modifyPiGS(error = '')
         
         # 6: Start PiCamera
-        print('')
 
         self.camera = PiCamera()
         self.camera.resolution = (1296, 972)
@@ -419,10 +418,8 @@ class CichlidTracker:
     def _googlePrint(self, e):
         try:
             print(str(datetime.datetime.now()) + ': ' + type(e) + ': ' + e, file = self.g_lf, flush = True)
-        except Exception as e:
-            self._googlePrint(e)
-            pass
-#        print(e, file = sys.stderr, flush = True)
+        except NameError as e: # log file not created yet so just print to stderr
+            print(str(datetime.datetime.now()) + ': ' + type(e) + ': ' + e, flush = True)
 
     def _returnRegColor(self, crop = True):
         # This function returns a registered color array
