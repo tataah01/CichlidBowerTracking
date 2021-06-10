@@ -10,8 +10,6 @@ class FileManager():
 		else:
 			self.localMasterDir = os.getenv('HOME').rstrip('/') + '/' + 'Temp/CichlidAnalyzer/'
 
-		pdb.set_trace()
-
 		# Identify cloud directory for rclone
 		self.rcloneRemote = rcloneRemote
 		# On some computers, the first directory is McGrath, on others it's BioSci-McGrath. Use rclone to figure out which
