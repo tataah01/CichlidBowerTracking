@@ -408,7 +408,7 @@ class CichlidTracker:
         self.monitorCommands()
  
     def _print(self, text):
-        temperature = subprocess.run(['/opt/vc/bin/vcgencmd' 'measure_temp'], capture_output = True)
+        temperature = subprocess.run(['/opt/vc/bin/vcgencmd','measure_temp'], capture_output = True)
         try:
             print(str(text) + ',,Temp: ' + str(temperature.stdout), file = self.lf, flush = True)
         except Exception as e:
