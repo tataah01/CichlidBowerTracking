@@ -10,6 +10,8 @@ class FileManager():
 		else:
 			self.localMasterDir = os.getenv('HOME').rstrip('/') + '/' + 'Temp/CichlidAnalyzer/'
 
+		pdb.set_trace()
+
 		# Identify cloud directory for rclone
 		self.rcloneRemote = rcloneRemote
 		# On some computers, the first directory is McGrath, on others it's BioSci-McGrath. Use rclone to figure out which
@@ -472,7 +474,7 @@ class FileManager():
 
 	def _identifyPiDirectory(self):
 		writableDirs = []
-		mounted_dir = '/media/' + os.getenv('USER') + '/'
+		mounted_dir = '/media/pi/'
 		try:
 			possibleDirs = os.listdir(mounted_dir)
 		except FileNotFoundError:
