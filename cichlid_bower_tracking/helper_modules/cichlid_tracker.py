@@ -412,9 +412,8 @@ class CichlidTracker:
         try:
             print(str(text) + ',,Temp: ' + str(temperature.stdout), file = self.lf, flush = True)
         except Exception as e:
-            self._googlePrint(e)
             pass
-        print(text, file = sys.stderr, flush = True)
+        print(str(text) + ',,Temp: ' + str(temperature.stdout), file = sys.stderr, flush = True)
 
     def _googlePrint(self, e):
         try:
