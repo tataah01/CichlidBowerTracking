@@ -36,9 +36,9 @@ except:
 
 # Move video
 
-subprocess.run(['mv', args.VideoFile, args.VideoFile.split('/Videos/')[0] + '/Backups/'])
-#subprocess.run(['rm', '-f', args.VideoFile])
-#subprocess.run(['rm', '-f', args.VideoFile.replace('.h264', '.mp4')])
+#subprocess.run(['mv', args.VideoFile, args.VideoFile.split('/Videos/')[0] + '/Backups/'])
+subprocess.run(['rm', '-f', args.VideoFile])
+subprocess.run(['rm', '-f', args.VideoFile.replace('.h264', '.mp4')])
 
 print('Video Processed')
 
