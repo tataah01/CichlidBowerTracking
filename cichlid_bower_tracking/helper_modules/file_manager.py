@@ -309,8 +309,8 @@ class FileManager():
 			self.createDirectory(self.localSummaryDir)
 			self.downloadData(self.localLogfile)
 			self.downloadData(self.localAnalysisDir)
-			self.downloadData(self.localPaceDir, allow_errors=True)
-			self.downloadData(self.localEuthData, allow_errors=True)
+			self.downloadData(self.localPaceDir, allow_errors=True, quiet=True)
+			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
 
 		elif dtype == 'All':
 			self.createDirectory(self.localMasterDir)
@@ -327,7 +327,7 @@ class FileManager():
 			self.downloadData(self.localVideoDir)
 			self.downloadData(self.localFrameDir, tarred = True)
 			self.downloadData(self.local3DModelDir)
-			self.downloadData(self.localEuthData, allow_errors=True)
+			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
 
 		else:
 			raise KeyError('Unknown key: ' + dtype)
@@ -520,7 +520,7 @@ class FileManager():
 			os.makedirs(directory)
 
 
-	def downloadData(self, local_data, tarred = False, tarred_subdirs = False, allow_errors=False):
+	def downloadData(self, local_data, tarred = False, tarred_subdirs = False, allow_errors=False, quiet=False):
 		if local_data is None:
 			return
 		relative_name = local_data.rstrip('/').split('/')[-1] + '.tar' if tarred else local_data.rstrip('/').split('/')[-1]
@@ -535,13 +535,19 @@ class FileManager():
 			output = subprocess.run(['rclone', 'copy', cloud_path + relative_name, local_path], capture_output = True, encoding = 'utf-8')
 		else:
 			if allow_errors:
-				print('Warning: Cannot find {}. Continuing'.format(cloud_path + relative_name))
+				if not quiet:
+					print('Warning: Cannot find {}. Continuing'.format(cloud_path + relative_name))
+				else:
+					pass
 			else:
 				raise FileNotFoundError('Cant find file for download: ' + cloud_path + relative_name)
 
 		if not os.path.exists(local_path + relative_name):
 			if allow_errors:
-				print('Warning. Cannot download {}. Continuing'.format(local_path + relative_name))
+				if not quiet:
+					print('Warning. Cannot download {}. Continuing'.format(local_path + relative_name))
+				else:
+					pass
 			else:
 				raise FileNotFoundError('Error downloading: ' + local_path + relative_name)
 
