@@ -5,7 +5,7 @@ class FileManager():
 	def __init__(self, projectID = None, modelID = None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
 
 		# Identify directory for temporary local files
-		if platform.node() == 'raspberrypi' or 'Pi' in platform.node():
+		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node():
 			self._identifyPiDirectory()
 		else:
 			self.localMasterDir = os.getenv('HOME').rstrip('/') + '/' + 'Temp/CichlidAnalyzer/'

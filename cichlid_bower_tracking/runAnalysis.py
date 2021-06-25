@@ -37,6 +37,13 @@ print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
 
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID)])
 for i, projectID in enumerate(projectIDs):
+	if args.SummaryFile:
+		dt.loc[dt.projectID == projectID,args.AnalysisType] = 'Running'
+		dt.to_csv(summary_file, index = False)
+		fm_obj.uploadData(summary_file)
+
+
+
 	print('Running: ' + projectID + ' ' + str(datetime.datetime.now()))
 
 	# Run appropriate analysis script
@@ -63,7 +70,7 @@ for i, projectID in enumerate(projectIDs):
 	#Modify summary file if necessary
 	if args.SummaryFile:
 		dt.loc[dt.projectID == projectID,args.AnalysisType] = True
-		dt.to_csv(summary_file)
+		dt.to_csv(summary_file, index = False)
 		fm_obj.uploadData(summary_file)
 
 
