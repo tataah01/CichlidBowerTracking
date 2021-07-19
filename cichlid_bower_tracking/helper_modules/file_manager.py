@@ -7,6 +7,8 @@ class FileManager():
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node():
 			self._identifyPiDirectory()
+		elif platform.node() == 'ebb-utaka.biosci.gatech.edu':
+			self.localMasterDir = '/mnt/Storage/' + os.getenv('USER') + '/Temp/CichlidAnalyzer/'
 		else:
 			self.localMasterDir = os.getenv('HOME').rstrip('/') + '/' + 'Temp/CichlidAnalyzer/'
 
