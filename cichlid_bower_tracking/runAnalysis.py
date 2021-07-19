@@ -42,8 +42,6 @@ for i, projectID in enumerate(projectIDs):
 		dt.to_csv(summary_file, index = False)
 		fm_obj.uploadData(summary_file)
 
-
-
 	print('Running: ' + projectID + ' ' + str(datetime.datetime.now()))
 
 	# Run appropriate analysis script
