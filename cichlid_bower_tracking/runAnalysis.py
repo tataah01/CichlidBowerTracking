@@ -2,7 +2,7 @@
 # 1. Make summary file on Dropbox
 # 2. Handle Sigint to make sure uploads complete
 
-import argparse, subprocess, pdb, datetime, os
+import argparse, subprocess, pdb, datetime, os, sys
 import pandas as pd
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
@@ -61,6 +61,8 @@ for i, projectID in enumerate(projectIDs):
 	
 	# Pause script until current analysis is complete and data for next project is downloaded
 	p1.communicate()
+	if p1.returncode != 0:
+		sys.exit()
 	try:
 		p2.communicate() # Need to catch an exception if only one project is analyzed
 	except NameError:
