@@ -33,14 +33,16 @@ else:
 
 # To run analysis efficiently, we download and upload data in the background while the main script runs
 uploadProcesses = [] # Keep track of all of the processes still uploading so we don't quit before they finish
-print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
 
+if args.SummaryFile:
+	dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
+	dt.to_csv(summary_file, index = False)
+	fm_obj.uploadData(summary_file)
+
+print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID)])
-for i, projectID in enumerate(projectIDs):
-	if args.SummaryFile:
-		dt.loc[dt.projectID == projectID,args.AnalysisType] = 'Running'
-		dt.to_csv(summary_file, index = False)
-		fm_obj.uploadData(summary_file)
+while len(projectIDs) != 0:
+	projectID = projectIDs[0]
 
 	print('Running: ' + projectID + ' ' + str(datetime.datetime.now()))
 
@@ -56,8 +58,18 @@ for i, projectID in enumerate(projectIDs):
 
 	# In the meantime, download data for next project in the background
 	if i+1 < len(projectIDs):
-		print('Downloading: ' + projectID + ' ' + str(datetime.datetime.now()))
-		p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[i+1]])
+		if args.SummaryFile:
+			fm_obj.downloadData(summary_file)
+			dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
+			projectIDs = list(dt[dt[args.AnalysisType] == 'FALSE'].projectID) # Only run analysis on projects that need it
+
+			if len(projectIDs) != 0:
+				dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
+				dt.to_csv(summary_file, index = False)
+				fm_obj.uploadData(summary_file)
+		
+				print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
+				p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
 	
 	# Pause script until current analysis is complete and data for next project is downloaded
 	p1.communicate()
@@ -69,6 +81,9 @@ for i, projectID in enumerate(projectIDs):
 		pass
 	#Modify summary file if necessary
 	if args.SummaryFile:
+		fm_obj.downloadData(summary_file)
+		dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
+
 		dt.loc[dt.projectID == projectID,args.AnalysisType] = 'TRUE'
 		dt.to_csv(summary_file, index = False)
 		fm_obj.uploadData(summary_file)
