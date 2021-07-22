@@ -24,6 +24,7 @@ else:
 	summary_file = fm_obj.localAnalysisStatesDir + args.SummaryFile
 	fm_obj.downloadData(summary_file)
 	dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
+	pdb.set_trace()
 	projectIDs = list(dt[dt[args.AnalysisType] == 'False'].projectID) # Only run analysis on projects that need it
 
 if args.Workers is None:
