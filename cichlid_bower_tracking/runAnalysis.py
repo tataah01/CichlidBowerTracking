@@ -57,20 +57,20 @@ while len(projectIDs) != 0:
 		p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.classify_clusters', projectID, args.ModelID])
 
 	# In the meantime, download data for next project in the background
-	if i+1 < len(projectIDs):
-		if args.SummaryFile:
-			fm_obj.downloadData(summary_file)
-			dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
-			projectIDs = list(dt[dt[args.AnalysisType] == 'FALSE'].projectID) # Only run analysis on projects that need it
-
-			if len(projectIDs) != 0:
-				dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
-				dt.to_csv(summary_file, index = False)
-				fm_obj.uploadData(summary_file)
-		
-				print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
-				p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
 	
+	if args.SummaryFile:
+		fm_obj.downloadData(summary_file)
+		dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
+		projectIDs = list(dt[dt[args.AnalysisType] == 'FALSE'].projectID) # Only run analysis on projects that need it
+
+		if len(projectIDs) != 0:
+			dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
+			dt.to_csv(summary_file, index = False)
+			fm_obj.uploadData(summary_file)
+	
+			print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
+			p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
+
 	# Pause script until current analysis is complete and data for next project is downloaded
 	p1.communicate()
 	if p1.returncode != 0:
