@@ -24,8 +24,7 @@ else:
 	summary_file = fm_obj.localAnalysisStatesDir + args.SummaryFile
 	fm_obj.downloadData(summary_file)
 	dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
-	pdb.set_trace()
-	projectIDs = list(dt[dt[args.AnalysisType] == 'False'].projectID) # Only run analysis on projects that need it
+	projectIDs = list(dt[dt[args.AnalysisType] == 'FALSE'].projectID) # Only run analysis on projects that need it
 
 if args.Workers is None:
 	workers = os.cpu_count()
@@ -70,7 +69,7 @@ for i, projectID in enumerate(projectIDs):
 		pass
 	#Modify summary file if necessary
 	if args.SummaryFile:
-		dt.loc[dt.projectID == projectID,args.AnalysisType] = True
+		dt.loc[dt.projectID == projectID,args.AnalysisType] = 'TRUE'
 		dt.to_csv(summary_file, index = False)
 		fm_obj.uploadData(summary_file)
 
