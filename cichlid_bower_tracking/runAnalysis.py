@@ -44,7 +44,7 @@ subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_d
 while len(projectIDs) != 0:
 	projectID = projectIDs[0]
 
-	print('Running: ' + projectID + ' ' + str(datetime.datetime.now()))
+	print('Running: ' + projectID + ' ' + str(datetime.datetime.now()), flush = True)
 
 	# Run appropriate analysis script
 	if args.AnalysisType == 'Prep':
@@ -68,7 +68,7 @@ while len(projectIDs) != 0:
 			dt.to_csv(summary_file, index = False)
 			fm_obj.uploadData(summary_file)
 	
-			print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
+			print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
 			p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
 
 	# Pause script until current analysis is complete and data for next project is downloaded
@@ -90,12 +90,12 @@ while len(projectIDs) != 0:
 
 
 	#Upload data and keep track of it
-	print('Uploading: ' + projectID + ' ' + str(datetime.datetime.now()))
+	print('Uploading: ' + projectID + ' ' + str(datetime.datetime.now()), flush = True)
 
 	uploadProcesses.append(subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.upload_data', args.AnalysisType, '--Delete', '--ProjectID', projectID]))
 	#uploadProcesses.append(subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.upload_data', args.AnalysisType, projectID]))
 
 for i,p in enumerate(uploadProcesses):
-	print('Finishing uploading process ' + str(i) + ': ' + str(datetime.datetime.now()))
+	print('Finishing uploading process ' + str(i) + ': ' + str(datetime.datetime.now()), flush = True)
 	p.communicate()
-print('Finished analysis: ' + str(datetime.datetime.now()))
+print('Finished analysis: ' + str(datetime.datetime.now()), flush = True)
