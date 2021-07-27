@@ -39,7 +39,7 @@ if args.SummaryFile:
 	dt.to_csv(summary_file, index = False)
 	fm_obj.uploadData(summary_file)
 
-print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()))
+print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID)])
 while len(projectIDs) != 0:
 	projectID = projectIDs[0]
