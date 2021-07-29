@@ -30,6 +30,7 @@ class ProjectPreparer():
 		if self.projectID + '/' in projectIDs:
 			return True
 		else:
+			pdb.set_trace()
 			return False
 
 	def downloadData(self, dtype, videoIndex = None):
