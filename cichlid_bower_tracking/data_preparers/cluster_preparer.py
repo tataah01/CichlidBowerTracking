@@ -33,6 +33,7 @@ class ClusterPreparer():
 	def runClusterAnalysis(self):
 		command = ['python3', 'VideoFocus.py']
 		command.extend(['--Movie_file', self.videoObj.localVideoFile])
+		command.extend(['--Movie_framerate', self.fileManager.lp.framerate])
 		command.extend(['--Num_workers', str(self.workers)])
 		command.extend(['--Log', self.videoObj.localLogfile])
 		command.extend(['--HMM_temp_directory', self.videoObj.localTempDir])
