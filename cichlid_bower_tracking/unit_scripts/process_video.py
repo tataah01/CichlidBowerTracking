@@ -34,7 +34,9 @@ except:
 		except:
 			pdb.set_trace()
 
-# Delete video
+# Move video
+
+#subprocess.run(['mv', args.VideoFile, args.VideoFile.split('/Videos/')[0] + '/Backups/'])
 subprocess.run(['rm', '-f', args.VideoFile])
 subprocess.run(['rm', '-f', args.VideoFile.replace('.h264', '.mp4')])
 

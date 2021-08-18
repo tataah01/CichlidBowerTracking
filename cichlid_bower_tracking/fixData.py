@@ -27,7 +27,42 @@ for projectID in projectIDs:
 	lp = fm_obj.lp
 
 	main_directory_data = subprocess.run(['rclone', 'lsf', 'cichlidVideo:McGrath/Apps/CichlidPiData/' + '__ProjectData/' + projectID + '/'], capture_output = True, encoding = 'utf-8').stdout.split('\n')
+	for bad_data in ['AllClips.tar', 'MLClips.tar', 'MLFrames.tar', 'Backgrounds.tar']:
+		if bad_data in main_directory_data:
+			print('  Deleting: ' + bad_data)
+			subprocess.run(['rclone','delete', 'cichlidVideo:McGrath/Apps/CichlidPiData/' + '__ProjectData/' + projectID + '/' + bad_data])
+			print('Downloading: ' + projectID + ' ' + str(datetime.datetime.now()))
+			subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', 'Cluster', '--ProjectID', projectID])
 
+			videos = list(range(len(fm_obj.lp.movies)))
+			for videoIndex in videos:
+				videoObj = fm_obj.returnVideoObject(videoIndex)
+
+
+				command = ['python3', 'Utils/calculateClusters.py']
+				command.extend(['--Movie_file', videoObj.localVideoFile])
+					command.extend(['--Num_workers', str(self.workers)])
+				command.extend(['--HMM_filename', self.videoObj.localHMMFile])
+				command.extend(['--HMM_transition_filename', self.videoObj.localRawCoordsFile])
+				command.extend(['--Cl_labeled_transition_filename', self.videoObj.localLabeledCoordsFile])
+				command.extend(['--Cl_labeled_cluster_filename', self.videoObj.localLabeledClustersFile])
+				command.extend(['--Cl_videos_directory', self.videoObj.localAllClipsDir])
+				command.extend(['--ML_frames_directory', self.videoObj.localManualLabelFramesDir])
+				command.extend(['--ML_videos_directory', self.videoObj.localManualLabelClipsDir])
+				command.extend(['--Video_start_time', str(self.videoObj.startTime)])
+				command.extend(['--VideoID', self.videoObj.baseName])
+			
+				if not os.path.isdir('CichlidActionDetection'):
+					subprocess.run(['git', 'clone', 'https://www.github.com/ptmcgrat/CichlidActionDetection'])
+
+				os.chdir('CichlidActionDetection')
+				subprocess.run(['git', 'pull'])
+				subprocess.run(command)
+				os.chdir('..')
+
+
+
+	"""
 	# Directories to delete
 	for bad_data in ['PBS/', 'Backgrounds/', 'Figures/', 'DepthAnalysis/', 'VideoAnalysis/', 'Troubleshooting/','AllClips/','MLClips/', 'MLFrames/']:
 		if bad_data in main_directory_data:

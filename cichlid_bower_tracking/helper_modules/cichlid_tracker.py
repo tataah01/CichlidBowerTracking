@@ -4,6 +4,15 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 from picamera import PiCamera
 import numpy as np
+
+import warnings
+warnings.filterwarnings('ignore')
+
+
+#with warnings.catch_warnings():
+#    warnings.filterwarnings('ignore', message = 'Degrees of freedom <= 0 for slice.')
+#    warnings.filterwarnings('ignore', message = 'Mean of empty slice')
+
 from PIL import Image
 from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
@@ -25,7 +34,6 @@ class CichlidTracker:
 
         # 3: Create file manager
         self.fileManager = FM()
-
 
         # 4: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialSpreadsheet)
@@ -97,6 +105,7 @@ class CichlidTracker:
         # Rename files to make code more readable 
         self.projectDirectory = self.fileManager.localProjectDir
         self.loggerFile = self.fileManager.localLogfile
+        self.googleErrorFile = self.fileManager.localProjectDir + 'GoogleErrors.txt'
         self.frameDirectory = self.fileManager.localFrameDir
         self.videoDirectory = self.fileManager.localVideoDir
         self.backupDirectory = self.fileManager.localBackupDir
@@ -122,7 +131,8 @@ class CichlidTracker:
                 if self.device == 'kinect':
                     freenect.sync_stop()
                     freenect.shutdown(self.a)
-            except:
+            except Exception as e:
+                self._googlePrint(e)
                 self._print('ErrorStopping kinect')
                 
          
@@ -177,7 +187,8 @@ class CichlidTracker:
             if self.system != logObj.system or self.device != logObj.device or self.piCamera != logObj.camera:
                 self._reinstructError('Restart error. System, device, or camera does not match what is in logfile')
                 
-        self.lf = open(self.loggerFile, 'a')
+        self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
+        self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
         self._modifyPiGS(start = str(self.masterStart))
 
         if command in ['New', 'Rewrite']:
@@ -211,7 +222,7 @@ class CichlidTracker:
         # Capture data
         self.captureFrames()
     
-    def captureFrames(self, frame_delta = 5, background_delta = 5, max_frames = 20, stdev_threshold = 20):
+    def captureFrames(self, frame_delta = 5, background_delta = 5):
 
         current_background_time = datetime.datetime.now()
         current_frame_time = current_background_time + datetime.timedelta(seconds = 60 * frame_delta)
@@ -227,11 +238,11 @@ class CichlidTracker:
             if self.piCamera:
                 if self._video_recording() and not self.camera.recording:
                     self.camera.capture(self.videoDirectory + str(self.videoCounter).zfill(4) + "_pic.jpg")
-                    self.camera.start_recording(self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264", bitrate=7500000)
                     self._print('PiCameraStarted: FrameRate: ' + str(self.camera.framerate) + ',,Resolution: ' + str(self.camera.resolution) + ',,Time: ' + str(datetime.datetime.now()) + ',,VideoFile: Videos/' + str(self.videoCounter).zfill(4) + '_vid.h264,,PicFile: Videos/' + str(self.videoCounter).zfill(4) + '_pic.jpg')
+                    self.camera.start_recording(self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264", bitrate=7500000)
                 elif not self._video_recording() and self.camera.recording:
-                    self.camera.stop_recording()
                     self._print('PiCameraStopped: Time: ' + str(datetime.datetime.now()) + ',, File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
+                    self.camera.stop_recording()
                     #self._print(['rclone', 'copy', self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264"])
                     command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
                     command += [str(self.camera.framerate[0]), self.projectID]
@@ -243,17 +254,17 @@ class CichlidTracker:
             
             if now > current_background_time:
                 if command == 'Snapshots':
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold, snapshots = True)
+                    out = self._captureFrame(current_frame_time, snapshots = True)
                 else:
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold)
+                    out = self._captureFrame(current_frame_time)
                 if out is not None:
                     current_background_time += datetime.timedelta(seconds = 60 * background_delta)
                 subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
             else:
                 if command == 'Snapshots':
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold, snapshots = True)
+                    out = self._captureFrame(current_frame_time, snapshots = True)
                 else:    
-                    out = self._captureFrame(current_frame_time, max_frames = max_frames, stdev_threshold = stdev_threshold)
+                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
             self._modifyPiGS(status = 'Running')
@@ -282,32 +293,38 @@ class CichlidTracker:
         for i in range(0,3): # Try to autheticate three times before failing
             try:
                 gs = gspread.authorize(credentials)
-            except:
+            except Exception as e:
+                self._googlePrint(e)
                 continue
             try:
                 self.controllerGS = gs.open('Controller')
                 pi_ws = self.controllerGS.worksheet('RaspberryPi')
-            except:
+            except Exception as e:
+                self._googlePrint(e)
                 continue
             try:
                 headers = pi_ws.row_values(1)
-            except:
+            except Exception as e:
+                self._googlePrint(e)
                 continue
             column = headers.index('RaspberryPiID') + 1
             try:
                 pi_ws.col_values(column).index(platform.node())
                 return True
-            except ValueError:
+            except ValueError as e:
+                self._googlePrint(e)
                 s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
                 s.connect(("8.8.8.8", 80))
                 ip = s.getsockname()[0]
                 s.close()
                 try:
                     pi_ws.append_row([platform.node(),ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
-                except:
+                except Exception as e:
+                    self._googlePrint(e)
                     continue
                 return True
-            except:
+            except Exception as e:
+                self._googlePrint(e)
                 continue    
             time.sleep(2)
         return False
@@ -359,7 +376,8 @@ class CichlidTracker:
                 try:
                     row = pi_ws.col_values(raPiID_col).index(platform.node()) + 1
                     break
-                except:
+                except Exception as e:
+                    self._googlePrint(e)
                     continue
             col = headers.index('TankID')
             if pi_ws.row_values(row)[col] not in ['None','']:
@@ -368,7 +386,8 @@ class CichlidTracker:
                     try:
                         self._modifyPiGS(capability = 'Device=' + self.device + ',Camera=' + str(self.piCamera), status = 'AwaitingCommand')
                         return
-                    except:
+                    except Exception as e:
+                        self._googlePrint(e)
                         continue
                 return
             else:
@@ -378,7 +397,8 @@ class CichlidTracker:
     def _initError(self, message):
         try:
             self._modifyPiGS(command = 'None', status = 'Stopped', error = 'InitError: ' + message)
-        except:
+        except Exception as e:
+            self._googlePrint(e)
             pass
         self._print('InitError: ' + message)
         raise TypeError
@@ -390,11 +410,18 @@ class CichlidTracker:
         self.monitorCommands()
  
     def _print(self, text):
+        temperature = subprocess.run(['/opt/vc/bin/vcgencmd','measure_temp'], capture_output = True)
         try:
-            print(text, file = self.lf, flush = True)
-        except:
+            print(str(text) + ',,Temp: ' + str(temperature.stdout), file = self.lf, flush = True)
+        except Exception as e:
             pass
-        print(text, file = sys.stderr, flush = True)
+        print(str(text) + ',,Temp: ' + str(temperature.stdout), file = sys.stderr, flush = True)
+
+    def _googlePrint(self, e):
+        try:
+            print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), file = self.g_lf, flush = True)
+        except AttributeError as e2: # log file not created yet so just print to stderr
+            print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), flush = True)
 
     def _returnRegColor(self, crop = True):
         # This function returns a registered color array
@@ -402,7 +429,7 @@ class CichlidTracker:
             out = freenect.sync_get_video()[0]
             
         if self.device == 'realsense':
-            frames = self.pipeline.wait_for_frames()
+            frames = self.pipeline.wait_for_frames(1000)
             color_frame = frames.get_color_frame()
             out = np.asanyarray(color_frame.get_data())
 
@@ -419,8 +446,8 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
         
         if self.device == 'realsense':
-            depth_frame = self.pipeline.wait_for_frames().get_depth_frame().as_depth_frame()
-            data = np.asanyarray(depth_frame.total_df) * depth_frame.get_units() # Convert to meters
+            depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
+            data = np.asanyarray(depth_frame.data)*depth_frame.get_units() # Convert to meters
             data[data==0] = np.nan # 0 indicates bad data from RealSense
             data[data>1] = np.nan # Anything further away than 1 m is a mistake
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
@@ -469,8 +496,8 @@ class CichlidTracker:
             pi_ws.update_cell(row, column, str(datetime.datetime.now()))
         except gspread.exceptions.RequestError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
-        except TypeError:
-            self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly')
+        except TypeError as e:
+            self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly...' + str(e))
     
     def _video_recording(self):
         if datetime.datetime.now().hour >= 8 and datetime.datetime.now().hour <= 18:
@@ -495,7 +522,7 @@ class CichlidTracker:
             # Start streaming
             self.pipeline.start(config)
         
-            frames = self.pipeline.wait_for_frames()
+            frames = self.pipeline.wait_for_frames(1000)
             depth = frames.get_depth_frame()
             self.r = (0,0,depth.width,depth.height)
 
@@ -527,15 +554,15 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = .05, snapshots = False):
+    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 20, snapshots = False):
         # Captures time averaged frame of depth data
-        
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
         stds = np.zeros(shape = (self.r[3], self.r[2]))
         
         current_time = datetime.datetime.now()
         if current_time >= endtime:
+            self._print('Frame without data')
             return
 
         counter = 1

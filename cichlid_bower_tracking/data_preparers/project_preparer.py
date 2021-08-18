@@ -15,6 +15,8 @@ class ProjectPreparer():
 
 	def __init__(self, projectID = None, modelID = None, workers = None, summaryFile=None):
 		self.projectID = projectID
+		if modelID == 'None':
+			modelID = None
 		self.fileManager = FM(projectID = projectID, modelID = modelID, summaryFile=summaryFile)
 		self.modelID = modelID
 		if not self._checkProjectID():
@@ -28,6 +30,7 @@ class ProjectPreparer():
 		if self.projectID + '/' in projectIDs:
 			return True
 		else:
+			pdb.set_trace()
 			return False
 
 	def downloadData(self, dtype, videoIndex = None):

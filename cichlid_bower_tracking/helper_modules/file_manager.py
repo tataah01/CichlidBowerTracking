@@ -5,9 +5,10 @@ class FileManager():
 	def __init__(self, projectID = None, modelID = None, summaryFile=None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
 
 		# Identify directory for temporary local files
-		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or platform.node() == 'realsense':
-			self.localMasterDir = os.getenv('HOME').rstrip('/') + '/' + 'Temp/CichlidAnalyzer/'
-			#self._identifyPiDirectory()
+		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node():
+			self._identifyPiDirectory()
+		elif platform.node() == 'ebb-utaka.biosci.gatech.edu':
+			self.localMasterDir = '/mnt/Storage/' + os.getenv('USER') + '/Temp/CichlidAnalyzer/'
 		else:
 			self.localMasterDir = os.getenv('HOME').rstrip('/') + '/' + 'Temp/CichlidAnalyzer/'
 
@@ -486,7 +487,7 @@ class FileManager():
 
 	def _identifyPiDirectory(self):
 		writableDirs = []
-		mounted_dir = '/media/' + os.getenv('USER') + '/'
+		mounted_dir = '/media/pi/'
 		try:
 			possibleDirs = os.listdir(mounted_dir)
 		except FileNotFoundError:
@@ -577,10 +578,10 @@ class FileManager():
 
 		if os.path.isdir(local_path + relative_name):
 			output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path + relative_name], capture_output = True, encoding = 'utf-8')
-			#subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path + relative_name], check = True)
+			#subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path + relative_name], check = True) #Troubleshooting directory will have depth data in it when you upload the cluster data
 
 		elif os.path.isfile(local_path + relative_name):
-			#print(['rclone', 'copy', local_path + relative_name, cloud_path])
+			print(['rclone', 'copy', local_path + relative_name, cloud_path])
 			output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path], capture_output = True, encoding = 'utf-8')
 			output = subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path], check = True, capture_output = True, encoding = 'utf-8')
 		else:
