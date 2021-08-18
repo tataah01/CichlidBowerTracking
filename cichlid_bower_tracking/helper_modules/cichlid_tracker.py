@@ -14,7 +14,7 @@ warnings.filterwarnings('ignore')
 #    warnings.filterwarnings('ignore', message = 'Mean of empty slice')
 
 from PIL import Image
-from oauth2client.service_account import ServiceAccountCredentials
+# from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
 
 sys.path.append(sys.path[0] + '/unit_scripts')
@@ -285,14 +285,15 @@ class CichlidTracker:
                 self._modifyPiGS(error = '')
 
     def _authenticateGoogleSpreadSheets(self):
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/spreadsheets"
-        ]
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(self.credentialSpreadsheet, scope)
+        # scope = [
+        #     "https://spreadsheets.google.com/feeds",
+        #     "https://www.googleapis.com/auth/spreadsheets"
+        # ]
+        # credentials = ServiceAccountCredentials.from_json_keyfile_name(self.credentialSpreadsheet, scope)
         for i in range(0,3): # Try to autheticate three times before failing
             try:
-                gs = gspread.authorize(credentials)
+                # gs = gspread.authorize(credentials)
+                gs = gspread.service_account(filename=self.credentialSpreadsheet)
             except Exception as e:
                 self._googlePrint(e)
                 continue
