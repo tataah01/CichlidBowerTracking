@@ -27,10 +27,10 @@ def downsample_basic_block(x, planes, stride):
     zero_pads = torch.Tensor(
         out.size(0), planes - out.size(1), out.size(2), out.size(3),
         out.size(4)).zero_()
-    if isinstance(out.data, torch.cuda.FloatTensor):
+    if isinstance(out.total_df, torch.cuda.FloatTensor):
         zero_pads = zero_pads.cuda()
 
-    out = Variable(torch.cat([out.data, zero_pads], dim=1))
+    out = Variable(torch.cat([out.total_df, zero_pads], dim=1))
 
     return out
 
@@ -144,8 +144,8 @@ class ResNet(nn.Module):
             if isinstance(m, nn.Conv3d):
                 m.weight = nn.init.kaiming_normal_(m.weight, mode='fan_out')
             elif isinstance(m, nn.BatchNorm3d):
-                m.weight.data.fill_(1)
-                m.bias.data.zero_()
+                m.weight.total_df.fill_(1)
+                m.bias.total_df.zero_()
 
     def _make_layer(self, block, planes, blocks, shortcut_type, stride=1):
         downsample = None

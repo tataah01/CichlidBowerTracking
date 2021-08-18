@@ -311,6 +311,7 @@ class FileManager():
 			self.downloadData(self.localAnalysisDir)
 			self.downloadData(self.localPaceDir, allow_errors=True, quiet=True)
 			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
+			self.downloadData(self.localSummaryDir, allow_errors=True, quiet=True)
 
 		elif dtype == 'All':
 			self.createDirectory(self.localMasterDir)

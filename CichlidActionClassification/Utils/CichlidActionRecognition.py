@@ -76,11 +76,11 @@ class ML_model():
                                  target_transform=target_transform, 
                                  annotationDict =source_annotation_dict)
         if len(training_data) != 0:
-            train_loader = torch.utils.data.DataLoader(training_data,
-                                                       batch_size=opt.batch_size,
-                                                       shuffle=True,
-                                                       num_workers=opt.n_threads,
-                                                       pin_memory=True)
+            train_loader = torch.utils.total_df.DataLoader(training_data,
+                                                           batch_size=opt.batch_size,
+                                                           shuffle=True,
+                                                           num_workers=opt.n_threads,
+                                                           pin_memory=True)
             train_logger = Logger(
                 os.path.join(opt.Results_directory, 'train.log'),
                 ['epoch', 'loss', 'acc', 'lr'])
@@ -108,11 +108,11 @@ class ML_model():
                                    target_transform=target_transform, 
                                    annotationDict =source_annotation_dict)
                                      
-        val_loader = torch.utils.data.DataLoader(validation_data,
-                                                        batch_size=opt.batch_size,
-                                                        shuffle=False,
-                                                        num_workers=opt.n_threads,
-                                                        pin_memory=True)
+        val_loader = torch.utils.total_df.DataLoader(validation_data,
+                                                     batch_size=opt.batch_size,
+                                                     shuffle=False,
+                                                     num_workers=opt.n_threads,
+                                                     pin_memory=True)
         val_logger = Logger(
             os.path.join(opt.Results_directory, 'val.log'), ['epoch', 'loss', 'acc'])
 
@@ -135,11 +135,11 @@ class ML_model():
                                    target_transform=target_transform,
                                    annotationDict=source_annotation_dict)
         if len(test_data) != 0:
-            test_loader = torch.utils.data.DataLoader(test_data,
-                                                     batch_size=opt.batch_size,
-                                                     shuffle=True,
-                                                     num_workers=opt.n_threads,
-                                                     pin_memory=True)
+            test_loader = torch.utils.total_df.DataLoader(test_data,
+                                                          batch_size=opt.batch_size,
+                                                          shuffle=True,
+                                                          num_workers=opt.n_threads,
+                                                          pin_memory=True)
             test_logger = Logger(
                 os.path.join(opt.Results_directory, 'test.log'), ['epoch', 'loss', 'acc'])
 
@@ -208,7 +208,7 @@ class ML_model():
             loss = criterion(outputs, targets)
             acc = calculate_accuracy(outputs, targets)
 
-            losses.update(loss.data, inputs.size(0))
+            losses.update(loss.total_df, inputs.size(0))
             accuracies.update(acc, inputs.size(0))
 
             optimizer.zero_grad()
@@ -288,13 +288,13 @@ class ML_model():
                     confidence_for_each_validation[key] = [x.item() for x in outputs[j]]
 
                 rows = [int(x) for x in targets]
-                columns = [int(x) for x in np.argmax(outputs.data.cpu(),1)]
+                columns = [int(x) for x in np.argmax(outputs.total_df.cpu(), 1)]
                 assert len(rows) == len(columns)
                 for idx in range(len(rows)):
                     confusion_matrix[rows[idx]][columns[idx]] +=1
 
                 ###########################################################################
-                losses.update(loss.data, inputs.size(0))
+                losses.update(loss.total_df, inputs.size(0))
                 accuracies.update(acc, inputs.size(0))
 
                 batch_time.update(time.time() - end_time)
@@ -348,7 +348,7 @@ class ML_model():
                     outputs = model(inputs)
                     loss = criterion(outputs, targets)
                     acc = calculate_accuracy(outputs, targets)
-                    losses.update(loss.data, inputs.size(0))
+                    losses.update(loss.total_df, inputs.size(0))
                     accuracies.update(acc, inputs.size(0))
 
                     batch_time.update(time.time() - end_time)

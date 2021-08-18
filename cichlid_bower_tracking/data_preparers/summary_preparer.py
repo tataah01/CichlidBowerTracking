@@ -15,6 +15,7 @@ import glob
 import re
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 import pickle
+import PyPDF2 as pypdf
 
 class SummaryPreparer:
 
@@ -777,8 +778,8 @@ class SummaryPreparer:
             ca_data = vars(self.ca_obj.returnClusterSummary(t0, t1))
             da_data = vars(self.da_obj.returnVolumeSummary(t0, t1))
             row = {'t0': t0, 't1': t1,
-                   't_euth-t0': self.euth_data.dissection_time - t0,
-                   't_euth-t1': self.euth_data.dissection_time - t1}
+                   't_euth-t0': (self.euth_data.dissection_time - t0).seconds/60,
+                   't_euth-t1': (self.euth_data.dissection_time - t1).seconds/60}
             row.update(ca_data)
             row.update(da_data)
             return row
@@ -832,7 +833,8 @@ class MultiSummaryPreparer:
             self.das = {}
             self.load_data()
         self.bid_labels = self.cas[list(self.cas)[0]].bid_labels
-        self.data = self.collate_data()
+        self.total_df = self.collate_total_data()
+        self.detail_df = self.collate_detail_data()
 
     def load_data(self):
         for pid in self.pids:
@@ -840,7 +842,7 @@ class MultiSummaryPreparer:
             t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
             t_min = t_max - datetime.timedelta(hours=2)
             fm = FM(projectID=pid)
-            # fm.downloadProjectData('Summary')
+            fm.downloadProjectData('Summary')
             self.cas.update({pid: ClusterAnalyzer(fm)})
             self.das.update({pid: DepthAnalyzer(fm)})
             self.das[pid].clip_data(t_min, t_max)
@@ -851,7 +853,7 @@ class MultiSummaryPreparer:
         with open(self.das_pickle) as f:
             pickle.dump(self.das, f)
 
-    def collate_data(self):
+    def collate_total_data(self):
         df = []
         for pid in self.pids:
             row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
@@ -859,28 +861,81 @@ class MultiSummaryPreparer:
             da = self.das[pid]
             t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
             t_min = t_max - datetime.timedelta(hours=2)
-            bids = ['c', 'p', 'f', 't']
+            bids = ['c', 'p', 'b', 'f', 't', 'm', 's']
             for bid in bids:
-                row.update({ca.bid_labels[bid]: ca.returnClusterCounts(t_min, t_max, bid)})
+                row.update({bid: ca.returnClusterCounts(t_min, t_max, bid)})
+            row.update({'c+p+b': row['c'] + row['p'] + row['b']})
+            row.update({'f+t+m': row['f'] + row['t'] + row['m']})
             df.append(row)
         df = pd.DataFrame(df)
         return df
 
-    def plot_scoop_spit_histograms(self):
-        fig, axes = plt.subplots(2, 2, sharex='all', sharey='all', figsize=(8, 8))
+    def collate_detail_data(self, dt=10):
+        df = []
+        dt = datetime.timedelta(minutes=dt)
+        bids = ['c', 'p', 'b', 'f', 't', 'm', 's', ['c', 'p', 'b'], ['f', 't', 'm']]
+        for pid in self.pids:
+            ca = self.cas[pid]
+            da = self.das[pid]
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
+            t_min = t_max - datetime.timedelta(hours=2)
+            for bid in bids:
+                t0 = t_min
+                t1 = t0 + dt
+                while t1 <= t_max:
+                    row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
+                    row.update({'bid': '+'.join(bid) if type(bid) is list else bid})
+                    row.update({'t_euth-t0': (self.euth_data.loc[pid, 'dissection_time'] - t0).seconds/60})
+                    row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
+                    row.update({'n events': ca.returnClusterCounts(t0, t1, bid)})
+                    df.append(row)
+                    t1 += dt
+                    t0 += dt
+        df = pd.DataFrame(df)
+        return df
+
+    def plot_build_feed_spawn_histograms(self, n_bins=30):
+        fig, axes = plt.subplots(3, 1, figsize=(5.5, 8.5))
         axes = axes.flatten()
-        for i, bid in enumerate(['c', 'p', 'f', 't']):
-            sns.histplot(self.data, x=self.bid_labels[bid], hue='behave_or_control', ax=axes[i], binwidth=50, kde=True)
-            axes[i].set(title=self.bid_labels[bid], xlabel='')
+        for i, behavior in enumerate(['c+p+b', 'f+t+m', 's']):
+            sns.histplot(self.total_df, x=behavior, hue='behave_or_control', ax=axes[i], kde=True, bins=n_bins)
+            axes[i].set(title=behavior, xlabel='n events in 2 hours preceding euthanization')
         fig.tight_layout()
         fig.savefig(self.fm.localAnalysisStatesDir + 'behavioral_histograms.pdf')
         plt.close(fig)
 
-    # def generate_summary_spreadsheet(self):
-    #     writer = pd.ExcelWriter(self.fm.localSummaryDir + 'SingleNucDataSummary.xlsx')
-    #     total_df.to_excel(writer, 'Total')
-    #     detail_df.to_excel(writer, 'Detail')
-    #     writer.save()
+    def plot_build_feed_spawn_lineplots(self):
+        fig, axes = plt.subplots(2, 3, figsize=(11, 8.5), sharex='all', sharey='col')
+        behaviors = ['c+p+b', 'f+t+m', 's']
+        trial_types = ['C', 'B']
+        df = self.detail_df[self.detail_df.bid.isin(behaviors)]
+        for i, behavior in enumerate(behaviors):
+            for j, trial_type in enumerate(trial_types):
+                sub_df = df[(df.bid == behavior) & (df['behave_or_control'] == trial_type)]
+                sns.lineplot(data=sub_df, x=sub_df['t_euth-t1'] * -1, y='n events', ax=axes[j, i], hue='pid', alpha=0.5, legend=False)
+                title = behavior + (' Behave' if trial_type == 'B' else ' Control')
+                axes[j, i].set(title=title, xlabel='time until euthanization (minutes)', ylabel='n events')
+        fig.tight_layout()
+        fig.savefig(self.fm.localAnalysisStatesDir + 'behavioral_lineplots.pdf')
+        plt.close(fig)
+
+    def merge_project_pdfs(self, filename):
+        paths = [ca.fileManager.localSummaryDir + filename for ca in list(self.cas.values())]
+        writer = pypdf.PdfFileWriter()
+        for path in paths:
+            f = open(path, 'rb')
+            reader = pypdf.PdfFileReader(f)
+            for page_number in range(reader.numPages):
+                writer.addPage(reader.getPage(page_number))
+        with open(self.fm.localAnalysisStatesDir + 'Collated' + filename, 'wb') as f:
+            writer.write(f)
+
+    def generate_summary_spreadsheet(self):
+        writer = pd.ExcelWriter(self.fm.localAnalysisStatesDir + 'SingleNucDataSummary.xlsx')
+        self.total_df.to_excel(writer, 'Total')
+        self.detail_df.to_excel(writer, 'Detail')
+
+        writer.save()
 
 
 

@@ -35,8 +35,8 @@ except:
 			pdb.set_trace()
 
 # Delete video
-subprocess.run(['rm', '-f', args.VideoFile]
-subprocess.run(['rm', '-f', args.VideoFile.replace('.h264', '.mp4')]
+subprocess.run(['rm', '-f', args.VideoFile])
+subprocess.run(['rm', '-f', args.VideoFile.replace('.h264', '.mp4')])
 
 print('Video Processed')
 

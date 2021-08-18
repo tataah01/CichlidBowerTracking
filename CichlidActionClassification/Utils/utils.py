@@ -56,7 +56,7 @@ def calculate_accuracy(outputs, targets):
     pred = pred.t()
     correct = pred.eq(targets.view(1, -1))
     try:
-        n_correct_elems = correct.float().sum().data[0]
+        n_correct_elems = correct.float().sum().total_df[0]
     except:
         n_correct_elems = correct.float().sum().item()
 
