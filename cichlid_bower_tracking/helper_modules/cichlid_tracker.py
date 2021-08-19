@@ -463,7 +463,7 @@ class CichlidTracker:
                 command = pi_ws.col_values(headers.index('Command') + 1)[piIndex]
                 projectID = pi_ws.col_values(headers.index('ProjectID') + 1)[piIndex]
                 return command, projectID
-            except gspread.exceptions.RequestError:
+            except gspread.exceptions.APIError:
                 continue
 
     def _modifyPiGS(self, start = None, command = None, status = None, IP = None, capability = None, error = None):
@@ -493,7 +493,7 @@ class CichlidTracker:
                 pi_ws.update_cell(row, column, capability)
             column = headers.index('Ping') + 1
             pi_ws.update_cell(row, column, str(datetime.datetime.now()))
-        except gspread.exceptions.RequestError as e:
+        except gspread.exceptions.APIError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
         except TypeError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly...' + str(e))
