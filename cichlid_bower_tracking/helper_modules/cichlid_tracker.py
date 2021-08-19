@@ -464,6 +464,7 @@ class CichlidTracker:
                 projectID = pi_ws.col_values(headers.index('ProjectID') + 1)[piIndex]
                 return command, projectID
             except gspread.exceptions.APIError:
+                time.sleep(10)
                 continue
 
     def _modifyPiGS(self, start = None, command = None, status = None, IP = None, capability = None, error = None):
