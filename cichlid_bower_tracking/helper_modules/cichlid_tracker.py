@@ -419,6 +419,7 @@ class CichlidTracker:
     def _googlePrint(self, e):
         try:
             print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), file = self.g_lf, flush = True)
+            time.sleep(10)
         except AttributeError as e2: # log file not created yet so just print to stderr
             print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), flush = True)
 
