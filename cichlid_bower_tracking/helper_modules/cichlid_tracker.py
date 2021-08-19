@@ -496,6 +496,7 @@ class CichlidTracker:
             pi_ws.update_cell(row, column, str(datetime.datetime.now()))
         except gspread.exceptions.APIError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
+            time.sleep(10)
         except TypeError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly...' + str(e))
     
