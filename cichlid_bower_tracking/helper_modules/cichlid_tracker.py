@@ -306,7 +306,7 @@ class CichlidTracker:
         # Get IP address
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
-        self.ip = s.getsockname()[0]
+        self.IP = s.getsockname()[0]
         s.close()
 
         for i in range(0,3): # Try to autheticate three times before failing
@@ -485,7 +485,7 @@ class CichlidTracker:
                 raise Exception
             try:
                 cell = dt.loc[(dt.RaspberryPiID == platform.node())&(dt.IP == self.IP),column_name]
-            except AttributeError:
+            except AttributeError as error:
                 pdb.set_trace()
             if len(cell) > 1:
                 self._googlePrint('Multiple rows in the Controller with the same ID and IP')
