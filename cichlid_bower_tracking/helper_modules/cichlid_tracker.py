@@ -503,6 +503,7 @@ class CichlidTracker:
             row, column, ping_column = self._getPiGS(column_name, return_row_column = True)
             
             self.pi_ws.update_cell(row, column, new_value)
+            pdb.set_trace()
             self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
         except gspread.exceptions.APIError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
