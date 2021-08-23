@@ -380,7 +380,7 @@ class CichlidTracker:
             if tankID not in ['None','']:
                 self.tankID = tankID
                 
-                self._modifyPiGS('capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera))
+                self._modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera))
                 self._modifyPiGS('Status', 'AwaitingCommand')
                 break
             else:
