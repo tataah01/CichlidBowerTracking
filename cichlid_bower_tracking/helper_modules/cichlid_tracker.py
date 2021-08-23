@@ -62,9 +62,9 @@ class CichlidTracker:
         
     def __del__(self):
         # Try to close out files and stop running Kinects
-        self._modifyPiGS('command','None')
-        self._modifyPiGS('status','Stopped')
-        self._modifyPiGS('error','UnknownError')
+        self._modifyPiGS('Command','None')
+        self._modifyPiGS('Status','Stopped')
+        self._modifyPiGS('Error','UnknownError')
 
         if self.piCamera:
             if self.camera.recording:
@@ -96,7 +96,7 @@ class CichlidTracker:
                 self.fileManager.createProjectData(projectID)    
                 self.runCommand(command, projectID)
 
-            self._modifyPiGS('status', 'AwaitingCommand')
+            self._modifyPiGS('Status', 'AwaitingCommand')
             time.sleep(delta)
 
     def runCommand(self, command, projectID):
@@ -140,26 +140,26 @@ class CichlidTracker:
 
             self._closeFiles()
 
-            self._modifyPiGS('command', 'None')
-            self._modifyPiGS('status', 'AwaitingCommand')
+            self._modifyPiGS('Command', 'None')
+            self._modifyPiGS('Status', 'AwaitingCommand')
             return
 
         if command == 'UploadData':
 
-            self._modifyPiGS('command', 'None')
+            self._modifyPiGS('Command', 'None')
             self._uploadFiles()
             return
             
         if command == 'LocalDelete':
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
-            self._modifyPiGS('command', 'None')
-            self._modifyPiGS('status', 'AwaitingCommand')
+            self._modifyPiGS('Command', 'None')
+            self._modifyPiGS('Status', 'AwaitingCommand')
             return
 
-        self._modifyPiGS('command', 'None')
-        self._modifyPiGS('status', 'Running')
-        self._modifyPiGS('error', '')
+        self._modifyPiGS('Command', 'None')
+        self._modifyPiGS('Status', 'Running')
+        self._modifyPiGS('Error', '')
         
 
         if command == 'New':
@@ -235,9 +235,9 @@ class CichlidTracker:
         command = ''
         
         while True:
-            self._modifyPiGS('command', 'None')
-            self._modifyPiGS('status', 'Running')
-            self._modifyPiGS('error', '')
+            self._modifyPiGS('Command', 'None')
+            self._modifyPiGS('Status', 'Running')
+            self._modifyPiGS('Error', '')
  
             # Grab new time
             now = datetime.datetime.now()
@@ -275,7 +275,7 @@ class CichlidTracker:
                     out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
-            self._modifyPiGS('status', 'Running')
+            self._modifyPiGS('Status', 'Running')
  
             
             # Check google doc to determine if recording has changed.
@@ -285,15 +285,15 @@ class CichlidTracker:
                 continue                
             if command != 'None':
                 if command == 'Snapshots':
-                    self._modifyPiGS('command', 'None')
-                    self._modifyPiGS('status', 'Writing Snapshots')
+                    self._modifyPiGS('Command', 'None')
+                    self._modifyPiGS('Status', 'Writing Snapshots')
  
                     self._modifyPiGS(command = 'None', status = 'Writing Snapshots')
                     continue
                 else:
                     break
             else:
-                self._modifyPiGS('error', '')
+                self._modifyPiGS('Error', '')
  
 
     def _authenticateGoogleSpreadSheets(self):
@@ -381,17 +381,17 @@ class CichlidTracker:
                 self.tankID = tankID
                 
                 self._modifyPiGS('capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera))
-                self._modifyPiGS('status', 'AwaitingCommand')
+                self._modifyPiGS('Status', 'AwaitingCommand')
                 break
             else:
-                self._modifyPiGS('error','Awaiting assignment of TankID')
+                self._modifyPiGS('Error','Awaiting assignment of TankID')
                 time.sleep(20)
         
     def _initError(self, message):
         try:
-            self._modifyPiGS('command', 'None')
-            self._modifyPiGS('status', 'Stopped')
-            self._modifyPiGS('error', 'InitError: ' + message)
+            self._modifyPiGS('Command', 'None')
+            self._modifyPiGS('Status', 'Stopped')
+            self._modifyPiGS('Error', 'InitError: ' + message)
 
         except Exception as e:
             self._googlePrint(e)
@@ -401,9 +401,9 @@ class CichlidTracker:
             
     def _reinstructError(self, message):
         try:
-            self._modifyPiGS('command', 'None')
-            self._modifyPiGS('status', 'AwaitingCommands')
-            self._modifyPiGS('error', 'InstructError: ' + message)
+            self._modifyPiGS('Command', 'None')
+            self._modifyPiGS('Status', 'AwaitingCommands')
+            self._modifyPiGS('Error', 'InstructError: ' + message)
         except Exception as e:
             self._googlePrint(e)
             pass
@@ -616,7 +616,7 @@ class CichlidTracker:
 
             
     def _uploadFiles(self):
-        self._modifyPiGS('status', 'Finishing converting and uploading of videos')
+        self._modifyPiGS('Status', 'Finishing converting and uploading of videos')
         for p in self.processes:
             p.communicate()
         
@@ -630,7 +630,7 @@ class CichlidTracker:
         for p in self.processes:
             p.communicate()
 
-        self._modifyPiGS('status','Creating prep files')
+        self._modifyPiGS('Status','Creating prep files')
 
         # Move files around as appropriate
         prepDirectory = self.projectDirectory + 'PrepFiles/'
@@ -653,14 +653,14 @@ class CichlidTracker:
         subprocess.call(['cp', self.projectDirectory + depthObj.pic_file, prepDirectory + 'DepthRGB.jpg'])
 
         if not os.path.isdir(self.frameDirectory):
-            self._modifyPiGS('status', 'Error: ' + self.frameDirectory + ' does not exist.')
+            self._modifyPiGS('Status', 'Error: ' + self.frameDirectory + ' does not exist.')
             return
 
         subprocess.call(['cp', self.frameDirectory + 'Frame_000001.npy', prepDirectory + 'FirstDepth.npy'])
         subprocess.call(['cp', self.frameDirectory + 'Frame_' + str(self.frameCounter-1).zfill(6) + '.npy', prepDirectory + 'LastDepth.npy'])
         
         try:
-            self._modifyPiGS('status', 'Uploading data to cloud')
+            self._modifyPiGS('Status', 'Uploading data to cloud')
             self.fileManager.uploadData(self.frameDirectory, tarred = True)
             #print(prepDirectory)
             self.fileManager.uploadData(prepDirectory)
@@ -668,11 +668,11 @@ class CichlidTracker:
             self.fileManager.uploadData(self.videoDirectory)
             #print(self.loggerFile)
             self.fileManager.uploadData(self.loggerFile)
-            self._modifyPiGS('error','UploadSuccessful, ready for delete')
+            self._modifyPiGS('Error','UploadSuccessful, ready for delete')
 
         except Exception as e:
             print('UploadError: ' + str(e))
-            self._modifyPiGS('error','UploadFailed, Need to rerun')
+            self._modifyPiGS('Error','UploadFailed, Need to rerun')
             raise Exception
         
     def _closeFiles(self):
