@@ -1,7 +1,7 @@
 import platform, sys, os, shutil, datetime, subprocess, gspread, time, socket, pdb, time
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
-
+import pandas as pd
 from picamera import PiCamera
 import numpy as np
 
@@ -62,7 +62,10 @@ class CichlidTracker:
         
     def __del__(self):
         # Try to close out files and stop running Kinects
-        self._modifyPiGS(command = 'None', status = 'Stopped', error = 'UnknownError')
+        self._modifyPiGS('command','None')
+        self._modifyPiGS('status','Stopped')
+        self._modifyPiGS('error','UnknownError')
+
         if self.piCamera:
             if self.camera.recording:
                 self.camera.stop_recording()
