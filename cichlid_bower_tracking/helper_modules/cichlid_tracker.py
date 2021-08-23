@@ -494,8 +494,7 @@ class CichlidTracker:
                 column = dt.columns.get_loc(column_name)
                 ping_column = dt.columns.get_loc('Ping')
                 row = pd.Index((dt.RaspberryPiID == platform.node())&(dt.IP == self.IP)).get_loc(True)
-                pdb.set_trace()
-                return (row + 1, column + 1, ping_column + 1)
+                return (row + 2, column + 1, ping_column + 1) # 0 vs 1 indexing for pandas vs gspread + column names aren't in the pandas dataframe
             else:
                 return cell.values[0]
 
