@@ -49,7 +49,11 @@ class FileManager():
 
 
 	def createPiData(self):
-		self.localCredentialSpreadsheet = self.localMasterDir + '__CredentialFiles/SAcredentials.json'
+		if 'bt-' in platform.node():
+			sa_num = (int(platform.node()[-3:]) % 5) + 1
+		else:
+			sa_num = 1
+		self.localCredentialSpreadsheet = self.localMasterDir + '__CredentialFiles/SAcredentials_{}.json'.format(sa_num)
 		self.localCredentialDrive = self.localMasterDir + '__CredentialFiles/DriveCredentials.txt'
 
 	def getAllProjectIDs(self):
