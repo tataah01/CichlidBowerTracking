@@ -494,6 +494,7 @@ class CichlidTracker:
                 column = dt.columns.get_loc(column_name)
                 ping_column = dt.columns.get_loc('Ping')
                 row = pd.Index((dt.RaspberryPiID == platform.node())&(dt.IP == self.IP)).get_loc(True)
+                pdb.set_trace()
                 return (row + 1, column + 1, ping_column + 1)
             else:
                 return cell.values[0]
@@ -503,7 +504,6 @@ class CichlidTracker:
             row, column, ping_column = self._getPiGS(column_name, return_row_column = True)
             
             self.pi_ws.update_cell(row, column, new_value)
-            pdb.set_trace()
             self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
         except gspread.exceptions.APIError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
