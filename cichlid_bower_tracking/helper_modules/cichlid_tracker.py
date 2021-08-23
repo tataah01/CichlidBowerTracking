@@ -483,7 +483,10 @@ class CichlidTracker:
             if column_name not in dt.columns:
                 self._googlePrint('Cant find column name in Controller: ' + column_name)
                 raise Exception
-            cell = dt.loc[(dt.RaspberryPiID == platform.node())&(dt.IP == self.IP),column_name]
+            try:
+                cell = dt.loc[(dt.RaspberryPiID == platform.node())&(dt.IP == self.IP),column_name]
+            except AttributeError:
+                pdb.set_trace()
             if len(cell) > 1:
                 self._googlePrint('Multiple rows in the Controller with the same ID and IP')
                 raise Exception
