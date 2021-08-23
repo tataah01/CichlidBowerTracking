@@ -39,7 +39,7 @@ class CichlidTracker:
 
         # 5: Connect to Google Spreadsheets
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
-        self._modifyPiGS(error = '')
+        self._modifyPiGS('Error', '')
         
         # 6: Start PiCamera
 
