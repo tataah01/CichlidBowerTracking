@@ -87,13 +87,13 @@ class CichlidTracker:
                 self._reinstructError('ProjectID must be set')
                 time.sleep(delta)
                 continue
-
             
             if command != 'None':
                 print(command + '\t' + projectID)
                 self.fileManager.createProjectData(projectID)    
                 self.runCommand(command, projectID)
-            self._modifyPiGS(status = 'AwaitingCommand')
+
+            self._modifyPiGS('status', 'AwaitingCommand')
             time.sleep(delta)
 
     def runCommand(self, command, projectID):
@@ -137,23 +137,27 @@ class CichlidTracker:
 
             self._closeFiles()
 
-            self._modifyPiGS(command = 'None', status = 'AwaitingCommand')
+            self._modifyPiGS('command', 'None')
+            self._modifyPiGS('status', 'AwaitingCommand')
             return
 
         if command == 'UploadData':
 
-            self._modifyPiGS(command = 'None')
+            self._modifyPiGS('command', 'None')
             self._uploadFiles()
             return
             
         if command == 'LocalDelete':
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
-            self._modifyPiGS(command = 'None', status = 'AwaitingCommand')
+            self._modifyPiGS('command', 'None')
+            self._modifyPiGS('status', 'AwaitingCommand')
             return
-        
-        self._modifyPiGS(command = 'None', status = 'Running', error = '')
 
+        self._modifyPiGS('command', 'None')
+        self._modifyPiGS('status', 'Running')
+        self._modifyPiGS('error', '')
+        
 
         if command == 'New':
             # Project Directory should not exist. If it does, report error
@@ -187,7 +191,7 @@ class CichlidTracker:
                 
         self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
         self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
-        self._modifyPiGS(start = str(self.masterStart))
+        self._modifyPiGS('start',str(self.masterStart))
 
         if command in ['New', 'Rewrite']:
             self._print('MasterStart: System: '+self.system + ',,Device: ' + self.device + ',,Camera: ' + str(self.piCamera) + ',,Uname: ' + str(platform.uname()) + ',,TankID: ' + self.tankID + ',,ProjectID: ' + self.projectID)
@@ -228,7 +232,10 @@ class CichlidTracker:
         command = ''
         
         while True:
-            self._modifyPiGS(command = 'None', status = 'Running', error = '')
+            self._modifyPiGS('command', 'None')
+            self._modifyPiGS('status', 'Running')
+            self._modifyPiGS('error', '')
+ 
             # Grab new time
             now = datetime.datetime.now()
             
@@ -265,8 +272,8 @@ class CichlidTracker:
                     out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
-            self._modifyPiGS(status = 'Running')
-
+            self._modifyPiGS('status', 'Running')
+ 
             
             # Check google doc to determine if recording has changed.
             try:
@@ -275,12 +282,16 @@ class CichlidTracker:
                 continue                
             if command != 'None':
                 if command == 'Snapshots':
+                    self._modifyPiGS('command', 'None')
+                    self._modifyPiGS('status', 'Writing Snapshots')
+ 
                     self._modifyPiGS(command = 'None', status = 'Writing Snapshots')
                     continue
                 else:
                     break
             else:
-                self._modifyPiGS(error = '')
+                self._modifyPiGS('error', '')
+ 
 
     def _authenticateGoogleSpreadSheets(self):
         # scope = [
@@ -288,6 +299,13 @@ class CichlidTracker:
         #     "https://www.googleapis.com/auth/spreadsheets"
         # ]
         # credentials = ServiceAccountCredentials.from_json_keyfile_name(self.credentialSpreadsheet, scope)
+        
+        # Get IP address
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        self.ip = s.getsockname()[0]
+        s.close()
+
         for i in range(0,3): # Try to autheticate three times before failing
             try:
                 # gs = gspread.authorize(credentials)
@@ -297,31 +315,19 @@ class CichlidTracker:
                 continue
             try:
                 self.controllerGS = gs.open('Controller')
-                pi_ws = self.controllerGS.worksheet('RaspberryPi')
+                self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
+                data = self.pi_ws.get_all_values()
+                dt = pd.DataFrame(data[1:], columns = data[0])
             except Exception as e:
                 self._googlePrint(e)
                 continue
+
             try:
-                headers = pi_ws.row_values(1)
-            except Exception as e:
-                self._googlePrint(e)
-                continue
-            column = headers.index('RaspberryPiID') + 1
-            try:
-                pi_ws.col_values(column).index(platform.node())
-                return True
-            except ValueError as e:
-                self._googlePrint(e)
-                s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-                s.connect(("8.8.8.8", 80))
-                ip = s.getsockname()[0]
-                s.close()
-                try:
-                    pi_ws.append_row([platform.node(),ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
-                except Exception as e:
-                    self._googlePrint(e)
-                    continue
-                return True
+                if len(dt.loc[dt.RaspberryPiID == platform.node()]) == 0:
+                    self.pi_ws.append_row([platform.node(),self.ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
+                    return True
+                else:
+                    return True
             except Exception as e:
                 self._googlePrint(e)
                 continue    
@@ -367,35 +373,23 @@ class CichlidTracker:
        
     def _identifyTank(self):
         while True:
-            self._authenticateGoogleSpreadSheets() # link to google drive spreadsheet stored in self.controllerGS 
-            pi_ws = self.controllerGS.worksheet('RaspberryPi')
-            headers = pi_ws.row_values(1)
-            raPiID_col = headers.index('RaspberryPiID') + 1
-            for i in range(5):
-                try:
-                    row = pi_ws.col_values(raPiID_col).index(platform.node()) + 1
-                    break
-                except Exception as e:
-                    self._googlePrint(e)
-                    continue
-            col = headers.index('TankID')
-            if pi_ws.row_values(row)[col] not in ['None','']:
-                self.tankID = pi_ws.row_values(row)[col]
-                for i in range(5):
-                    try:
-                        self._modifyPiGS(capability = 'Device=' + self.device + ',Camera=' + str(self.piCamera), status = 'AwaitingCommand')
-                        return
-                    except Exception as e:
-                        self._googlePrint(e)
-                        continue
-                return
+            tankID = self._getPiGS('TankID')
+            if tankID not in ['None','']:
+                self.tankID = tankID
+                
+                self._modifyPiGS('capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera))
+                self._modifyPiGS('status', 'AwaitingCommand')
+                break
             else:
-                self._modifyPiGS(error = 'Awaiting assignment of TankID')
-                time.sleep(5)
+                self._modifyPiGS('error','Awaiting assignment of TankID')
+                time.sleep(20)
         
     def _initError(self, message):
         try:
-            self._modifyPiGS(command = 'None', status = 'Stopped', error = 'InitError: ' + message)
+            self._modifyPiGS('command', 'None')
+            self._modifyPiGS('status', 'Stopped')
+            self._modifyPiGS('error', 'InitError: ' + message)
+
         except Exception as e:
             self._googlePrint(e)
             pass
@@ -403,25 +397,32 @@ class CichlidTracker:
         raise TypeError
             
     def _reinstructError(self, message):
-        self._modifyPiGS(command = 'None', status = 'AwaitingCommands', error = 'InstructError: ' + message)
+        try:
+            self._modifyPiGS('command', 'None')
+            self._modifyPiGS('status', 'AwaitingCommands')
+            self._modifyPiGS('error', 'InstructError: ' + message)
+        except Exception as e:
+            self._googlePrint(e)
+            pass
 
         # Update google doc to indicate error
         self.monitorCommands()
  
     def _print(self, text):
-        temperature = subprocess.run(['/opt/vc/bin/vcgencmd','measure_temp'], capture_output = True)
+        #temperature = subprocess.run(['/opt/vc/bin/vcgencmd','measure_temp'], capture_output = True)
         try:
-            print(str(text) + ',,Temp: ' + str(temperature.stdout), file = self.lf, flush = True)
+            print(str(text), file = self.lf, flush = True)
         except Exception as e:
             pass
-        print(str(text) + ',,Temp: ' + str(temperature.stdout), file = sys.stderr, flush = True)
+        print(str(text), file = sys.stderr, flush = True)
 
     def _googlePrint(self, e):
         try:
             print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), file = self.g_lf, flush = True)
-            time.sleep(10)
+            time.sleep(20)
         except AttributeError as e2: # log file not created yet so just print to stderr
             print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), flush = True)
+            time.sleep(20)
 
     def _returnRegColor(self, crop = True):
         # This function returns a registered color array
@@ -456,50 +457,48 @@ class CichlidTracker:
         if not self._authenticateGoogleSpreadSheets():
             raise KeyError
             # link to google drive spreadsheet stored in self.controllerGS
-        while True:
-            try:
-                pi_ws = self.controllerGS.worksheet('RaspberryPi')
-                headers = pi_ws.row_values(1)
-                piIndex = pi_ws.col_values(headers.index('RaspberryPiID') + 1).index(platform.node())
-                command = pi_ws.col_values(headers.index('Command') + 1)[piIndex]
-                projectID = pi_ws.col_values(headers.index('ProjectID') + 1)[piIndex]
-                return command, projectID
-            except gspread.exceptions.APIError:
-                time.sleep(10)
-                continue
+        command = self._getPiGS('Command')
+        projectID = self._getPiGS('ProjectID')
+        return command, projectID
 
-    def _modifyPiGS(self, start = None, command = None, status = None, IP = None, capability = None, error = None):
-        while not self._authenticateGoogleSpreadSheets(): # link to google drive spreadsheet stored in self.controllerGS
-            continue
+
+    def _getPiGS(self, column_name, return_row_column=False):
+
+        for i in range(3):
+            try:
+                data = self.pi_ws.get_all_values()
+            except gspread.exceptions.APIError as e:
+                if e.response.status_code == 429:
+                # Read requests per minute exceeded
+                    self._googlePrint('Read requests per minute exceeded')
+                    continue
+                else:
+                    self._googlePrint('gspread error of unknown nature: ' + str(e))
+                    raise Exception
+
+            dt = pd.DataFrame(data[1:], columns = data[0])
+            if column_name not in dt.columns:
+                self._googlePrint('Cant find column name in Controller: ' + column_name)
+                raise Exception
+            cell = dt.loc[(dt.RaspberryPiID == platform.node())&(dt.IP == self.IP),column_name]
+            if len(cell) > 1:
+                self._googlePrint('Multiple rows in the Controller with the same ID and IP')
+                raise Exception
+            if return_row_column:
+                column = dt.columns.get_loc(column_name)
+                ping_column = dt.columns.get_loc('Ping')
+                row = pd.Index((dt.RaspberryPiID == platform.node())&(dt.IP == self.IP)).get_loc(True)
+                return (row, column)
+            else:
+                return cell.values[0]
+
+    def _modifyPiGS(self, column_name, new_value):
         try:
-            pi_ws = self.controllerGS.worksheet('RaspberryPi')
-            headers = pi_ws.row_values(1)
-            row = pi_ws.col_values(headers.index('RaspberryPiID')+1).index(platform.node()) + 1
-            if start is not None:
-                column = headers.index('MasterStart') + 1
-                pi_ws.update_cell(row, column, start)
-            if command is not None:
-                column = headers.index('Command') + 1
-                pi_ws.update_cell(row, column, command)
-            if status is not None:
-                column = headers.index('Status') + 1
-                pi_ws.update_cell(row, column, status)
-            if error is not None:
-                column = headers.index('Error') + 1
-                pi_ws.update_cell(row, column, error)
-            if IP is not None:
-                column = headers.index('IP')+1
-                pi_ws.update_cell(row, column, IP)
-            if capability is not None:
-                column = headers.index('Capability')+1
-                pi_ws.update_cell(row, column, capability)
-            column = headers.index('Ping') + 1
-            pi_ws.update_cell(row, column, str(datetime.datetime.now()))
+            row, column = self._getPiGs(column_name, return_row_column = True)
+            self.pi_ws.update_cell(row, column, new_value)
+            pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
         except gspread.exceptions.APIError as e:
             self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
-            time.sleep(10)
-        except TypeError as e:
-            self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: Unknown. Gspread does not handle RequestErrors properly...' + str(e))
     
     def _video_recording(self):
         if datetime.datetime.now().hour >= 8 and datetime.datetime.now().hour <= 18:
@@ -614,7 +613,7 @@ class CichlidTracker:
 
             
     def _uploadFiles(self):
-        self._modifyPiGS(status = 'Finishing converting and uploading of videos')
+        self._modifyPiGS('status', 'Finishing converting and uploading of videos')
         for p in self.processes:
             p.communicate()
         
@@ -628,7 +627,7 @@ class CichlidTracker:
         for p in self.processes:
             p.communicate()
 
-        self._modifyPiGS(status = 'Creating prep files')
+        self._modifyPiGS('status','Creating prep files')
 
         # Move files around as appropriate
         prepDirectory = self.projectDirectory + 'PrepFiles/'
@@ -651,14 +650,14 @@ class CichlidTracker:
         subprocess.call(['cp', self.projectDirectory + depthObj.pic_file, prepDirectory + 'DepthRGB.jpg'])
 
         if not os.path.isdir(self.frameDirectory):
-            self._modifyPiGS(status = 'Error: ' + self.frameDirectory + ' does not exist.')
+            self._modifyPiGS('status', 'Error: ' + self.frameDirectory + ' does not exist.')
             return
 
         subprocess.call(['cp', self.frameDirectory + 'Frame_000001.npy', prepDirectory + 'FirstDepth.npy'])
         subprocess.call(['cp', self.frameDirectory + 'Frame_' + str(self.frameCounter-1).zfill(6) + '.npy', prepDirectory + 'LastDepth.npy'])
         
         try:
-            self._modifyPiGS(status = 'Uploading data to cloud')
+            self._modifyPiGS('status', 'Uploading data to cloud')
             self.fileManager.uploadData(self.frameDirectory, tarred = True)
             #print(prepDirectory)
             self.fileManager.uploadData(prepDirectory)
@@ -666,11 +665,11 @@ class CichlidTracker:
             self.fileManager.uploadData(self.videoDirectory)
             #print(self.loggerFile)
             self.fileManager.uploadData(self.loggerFile)
-            self._modifyPiGS(error = 'UploadSuccessful, ready for delete')
+            self._modifyPiGS('error','UploadSuccessful, ready for delete')
 
         except Exception as e:
             print('UploadError: ' + str(e))
-            self._modifyPiGS(error = 'UploadFailed, Need to rerun')
+            self._modifyPiGS('error','UploadFailed, Need to rerun')
             raise Exception
         
     def _closeFiles(self):
