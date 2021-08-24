@@ -127,6 +127,7 @@ class DriveUpdater:
             try:
                 self.controllerGS = gs.open('Controller')
                 self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
+                return
             except Exception as e:
                 continue
         print('Error authenticating google drive updater. Quitting')
