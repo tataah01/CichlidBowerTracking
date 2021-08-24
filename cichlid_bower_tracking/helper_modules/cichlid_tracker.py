@@ -132,6 +132,8 @@ class CichlidTracker:
                 if self.device == 'kinect':
                     freenect.sync_stop()
                     freenect.shutdown(self.a)
+                   if self.device == 'None':
+                    pass
             except Exception as e:
                 self._googlePrint(e)
                 self._print('ErrorStopping kinect')
@@ -220,7 +222,8 @@ class CichlidTracker:
 
             
         # Start kinect
-        self._start_kinect()
+        if self.device != 'None':
+            self._start_kinect()
         
         # Diagnose speed
         self._diagnose_speed()
@@ -260,20 +263,20 @@ class CichlidTracker:
                     self.videoCounter += 1
 
             # Capture a frame and background if necessary
-            
-            if now > current_background_time:
-                if command == 'Snapshots':
-                    out = self._captureFrame(current_frame_time, snapshots = True)
+            if self.device != 'None':
+                if now > current_background_time:
+                    if command == 'Snapshots':
+                        out = self._captureFrame(current_frame_time, snapshots = True)
+                    else:
+                        out = self._captureFrame(current_frame_time)
+                    if out is not None:
+                        current_background_time += datetime.timedelta(seconds = 60 * background_delta)
+                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
                 else:
-                    out = self._captureFrame(current_frame_time)
-                if out is not None:
-                    current_background_time += datetime.timedelta(seconds = 60 * background_delta)
-                subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
-            else:
-                if command == 'Snapshots':
-                    out = self._captureFrame(current_frame_time, snapshots = True)
-                else:    
-                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
+                    if command == 'Snapshots':
+                        out = self._captureFrame(current_frame_time, snapshots = True)
+                    else:    
+                        out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
             self._modifyPiGS('Status', 'Running')
@@ -359,7 +362,7 @@ class CichlidTracker:
             ctx = rs.context()
             if len(ctx.devices) == 0:
                 realsense = False
-            if len(ctx.devices) > 1:
+            elif len(ctx.devices) > 1:
                 self._initError('Multiple RealSense devices attached. Unsure how to handle')
             else:
                 realsense = True
@@ -368,8 +371,8 @@ class CichlidTracker:
 
         if kinect and realsense:
             self._initError('Kinect1 and RealSense devices attached. Unsure how to handle')
-        elif not kinect and not realsense:
-            self._initError('No depth sensor attached')
+        elif (not kinect) and (not realsense):
+            self.device = 'None'
         elif kinect:
             self.device = 'kinect'
         else:
@@ -652,21 +655,23 @@ class CichlidTracker:
         subprocess.call(['cp', self.projectDirectory + lp.movies[-1].pic_file, prepDirectory + 'LastPiCameraRGB.jpg'])
 
         # Find depthfile that is closest to the video file time
-        depthObj = [x for x in lp.frames if x.time > videoObj.startTime][0]
+        if self.device != 'None':
+            depthObj = [x for x in lp.frames if x.time > videoObj.startTime][0]
 
 
-        subprocess.call(['cp', self.projectDirectory + depthObj.pic_file, prepDirectory + 'DepthRGB.jpg'])
+            subprocess.call(['cp', self.projectDirectory + depthObj.pic_file, prepDirectory + 'DepthRGB.jpg'])
 
-        if not os.path.isdir(self.frameDirectory):
-            self._modifyPiGS('Status', 'Error: ' + self.frameDirectory + ' does not exist.')
-            return
+            if not os.path.isdir(self.frameDirectory):
+                self._modifyPiGS('Status', 'Error: ' + self.frameDirectory + ' does not exist.')
+                return
 
-        subprocess.call(['cp', self.frameDirectory + 'Frame_000001.npy', prepDirectory + 'FirstDepth.npy'])
-        subprocess.call(['cp', self.frameDirectory + 'Frame_' + str(self.frameCounter-1).zfill(6) + '.npy', prepDirectory + 'LastDepth.npy'])
+            subprocess.call(['cp', self.frameDirectory + 'Frame_000001.npy', prepDirectory + 'FirstDepth.npy'])
+            subprocess.call(['cp', self.frameDirectory + 'Frame_' + str(self.frameCounter-1).zfill(6) + '.npy', prepDirectory + 'LastDepth.npy'])
         
         try:
             self._modifyPiGS('Status', 'Uploading data to cloud')
-            self.fileManager.uploadData(self.frameDirectory, tarred = True)
+            if self.device != 'None':
+                self.fileManager.uploadData(self.frameDirectory, tarred = True)
             #print(prepDirectory)
             self.fileManager.uploadData(prepDirectory)
             #print(self.videoDirectory)
