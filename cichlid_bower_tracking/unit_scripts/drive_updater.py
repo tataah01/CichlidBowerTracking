@@ -150,6 +150,4 @@ class DriveUpdater:
         # Save the current credentials to a file
         self.gauth.SaveCredentialsFile(self.credentialDrive)
 
-print('Updating drive')
 dr_obj = DriveUpdater(args.Logfile)
-print('Done')
