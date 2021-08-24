@@ -26,6 +26,8 @@ class DriveUpdater:
         self.projectDirectory = self.fileManager.localProjectDir
         self.credentialDrive = self.fileManager.localCredentialDrive
         self.credentialSpreadsheet = self.fileManager.localCredentialSpreadsheet
+        self._authenticateGoogleDrive()
+        self._authenticateGoogleSpreadSheets()
         self._createImage()
         f = self.uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
         self.insertImage(f)
@@ -146,4 +148,6 @@ class DriveUpdater:
         # Save the current credentials to a file
         self.gauth.SaveCredentialsFile(self.credentialDrive)
 
+print('Updating drive')
 dr_obj = DriveUpdater(args.Logfile)
+print('Done')

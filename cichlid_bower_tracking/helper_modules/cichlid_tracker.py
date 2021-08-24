@@ -191,6 +191,7 @@ class CichlidTracker:
             self.videoCounter = logObj.lastVideoCounter + 1
             if self.system != logObj.system or self.device != logObj.device or self.piCamera != logObj.camera:
                 self._reinstructError('Restart error. System, device, or camera does not match what is in logfile')
+            subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
                 
         self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
         self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
