@@ -225,9 +225,8 @@ class CichlidTracker:
         # Start kinect
         if self.device != 'None':
             self._start_kinect()
-        
-        # Diagnose speed
-        self._diagnose_speed()
+            # Diagnose speed
+            self._diagnose_speed()
 
         # Capture data
         self.captureFrames()
