@@ -76,11 +76,11 @@ class DriveUpdater:
         #return self.graph_summary_fname       
     
     def uploadImage(self, image_file, name): #name should have format 't###_icon' or 't###_link'
-        self._authenticateGoogleDrive()
         drive = GoogleDrive(self.gauth)
         folder_id = "'151cke-0p-Kx-QjJbU45huK31YfiUs6po'"  #'Public Images' folder ID
         
         file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
+        print(file_list)
         # check if file name already exists so we can replace it
         flag = False
         count = 0
@@ -107,9 +107,7 @@ class DriveUpdater:
         return f
 
     def insertImage(self, f):
-        self._authenticateGoogleSpreadSheets()
-        pi_ws = self.controllerGS.worksheet('RaspberryPi')
-        headers = pi_ws.row_values(1)
+        headers = self.pi_ws.row_values(1)
         raPiID_col = headers.index('RaspberryPiID') + 1
         image_col = headers.index('Image') + 1
         row = pi_ws.col_values(raPiID_col).index(self.node) + 1
@@ -119,23 +117,18 @@ class DriveUpdater:
         pi_ws.update_cell(row, image_col, info)     
     
     def _authenticateGoogleSpreadSheets(self):
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/spreadsheets"
-        ]
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(self.credentialSpreadsheet, scope)
-        try:
-            gs = gspread.authorize(credentials)
-            while True:
-                try:
-                    self.controllerGS = gs.open('Controller')
-                    pi_ws = self.controllerGS.worksheet('RaspberryPi')
-                    break
-                except:
-                    time.sleep(1)
-        except gspread.exceptions.RequestError:
-            time.sleep(2)
-            self._authenticateGoogleSpreadSheets()
+        for i in range(0,3): # Try to autheticate three times before failing
+            try:
+                gs = gspread.service_account(filename=self.credentialSpreadsheet)
+            except Exception as e:
+                continue
+            try:
+                self.controllerGS = gs.open('Controller')
+                self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
+            except Exception as e:
+                continue
+        print('Error authenticating google drive updater. Quitting')
+        raise Exception
 
     def _authenticateGoogleDrive(self):
         self.gauth = GoogleAuth()
