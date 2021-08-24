@@ -132,7 +132,7 @@ class CichlidTracker:
                 if self.device == 'kinect':
                     freenect.sync_stop()
                     freenect.shutdown(self.a)
-                   if self.device == 'None':
+                if self.device == 'None':
                     pass
             except Exception as e:
                 self._googlePrint(e)
