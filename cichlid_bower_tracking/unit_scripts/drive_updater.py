@@ -112,11 +112,11 @@ class DriveUpdater:
         headers = self.pi_ws.row_values(1)
         raPiID_col = headers.index('RaspberryPiID') + 1
         image_col = headers.index('Image') + 1
-        row = pi_ws.col_values(raPiID_col).index(self.node) + 1
+        row = self.pi_ws.col_values(raPiID_col).index(self.node) + 1
         
         info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
 
-        pi_ws.update_cell(row, image_col, info)     
+        self.pi_ws.update_cell(row, image_col, info)     
     
     def _authenticateGoogleSpreadSheets(self):
         for i in range(0,3): # Try to autheticate three times before failing
