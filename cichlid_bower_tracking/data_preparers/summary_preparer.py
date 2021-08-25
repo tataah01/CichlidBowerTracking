@@ -834,7 +834,7 @@ class MultiSummaryPreparer:
             self.load_data()
         self.bid_labels = self.cas[list(self.cas)[0]].bid_labels
         self.total_df = self.collate_total_data()
-        self.detail_df = self.collate_detail_data()
+        self.detail_df = self.collate_detail_data_cluster()
 
     def load_data(self):
         for pid in self.pids:
@@ -866,19 +866,47 @@ class MultiSummaryPreparer:
                 row.update({bid: ca.returnClusterCounts(t_min, t_max, bid)})
             row.update({'c+p+b': row['c'] + row['p'] + row['b']})
             row.update({'f+t+m': row['f'] + row['t'] + row['m']})
+            vol_summary = da.returnvolumeSummary(t_min, t_max)
+            row.update({'total_signed_volume_change': vol_summary.depthSummedVolume,
+                        'total_abs_volume_change': vol_summary.depthAbsolutevolume,
+                        'castle_volume_change': vol_summary.depthCastlevolume,
+                        'pit_volume_change': vol_summary.depthPitVolume,
+                        'bower_index': vol_summary.depthBowerIndex})
             df.append(row)
         df = pd.DataFrame(df)
         return df
 
-    def collate_detail_data(self, dt=10):
+    def collate_detail_data_cluster(self, dt=10):
         df = []
         dt = datetime.timedelta(minutes=dt)
         bids = ['c', 'p', 'b', 'f', 't', 'm', 's', ['c', 'p', 'b'], ['f', 't', 'm']]
         for pid in self.pids:
             ca = self.cas[pid]
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
+            t_min = t_max - datetime.timedelta(hours=2)
+            for bid in bids:
+                t0 = t_min
+                t1 = t0 + dt
+                while t1 <= t_max:
+                    row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
+                    row.update({'bid': '+'.join(bid) if type(bid) is list else bid})
+                    row.update({'t_euth-t0': (self.euth_data.loc[pid, 'dissection_time'] - t0).seconds/60})
+                    row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
+                    row.update({'n events': ca.returnClusterCounts(t0, t1, bid)})
+                    df.append(row)
+                    t1 += dt
+                    t0 += dt
+        df = pd.DataFrame(df)
+        return df
+
+    def collate_detail_data_depth(self, dt=10):
+        df = []
+        dt = datetime.timedelta(minutes=dt)
+        for pid in self.pids:
             da = self.das[pid]
             t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
             t_min = t_max - datetime.timedelta(hours=2)
+            vol_types = ["total_signed_volume_change", "total_abs_volume_change", "castle_volume_change",
             for bid in bids:
                 t0 = t_min
                 t1 = t0 + dt
@@ -1106,10 +1134,10 @@ class DepthAnalyzer():
         flattenedData = heightChangeAbs.flatten()
         sortedData = np.sort(flattenedData[~np.isnan(flattenedData)])
         threshold = sortedData[-1 * bowerIndex_pixels]
-        thresholdCastleVolume = np.nansum(heightChangeAbs[(bowerLocations == 1) & (heightChangeAbs > threshold)])
-        thresholdPitVolume = np.nansum(heightChangeAbs[(bowerLocations == -1) & (heightChangeAbs > threshold)])
+        outData.thresholdCastleVolume = np.nansum(heightChangeAbs[(bowerLocations == 1) & (heightChangeAbs > threshold)])
+        outData.thresholdPitVolume = np.nansum(heightChangeAbs[(bowerLocations == -1) & (heightChangeAbs > threshold)])
 
-        outData.depthBowerIndex = (thresholdCastleVolume - thresholdPitVolume) / (thresholdCastleVolume + thresholdPitVolume)
+        outData.depthBowerIndex = (outData.thresholdCastleVolume - outData.thresholdPitVolume) / (outData.thresholdCastleVolume + outData.thresholdPitVolume)
 
         return outData
 
