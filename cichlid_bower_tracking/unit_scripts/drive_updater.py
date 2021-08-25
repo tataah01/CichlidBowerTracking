@@ -81,7 +81,11 @@ class DriveUpdater:
         drive = GoogleDrive(self.gauth)
         folder_id = "'151cke-0p-Kx-QjJbU45huK31YfiUs6po'"  #'Public Images' folder ID
         
-        file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
+        try:
+            file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
+        except oauth2client.clientsecrets.InvalidClientSecretsError:
+            self._authenticateGoogleDrive()
+            file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
         #print(file_list)
         # check if file name already exists so we can replace it
         flag = False
