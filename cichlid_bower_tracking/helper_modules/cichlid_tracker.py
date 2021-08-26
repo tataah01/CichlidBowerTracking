@@ -61,6 +61,7 @@ class CichlidTracker:
             self.r = (0,0,640,480)
 
         # 9: Await instructions
+        print('Monitor commands')
         self.monitorCommands()
         
     def __del__(self):
@@ -535,6 +536,7 @@ class CichlidTracker:
                 print('Write request (2): ' + str(datetime.datetime.now()))
                 self.pi_ws.update_cell(row, column, new_value)
                 self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
+                break
             except gspread.exceptions.APIError as e:
                 if e.response.status_code == 429:
                     # Read requests per minute exceeded
