@@ -481,7 +481,7 @@ class CichlidTracker:
 
 
     def _getPiGS(self, column_name):
-
+        print('Read request: ' + str(datetime.datetime.now()))
         for i in range(3):
             try:
                 data = self.pi_ws.get_all_values()
