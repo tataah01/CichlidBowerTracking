@@ -270,7 +270,7 @@ class CichlidTracker:
                         out = self._captureFrame(current_frame_time)
                     if out is not None:
                         current_background_time += datetime.timedelta(seconds = 60 * background_delta)
-                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
+                    #subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
                 else:
                     if command == 'Snapshots':
                         out = self._captureFrame(current_frame_time, snapshots = True)
