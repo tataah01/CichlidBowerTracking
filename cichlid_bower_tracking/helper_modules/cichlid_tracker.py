@@ -519,24 +519,24 @@ class CichlidTracker:
         return (row + 2, column + 1, ping_column + 1) # 0 vs 1 indexing for pandas vs gspread + column names aren't in the pandas dataframe
 
     def _modifyPiGS(self, column_name, new_value):
-        try:
-            row, column, ping_column = self._getRowColumn(column_name)
-            
-            self.pi_ws.update_cell(row, column, new_value)
-            self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
-        except gspread.exceptions.APIError as e:
-            if e.response.status_code == 429:
-                # Read requests per minute exceeded
-                self._googlePrint('Read requests per minute exceeded')
-                continue
-            elif e.response.status_code == 500:
-                self._googlePrint('Internal error encountered')
-                continue
-            else:
-                self._googlePrint('gspread error of unknown nature: ' + str(e))
-                raise Exception
+        for i in range(3):
+            try:
+                row, column, ping_column = self._getRowColumn(column_name)
+                
+                self.pi_ws.update_cell(row, column, new_value)
+                self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
+            except gspread.exceptions.APIError as e:
+                if e.response.status_code == 429:
+                    # Read requests per minute exceeded
+                    self._googlePrint('Read requests per minute exceeded')
+                    continue
+                elif e.response.status_code == 500:
+                    self._googlePrint('Internal error encountered')
+                    continue
+                else:
+                    self._googlePrint('gspread error of unknown nature: ' + str(e))
+                    raise Exception
 
-            self._googlePrint('')
     
     def _video_recording(self):
         if datetime.datetime.now().hour >= 8 and datetime.datetime.now().hour <= 18:
