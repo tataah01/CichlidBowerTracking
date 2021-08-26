@@ -32,23 +32,22 @@ class CichlidTracker:
         # 3: Create file manager
         self.fileManager = FM()
 
-        # 4: Download credential files
+        # 4: Start PiCamera
+        self.camera = PiCamera()
+        self.camera.resolution = (1296, 972)
+        self.camera.framerate = 30
+        self.piCamera = 'True'
+        
+        # 5: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
         self._identifyTank() #Stored in self.tankID
         self._identifyServiceAcount() 
 
-        # 5: Connect to Google Spreadsheets
+        # 6: Connect to Google Spreadsheets
         self._modifyPiGS('Error', '')
-        
-        # 6: Start PiCamera
 
-        self.camera = PiCamera()
-        self.camera.resolution = (1296, 972)
-        self.camera.framerate = 30
-        self.piCamera = 'True'
-        
         # 7: Keep track of processes spawned to convert and upload videofiles
         self.processes = [] 
 
