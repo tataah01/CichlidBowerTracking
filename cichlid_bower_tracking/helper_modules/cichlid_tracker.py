@@ -388,7 +388,7 @@ class CichlidTracker:
             if tankID not in ['None','']:
                 self.tankID = tankID
                 
-                self._modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera))
+                self._modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera), ping = False)
                 #self._modifyPiGS('Status', 'AwaitingCommand')
                 break
             else:
@@ -411,8 +411,8 @@ class CichlidTracker:
     def _initError(self, message):
         try:
             self._modifyPiGS('Command', 'None')
-            self._modifyPiGS('Status', 'Stopped')
-            self._modifyPiGS('Error', 'InitError: ' + message)
+            self._modifyPiGS('Status', 'Stopped', ping = False)
+            self._modifyPiGS('Error', 'InitError: ' + message, ping = False)
 
         except Exception as e:
             self._googlePrint(e)
@@ -423,8 +423,8 @@ class CichlidTracker:
     def _reinstructError(self, message):
         try:
             self._modifyPiGS('Command', 'None')
-            self._modifyPiGS('Status', 'AwaitingCommands')
-            self._modifyPiGS('Error', 'InstructError: ' + message)
+            self._modifyPiGS('Status', 'AwaitingCommands', ping = False)
+            self._modifyPiGS('Error', 'InstructError: ' + message, ping = False)
         except Exception as e:
             self._googlePrint(e)
             pass
