@@ -513,7 +513,7 @@ class CichlidTracker:
                     raise Exception
                 out_data.append(cell.values[0])
 
-            if len(out_data == 1):
+            if len(out_data) == 1:
                 return out_data[0]
             else:
                 return out_data
