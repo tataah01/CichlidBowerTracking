@@ -383,7 +383,7 @@ class CichlidTracker:
                 self.tankID = tankID
                 
                 self._modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera))
-                self._modifyPiGS('Status', 'AwaitingCommand')
+                #self._modifyPiGS('Status', 'AwaitingCommand')
                 break
             else:
                 self._modifyPiGS('Error','Awaiting assignment of TankID')
