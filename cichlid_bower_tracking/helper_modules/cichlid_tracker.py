@@ -35,6 +35,7 @@ class CichlidTracker:
         # 4: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
+        self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
         self._identifyTank() #Stored in self.tankID
         self._identifyServiceAcount() 
 
