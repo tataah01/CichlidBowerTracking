@@ -525,7 +525,18 @@ class CichlidTracker:
             self.pi_ws.update_cell(row, column, new_value)
             self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
         except gspread.exceptions.APIError as e:
-            self._print('GoogleError: Time: ' + str(datetime.datetime.now()) + ',,Error: ' + str(e))
+            if e.response.status_code == 429:
+                # Read requests per minute exceeded
+                self._googlePrint('Read requests per minute exceeded')
+                continue
+            elif e.response.status_code == 500:
+                self._googlePrint('Internal error encountered')
+                continue
+            else:
+                self._googlePrint('gspread error of unknown nature: ' + str(e))
+                raise Exception
+
+            self._googlePrint('')
     
     def _video_recording(self):
         if datetime.datetime.now().hour >= 8 and datetime.datetime.now().hour <= 18:
