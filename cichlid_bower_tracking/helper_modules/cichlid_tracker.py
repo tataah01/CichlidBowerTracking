@@ -33,12 +33,12 @@ class CichlidTracker:
         self.fileManager = FM()
 
         # 4: Download credential files
-        self.fileManager.downloadData(self.fileManager.localCredentialSpreadsheet)
-        self.fileManager.downloadData(self.fileManager.localCredentialDrive)
+        self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
+        self._identifyTank() #Stored in self.tankID
+        self._identifyServiceAcount() 
 
         # 5: Connect to Google Spreadsheets
-        self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
         self._modifyPiGS('Error', '')
         
         # 6: Start PiCamera
@@ -84,7 +84,6 @@ class CichlidTracker:
     def monitorCommands(self, delta = 10):
         # This function checks the master Controller Google Spreadsheet to determine if a command was issued (delta = seconds to recheck)
         while True:
-            self._identifyTank() #Stored in self.tankID
             command, projectID = self._returnCommand()
             if projectID in ['','None']:
                 self._reinstructError('ProjectID must be set')
@@ -299,7 +298,6 @@ class CichlidTracker:
             else:
                 self._modifyPiGS('Error', '')
  
-
     def _authenticateGoogleSpreadSheets(self):
         # scope = [
         #     "https://spreadsheets.google.com/feeds",
@@ -390,7 +388,20 @@ class CichlidTracker:
             else:
                 self._modifyPiGS('Error','Awaiting assignment of TankID')
                 time.sleep(20)
-        
+    
+    def _identifyServiceAccount(self):
+        while True:
+            serviceAccount = self._getPiGS('ServiceAccount')
+            if serviceAccount not in ['None','']:
+                self.serviceAccount = serviceAccount
+                self.credentialSpreadsheet = self.credentialSpreadsheet.replace('.json', '_' + self.serviceAccount + '.json')
+                self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
+
+                break
+            else:
+                self._modifyPiGS('Error','Awaiting assignment of ServiceAccount')
+                time.sleep(20)
+
     def _initError(self, message):
         try:
             self._modifyPiGS('Command', 'None')
@@ -469,7 +480,7 @@ class CichlidTracker:
         return command, projectID
 
 
-    def _getPiGS(self, column_name, return_row_column=False):
+    def _getPiGS(self, column_name):
 
         for i in range(3):
             try:
@@ -479,11 +490,15 @@ class CichlidTracker:
                 # Read requests per minute exceeded
                     self._googlePrint('Read requests per minute exceeded')
                     continue
+                elif e.response.status_code == 500:
+                    self._googlePrint('Internal error encountered')
+                    continue
                 else:
                     self._googlePrint('gspread error of unknown nature: ' + str(e))
                     raise Exception
 
             dt = pd.DataFrame(data[1:], columns = data[0])
+            self.dt = dt
             if column_name not in dt.columns:
                 self._googlePrint('Cant find column name in Controller: ' + column_name)
                 raise Exception
@@ -494,17 +509,18 @@ class CichlidTracker:
             if len(cell) > 1:
                 self._googlePrint('Multiple rows in the Controller with the same ID and IP')
                 raise Exception
-            if return_row_column:
-                column = dt.columns.get_loc(column_name)
-                ping_column = dt.columns.get_loc('Ping')
-                row = pd.Index((dt.RaspberryPiID == platform.node())&(dt.IP == self.IP)).get_loc(True)
-                return (row + 2, column + 1, ping_column + 1) # 0 vs 1 indexing for pandas vs gspread + column names aren't in the pandas dataframe
-            else:
-                return cell.values[0]
+            
+            return cell.values[0]
+
+    def _getRowColumn(self, column_name):
+        column = self.dt.columns.get_loc(column_name)
+        ping_column = self.dt.columns.get_loc('Ping')
+        row = pd.Index((self.dt.RaspberryPiID == platform.node())&(self.dt.IP == self.IP)).get_loc(True)
+        return (row + 2, column + 1, ping_column + 1) # 0 vs 1 indexing for pandas vs gspread + column names aren't in the pandas dataframe
 
     def _modifyPiGS(self, column_name, new_value):
         try:
-            row, column, ping_column = self._getPiGS(column_name, return_row_column = True)
+            row, column, ping_column = self._getRowColumn(column_name)
             
             self.pi_ws.update_cell(row, column, new_value)
             self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
