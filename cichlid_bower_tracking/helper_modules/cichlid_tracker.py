@@ -85,7 +85,7 @@ class CichlidTracker:
             pass
         self._closeFiles()
 
-    def monitorCommands(self, delta = 10):
+    def monitorCommands(self, delta = 20):
         # This function checks the master Controller Google Spreadsheet to determine if a command was issued (delta = seconds to recheck)
         self._modifyPiGS('Status', 'AwaitingCommand')
         self._modifyPiGS('Error', '', ping = False)
