@@ -282,6 +282,10 @@ class CichlidTracker:
                         out = self._captureFrame(current_frame_time, snapshots = True)
                     else:    
                         out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
+            else:
+                while datetime.datetime.now() < current_frame_time:
+                    time.sleep(5)
+
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
             #self._modifyPiGS('Status', 'Running')
