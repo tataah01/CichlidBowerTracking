@@ -480,7 +480,7 @@ class CichlidTracker:
     def _getPiGS(self, column_names):
         # Make this compatible with both lists and also strings
         if not isinstance(column_names, list):
-            column_name = [column_names]
+            column_names = [column_names]
         print('Read request: ' + str(datetime.datetime.now()))
         for i in range(3):
             try:
