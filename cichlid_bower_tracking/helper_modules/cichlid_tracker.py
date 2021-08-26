@@ -472,15 +472,17 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
 
     def _returnCommand(self):
-        if not self._authenticateGoogleSpreadSheets():
-            raise KeyError
-            # link to google drive spreadsheet stored in self.controllerGS
-        command = self._getPiGS('Command')
-        projectID = self._getPiGS('ProjectID')
+        
+        command, projectID = self._getPiGS(['Command','ProjectID'])
         return command, projectID
 
 
-    def _getPiGS(self, column_name):
+    def _getPiGS(self, column_names):
+        # Make this compatible with both lists and also strings
+        try:
+            iter(column_names)
+        except TypeError:
+            column_name = [column_names]
         print('Read request: ' + str(datetime.datetime.now()))
         for i in range(3):
             try:
@@ -499,18 +501,24 @@ class CichlidTracker:
 
             dt = pd.DataFrame(data[1:], columns = data[0])
             self.dt = dt
-            if column_name not in dt.columns:
-                self._googlePrint('Cant find column name in Controller: ' + column_name)
-                raise Exception
-            try:
-                cell = dt.loc[(dt.RaspberryPiID == platform.node())&(dt.IP == self.IP),column_name]
-            except AttributeError as error:
-                pdb.set_trace()
-            if len(cell) > 1:
-                self._googlePrint('Multiple rows in the Controller with the same ID and IP')
-                raise Exception
-            
-            return cell.values[0]
+            out_data = []
+            for column_name in column_names:
+                if column_name not in dt.columns:
+                    self._googlePrint('Cant find column name in Controller: ' + column_name)
+                    raise Exception
+                try:
+                    cell = dt.loc[(dt.RaspberryPiID == platform.node())&(dt.IP == self.IP),column_name]
+                except AttributeError as error:
+                    pdb.set_trace()
+                if len(cell) > 1:
+                    self._googlePrint('Multiple rows in the Controller with the same ID and IP')
+                    raise Exception
+                out_data.append(cell.values[0])
+
+            if len(out_data == 1):
+                return out_data[0]
+            else:
+                return out_data
 
     def _getRowColumn(self, column_name):
         column = self.dt.columns.get_loc(column_name)
