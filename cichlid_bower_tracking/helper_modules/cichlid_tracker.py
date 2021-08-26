@@ -41,12 +41,15 @@ class CichlidTracker:
         # 5: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
+        print('1st authentification')
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
+        print('Identify tank')
         self._identifyTank() #Stored in self.tankID
+        print('Identify service account')
         self._identifyServiceAccount() 
-
+        print('Done')
         # 6: Connect to Google Spreadsheets
-        self._modifyPiGS('Error', '')
+        #self._modifyPiGS('Error', '')
 
         # 7: Keep track of processes spawned to convert and upload videofiles
         self.processes = [] 
