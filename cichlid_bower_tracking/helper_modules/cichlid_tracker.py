@@ -43,7 +43,7 @@ class CichlidTracker:
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
         self._identifyTank() #Stored in self.tankID
-        self._identifyServiceAcount() 
+        self._identifyServiceAccount() 
 
         # 6: Connect to Google Spreadsheets
         self._modifyPiGS('Error', '')
