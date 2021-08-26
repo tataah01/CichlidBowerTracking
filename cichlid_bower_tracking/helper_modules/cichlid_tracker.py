@@ -199,8 +199,8 @@ class CichlidTracker:
             if self.system != logObj.system or self.device != logObj.device or self.piCamera != logObj.camera:
                 self._reinstructError('Restart error. System, device, or camera does not match what is in logfile')
             if self.device != 'None':
-                subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
-                
+                #subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
+                pass
         self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
         self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
         self._modifyPiGS('MasterStart',str(self.masterStart), ping = False)
@@ -244,9 +244,9 @@ class CichlidTracker:
         command = ''
         
         while True:
-            self._modifyPiGS('Command', 'None')
-            self._modifyPiGS('Status', 'Running')
-            self._modifyPiGS('Error', '')
+            #self._modifyPiGS('Command', 'None')
+            #self._modifyPiGS('Status', 'Running')
+            #self._modifyPiGS('Error', '')
  
             # Grab new time
             now = datetime.datetime.now()
@@ -284,7 +284,7 @@ class CichlidTracker:
                         out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
-            self._modifyPiGS('Status', 'Running')
+            #self._modifyPiGS('Status', 'Running')
  
             
             # Check google doc to determine if recording has changed.
