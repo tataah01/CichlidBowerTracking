@@ -66,9 +66,9 @@ class CichlidTracker:
         
     def __del__(self):
         # Try to close out files and stop running Kinects
-        self._modifyPiGS('Command','None')
-        self._modifyPiGS('Status','Stopped')
-        self._modifyPiGS('Error','UnknownError')
+        self._modifyPiGS('Command','None', ping = False)
+        self._modifyPiGS('Status','Stopped', ping = False)
+        self._modifyPiGS('Error','UnknownError', ping = False)
 
         if self.piCamera:
             if self.camera.recording:
@@ -88,6 +88,8 @@ class CichlidTracker:
     def monitorCommands(self, delta = 10):
         # This function checks the master Controller Google Spreadsheet to determine if a command was issued (delta = seconds to recheck)
         self._modifyPiGS('Status', 'AwaitingCommand')
+        self._modifyPiGS('Error', '', ping = False)
+
         while True:
             command, projectID = self._returnCommand()
             if projectID in ['','None']:
@@ -145,8 +147,8 @@ class CichlidTracker:
 
             self._closeFiles()
 
-            self._modifyPiGS('Command', 'None')
-            self._modifyPiGS('Status', 'AwaitingCommand')
+            self._modifyPiGS('Command', 'None', ping = False)
+            self._modifyPiGS('Status', 'AwaitingCommand', ping = False)
             return
 
         if command == 'UploadData':
@@ -158,13 +160,13 @@ class CichlidTracker:
         if command == 'LocalDelete':
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
-            self._modifyPiGS('Command', 'None')
-            self._modifyPiGS('Status', 'AwaitingCommand')
+            self._modifyPiGS('Command', 'None', ping = False)
+            self._modifyPiGS('Status', 'AwaitingCommand', ping = False)
             return
 
-        self._modifyPiGS('Command', 'None')
-        self._modifyPiGS('Status', 'Running')
-        self._modifyPiGS('Error', '')
+        self._modifyPiGS('Command', 'None', ping = False)
+        self._modifyPiGS('Status', 'Running', ping = False)
+        self._modifyPiGS('Error', '', ping = False)
         
 
         if command == 'New':
@@ -201,7 +203,7 @@ class CichlidTracker:
                 
         self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
         self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
-        self._modifyPiGS('MasterStart',str(self.masterStart))
+        self._modifyPiGS('MasterStart',str(self.masterStart), ping = False)
 
         if command in ['New', 'Rewrite']:
             self._print('MasterStart: System: '+self.system + ',,Device: ' + self.device + ',,Camera: ' + str(self.piCamera) + ',,Uname: ' + str(platform.uname()) + ',,TankID: ' + self.tankID + ',,ProjectID: ' + self.projectID)
@@ -528,14 +530,16 @@ class CichlidTracker:
         row = pd.Index((self.dt.RaspberryPiID == platform.node())&(self.dt.IP == self.IP)).get_loc(True)
         return (row + 2, column + 1, ping_column + 1) # 0 vs 1 indexing for pandas vs gspread + column names aren't in the pandas dataframe
 
-    def _modifyPiGS(self, column_name, new_value):
+    def _modifyPiGS(self, column_name, new_value, ping = True):
         for i in range(3):
             try:
                 row, column, ping_column = self._getRowColumn(column_name)
                 
-                print('Write request (2): ' + str(datetime.datetime.now()))
+                print('Write request: ' + str(datetime.datetime.now()))
                 self.pi_ws.update_cell(row, column, new_value)
-                self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
+                if ping:
+                    print('Write request: ' + str(datetime.datetime.now()))
+                    self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
                 break
             except gspread.exceptions.APIError as e:
                 if e.response.status_code == 429:
