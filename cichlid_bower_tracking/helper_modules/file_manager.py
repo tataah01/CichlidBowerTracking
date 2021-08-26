@@ -50,7 +50,7 @@ class FileManager():
 
 	def createPiData(self):
 		self.localCredentialDir = self.localMasterDir + '__CredentialFiles/'
-		self.localCredentialSpreadsheet = self.localCredentialDir + 'SAcredentials.json'
+		self.localCredentialSpreadsheet = self.localCredentialDir + 'SAcredentials_1.json'
 		self.localCredentialDrive = self.localCredentialDir +  'DriveCredentials.txt'
 
 	def getAllProjectIDs(self):

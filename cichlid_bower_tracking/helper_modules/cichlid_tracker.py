@@ -395,7 +395,7 @@ class CichlidTracker:
             serviceAccount = self._getPiGS('ServiceAccount')
             if serviceAccount not in ['None','']:
                 self.serviceAccount = serviceAccount
-                self.credentialSpreadsheet = self.credentialSpreadsheet.replace('.json', '_' + self.serviceAccount + '.json')
+                self.credentialSpreadsheet = self.credentialSpreadsheet.replace('_1.json', '_' + self.serviceAccount + '.json')
                 self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
 
                 break
