@@ -83,6 +83,7 @@ class CichlidTracker:
 
     def monitorCommands(self, delta = 10):
         # This function checks the master Controller Google Spreadsheet to determine if a command was issued (delta = seconds to recheck)
+        self._modifyPiGS('Status', 'AwaitingCommand')
         while True:
             command, projectID = self._returnCommand()
             if projectID in ['','None']:
@@ -95,7 +96,6 @@ class CichlidTracker:
                 self.fileManager.createProjectData(projectID)    
                 self.runCommand(command, projectID)
 
-            self._modifyPiGS('Status', 'AwaitingCommand')
             time.sleep(delta)
 
     def runCommand(self, command, projectID):
