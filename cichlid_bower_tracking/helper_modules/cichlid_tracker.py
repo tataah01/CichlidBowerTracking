@@ -481,9 +481,9 @@ class CichlidTracker:
         # Make this compatible with both lists and also strings
         if not isinstance(column_names, list):
             column_names = [column_names]
-        print('Read request: ' + str(datetime.datetime.now()))
         for i in range(3):
             try:
+                print('Read request: ' + str(datetime.datetime.now()))
                 data = self.pi_ws.get_all_values()
             except gspread.exceptions.APIError as e:
                 if e.response.status_code == 429:
@@ -529,6 +529,7 @@ class CichlidTracker:
             try:
                 row, column, ping_column = self._getRowColumn(column_name)
                 
+                print('Write request (2): ' + str(datetime.datetime.now()))
                 self.pi_ws.update_cell(row, column, new_value)
                 self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
             except gspread.exceptions.APIError as e:
