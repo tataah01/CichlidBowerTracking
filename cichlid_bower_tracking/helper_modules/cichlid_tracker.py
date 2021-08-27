@@ -200,7 +200,7 @@ class CichlidTracker:
                 self._reinstructError('Restart error. System, device, or camera does not match what is in logfile')
             if self.device != 'None':
                 row, column, ping_column = self._getRowColumn('Image')
-                subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, row, column])
+                subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, str(row), str(column)])
                 pass
         self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
         self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
@@ -278,7 +278,7 @@ class CichlidTracker:
                     if out is not None:
                         current_background_time += datetime.timedelta(seconds = 60 * background_delta)
                     row, column, ping_column = self._getRowColumn('Image')
-                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, row, column])
+                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, str(row), str(column)])
                 else:
                     if command == 'Snapshots':
                         out = self._captureFrame(current_frame_time, snapshots = True)
