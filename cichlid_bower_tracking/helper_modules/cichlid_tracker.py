@@ -41,13 +41,9 @@ class CichlidTracker:
         # 5: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
-        print('1st authentification')
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
-        print('Identify tank')
         self._identifyTank() #Stored in self.tankID
-        print('Identify service account')
         self._identifyServiceAccount() 
-        print('Done')
         # 6: Connect to Google Spreadsheets
         #self._modifyPiGS('Error', '')
 
@@ -495,7 +491,7 @@ class CichlidTracker:
             column_names = [column_names]
         for i in range(3):
             try:
-                print('Read request: ' + str(datetime.datetime.now()))
+                #print('Read request: ' + str(datetime.datetime.now()))
                 data = self.pi_ws.get_all_values()
             except gspread.exceptions.APIError as e:
                 if e.response.status_code == 429:
@@ -541,10 +537,10 @@ class CichlidTracker:
             try:
                 row, column, ping_column = self._getRowColumn(column_name)
                 
-                print('Write request: ' + str(datetime.datetime.now()))
+                #print('Write request: ' + str(datetime.datetime.now()))
                 self.pi_ws.update_cell(row, column, new_value)
                 if ping:
-                    print('Write request: ' + str(datetime.datetime.now()))
+                    #print('Write request: ' + str(datetime.datetime.now()))
                     self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
                 break
             except gspread.exceptions.APIError as e:
