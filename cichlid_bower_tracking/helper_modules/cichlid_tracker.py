@@ -501,9 +501,15 @@ class CichlidTracker:
                 elif e.response.status_code == 500:
                     self._googlePrint('Internal error encountered')
                     continue
+                elif e.response.status_code == 404:
+                    self._googlePrint('Requested entity was not found')
+                    continue
                 else:
                     self._googlePrint('gspread error of unknown nature: ' + str(e))
                     raise Exception
+            except requests.exceptions.ReadTimeout as e:
+                self._googlePrint('Requests read timeout error encountered')
+                continue
 
             dt = pd.DataFrame(data[1:], columns = data[0])
             self.dt = dt
