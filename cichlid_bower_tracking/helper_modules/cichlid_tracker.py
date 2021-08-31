@@ -424,8 +424,8 @@ class CichlidTracker:
             
     def _reinstructError(self, message):
         try:
-            self._modifyPiGS('Command', 'None')
-            self._modifyPiGS('Status', 'AwaitingCommands', ping = False)
+            #self._modifyPiGS('Command', 'None')
+            #self._modifyPiGS('Status', 'AwaitingCommands', ping = False)
             self._modifyPiGS('Error', 'InstructError: ' + message, ping = False)
         except Exception as e:
             self._googlePrint(e)
@@ -523,8 +523,8 @@ class CichlidTracker:
                 except AttributeError as error:
                     pdb.set_trace()
                 if len(cell) > 1:
-                    self._googlePrint('Multiple rows in the Controller with the same ID and IP')
-                    raise Exception
+                    self._googlePrint('Multiple rows in the Controller with the same ID and IP. Using 1st')
+                    self._modifyPiGS('Error', 'InstructError: Multiple rows with the same IP/ID', ping = False)
                 out_data.append(cell.values[0])
 
             if len(out_data) == 1:
