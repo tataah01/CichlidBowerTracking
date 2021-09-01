@@ -138,7 +138,6 @@ class DriveUpdater:
             except Exception as e:
                 continue
         print('Error authenticating google drive updater. Quitting')
-        pdb.set_trace()
         raise Exception
 
     def _authenticateGoogleDrive(self):

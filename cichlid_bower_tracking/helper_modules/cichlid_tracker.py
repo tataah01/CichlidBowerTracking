@@ -473,12 +473,12 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
         
         if self.device == 'realsense':
-            try:
-                depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
-            except RuntimeError:
-                self._googlePrint('No frame received from Kinect. Restarting')
-                self._start_kinect()
-                depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
+            depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
+            
+            #except RuntimeError:
+            #    self._googlePrint('No frame received from Kinect. Restarting')
+            #    self._start_kinect()
+            #    depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
 
             data = np.asanyarray(depth_frame.data)*depth_frame.get_units() # Convert to meters
             data[data==0] = np.nan # 0 indicates bad data from RealSense
@@ -512,7 +512,7 @@ class CichlidTracker:
                     continue
                 else:
                     self._googlePrint('gspread error of unknown nature: ' + str(e))
-                    raise Exception
+                    continue
             except requests.exceptions.ReadTimeout as e:
                 self._googlePrint('Requests read timeout error encountered')
                 continue
@@ -553,6 +553,7 @@ class CichlidTracker:
                 
                 #print('Write request: ' + str(datetime.datetime.now()))
                 self.pi_ws.update_cell(row, column, new_value)
+                
                 if ping:
                     #print('Write request: ' + str(datetime.datetime.now()))
                     self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))
@@ -565,9 +566,15 @@ class CichlidTracker:
                 elif e.response.status_code == 500:
                     self._googlePrint('Internal error encountered')
                     continue
+                elif e.response.status_code == 404:
+                    self._googlePrint('Requested entity was not found')
+                    continue
                 else:
                     self._googlePrint('gspread error of unknown nature: ' + str(e))
-                    raise Exception
+                    continue
+            except requests.exceptions.ReadTimeout:
+                self._googlePrint('Read timeout error')
+                continue
 
     
     def _video_recording(self):
