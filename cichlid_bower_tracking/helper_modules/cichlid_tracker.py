@@ -599,9 +599,9 @@ class CichlidTracker:
 
             # Start streaming
             self.profile = self.pipeline.start(config)
-            device = self.profile.get_device()
-            depth_sensor = device.first_depth_sensor()
-            device.hardware_reset()
+            #device = self.profile.get_device()
+            #depth_sensor = device.first_depth_sensor()
+            #device.hardware_reset()
 
             frames = self.pipeline.wait_for_frames(1000)
             depth = frames.get_depth_frame()
