@@ -476,6 +476,12 @@ class CichlidTracker:
             try:
                 depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
             except RuntimeError:
+                self.googlePrint('No frame received from Kinect. Restarting')
+                ctx = rs.context()
+                devices = ctx.query_devices()
+                for dev in devices:
+                dev.hardware_reset()
+                self._start_kinect()
                 depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
 
             data = np.asanyarray(depth_frame.data)*depth_frame.get_units() # Convert to meters
