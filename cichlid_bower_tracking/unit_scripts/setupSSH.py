@@ -14,10 +14,8 @@ dt = pd.DataFrame(data[1:], columns = data[0])
 
 for row in dt.RaspberryPiID:
 	print(row)
-#	subprocess.run(['ssh-keygen', '-t', 'rsa', '-f', '~/.ssh/id_rsa'])
-#	subprocess.run(['ssh-copy-id', 'pi@' + row + '.biosci.gatech.edu'])
+	#subprocess.run(['ssh-keygen', '-t', 'rsa', '-f', '~/.ssh/id_rsa'])
+	#subprocess.run(['ssh-copy-id', 'pi@' + row + '.biosci.gatech.edu'])
 
 for row in dt.RaspberryPiID:
 	subprocess.run(['ttab', '-t', row, 'ssh', 'pi@' + row + '.biosci.gatech.edu'])
-#ssh-keygen 
-#ssh-copy-id pi@bt-t001.biosci.gatech.edu

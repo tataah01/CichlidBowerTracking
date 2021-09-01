@@ -93,7 +93,7 @@ class CichlidTracker:
                 time.sleep(delta)
                 continue
             
-            if command != 'None':
+            if command not in ['None',None]:
                 print(command + '\t' + projectID)
                 self.fileManager.createProjectData(projectID)    
                 self.runCommand(command, projectID)
@@ -531,6 +531,8 @@ class CichlidTracker:
                 return out_data[0]
             else:
                 return out_data
+        self._googlePrint('Failed contancting controller for three tries')
+        return [None]*len(column_names)
 
     def _getRowColumn(self, column_name):
         column = self.dt.columns.get_loc(column_name)
