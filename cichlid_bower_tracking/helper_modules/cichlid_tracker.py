@@ -477,9 +477,6 @@ class CichlidTracker:
                 depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
             except RuntimeError:
                 self.googlePrint('No frame received from Kinect. Restarting')
-                device = self.profile.get_device()
-                depth_sensor = device.first_depth_sensor()
-                device.hardware_reset()
                 self._start_kinect()
                 depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
 
@@ -595,7 +592,10 @@ class CichlidTracker:
 
             # Start streaming
             self.profile = self.pipeline.start(config)
-        
+            device = self.profile.get_device()
+            depth_sensor = device.first_depth_sensor()
+            device.hardware_reset()
+
             frames = self.pipeline.wait_for_frames(1000)
             depth = frames.get_depth_frame()
             self.r = (0,0,depth.width,depth.height)
