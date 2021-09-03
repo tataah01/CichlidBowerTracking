@@ -2,7 +2,7 @@ from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 import argparse, subprocess, os, pdb, datetime
 
 def logPrinter(message, indent = True):
-	f = open(self.fileManager.localProjectDir + 'VideoProcessLog.txt', 'a')
+	f = open(fileManager.localProjectDir + 'VideoProcessLog.txt', 'a')
 	if indent:
 		print('    ' + str(datetime.datetime.now() + ': ' + message), file = f)
 	else:
