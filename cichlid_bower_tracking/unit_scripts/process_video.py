@@ -20,12 +20,12 @@ args = parser.parse_args()
 fileManager = FM(projectID = args.ProjectID)
 
 if '.h264' not in args.VideoFile:
-	logPrinter(args.VideoFile + ' not an h264 file')
+	logPrinter(args.VideoFile + ' not an h264 file', indent = False)
 	raise Exception(args.VideoFile + ' not an h264 file')
 
 # Convert h264 to mp4
 command = ['ffmpeg', '-r', str(args.Framerate), '-i', args.VideoFile, '-threads', '1', '-c:v', 'copy', '-r', str(args.Framerate), args.VideoFile.replace('.h264', '.mp4')]
-logPrinter('Beginning conversion of video:')
+logPrinter('Beginning conversion of video: ' + args.VideoFile.split('/')[-1], indent = False)
 logPrinter(command)
 ffmpeg_output = subprocess.run(command, capture_output = True)
 
