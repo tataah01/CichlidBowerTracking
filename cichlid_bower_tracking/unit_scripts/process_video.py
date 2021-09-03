@@ -4,9 +4,9 @@ import argparse, subprocess, os, pdb, datetime
 def logPrinter(message, indent = True):
 	f = open(fileManager.localProjectDir + 'VideoProcessLog.txt', 'a')
 	if indent:
-		print('    ' + str(datetime.datetime.now() + ': ' + message), file = f)
+		print('    ' + str(datetime.datetime.now()) + ': ' + message, file = f)
 	else:
-		print(str(datetime.datetime.now() + ': ' + message), file = f)
+		print(str(datetime.datetime.now()) + ': ' + message, file = f)
 
 	f.close()
 
