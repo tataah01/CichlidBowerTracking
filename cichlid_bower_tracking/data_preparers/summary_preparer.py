@@ -19,12 +19,12 @@ import PyPDF2 as pypdf
 
 class SummaryPreparer:
 
-    def __init__(self, FileManager):
+    def __init__(self, FileManager, ca=None, da=None):
         self.__version__ = '1.0.0'
         self.fm = FileManager
         self.projectID = self.fm.projectID
-        self.da_obj = None
-        self.ca_obj = None
+        self.da_obj = da
+        self.ca_obj = ca
         self.euth_data = None
         self.lp = None
         self.pid = None
@@ -35,7 +35,8 @@ class SummaryPreparer:
     def validateDepthData(self):
         # Determine whether or not the required data for depth figures in present, and initiate a DepthAnalyzer
         # object if it is. Otherwise, return False
-
+        if self.da_obj is not None:
+            return
         # List out required files
         reqs = [self.fm.localLogfile,
                 self.fm.localSummaryDir,
@@ -54,6 +55,8 @@ class SummaryPreparer:
     def validateClusterData(self):
         # Determine whether or not the required data for cluster figures in present, and initiate a ClusterAnalyzer
         # object if it is. Otherwise, return False
+        if self.ca_obj is not None:
+            return
 
         # List out required files
         reqs = [self.fm.localLogfile,
@@ -561,22 +564,22 @@ class SummaryPreparer:
         else:
             pass
 
-    def createSinglenucFigures(self):
+    def createSinglenucFigures(self, time_window=90, dt=10):
 
         # confirm that the required data is present
         if self.euth_data is None:
             return
 
-        n_plots = 12
+        n_plots = int(time_window/dt)
         half_viridis = colors.LinearSegmentedColormap.from_list('name', cm.viridis(np.linspace(0.5, 1)))
 
         # determine time window immediately before euthanization
-        t1 = self.euth_data.dissection_time - datetime.timedelta(minutes=10)
-        t0 = t1 - datetime.timedelta(hours=2)
+        t1 = self.euth_data.dissection_time - datetime.timedelta(minutes=5)
+        t0 = t1 - datetime.timedelta(minutes=time_window)
 
         # generate a parent figure
         fig = plt.figure(figsize=(17, 22))
-        fig.suptitle(self.projectID + ' activity in 2 hours preceding euthanization')
+        fig.suptitle(self.projectID + ' activity in 90 minutes preceding euthanization')
         outer_grid = gridspec.GridSpec(11, 1)
 
         # plot whole-period metrics at the top of the parent figure
@@ -813,7 +816,8 @@ class SummaryPreparer:
 class MultiSummaryPreparer:
     # class for creating figures that summarize/compare data from multiple projects. Built for the single-nuc projects,
     # but could be adapted more generally with some modification
-    def __init__(self, fileManager, use_pickle=True):
+    def __init__(self, fileManager, use_pickle=True, smooth_depth=True):
+        self.smooth_depth = smooth_depth
         self.fm = fileManager
         self.fm.downloadData(self.fm.localSummaryFile)
         self.fm.downloadData(self.fm.localEuthData)
@@ -828,65 +832,78 @@ class MultiSummaryPreparer:
                 self.cas = pickle.load(f)
             with open(self.das_pickle, 'rb') as f:
                 self.das = pickle.load(f)
+            if self.das[self.pids[0]].smooth_depth != self.smooth_depth:
+                print('pickled depth analyzers do not match the chosen option for smooth_depth. Recreating')
+                self.load_data()
         else:
             self.cas = {}
             self.das = {}
             self.load_data()
+        self.sps = {pid: SummaryPreparer(self.cas[pid].fileManager, self.cas[pid], self.das[pid]) for pid in self.pids}
         self.bid_labels = self.cas[list(self.cas)[0]].bid_labels
         self.total_df = self.collate_total_data()
-        self.detail_df = self.collate_detail_data_cluster()
+        self.cluster_detail_df = self.collate_detail_data_cluster()
+        self.depth_detail_df = self.collate_detail_data_depth()
 
-    def load_data(self):
+    def plot_all(self):
+        self.plot_vol_change_lineplot()
+        self.plot_build_feed_spawn_lineplots()
+        self.plot_build_feed_spawn_histograms()
+        self.generate_summary_spreadsheet()
+
+    def load_data(self, time_window=90):
         for pid in self.pids:
             print(pid)
-            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
-            t_min = t_max - datetime.timedelta(hours=2)
-            fm = FM(projectID=pid)
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
+            fm = FM(projectID=pid, summaryFile=os.path.basename(self.fm.localSummaryFile))
             fm.downloadProjectData('Summary')
+            fm.downloadData(fm.localInterpDepthFile)
             self.cas.update({pid: ClusterAnalyzer(fm)})
-            self.das.update({pid: DepthAnalyzer(fm)})
+            self.das.update({pid: DepthAnalyzer(fm, smooth_depth=self.smooth_depth)})
             self.das[pid].clip_data(t_min, t_max)
 
     def save_pickle(self):
-        with open(self.cas_pickle) as f:
+        with open(self.cas_pickle, 'wb') as f:
             pickle.dump(self.cas, f)
-        with open(self.das_pickle) as f:
+        with open(self.das_pickle, 'wb') as f:
             pickle.dump(self.das, f)
 
-    def collate_total_data(self):
+    def collate_total_data(self, time_window=90):
         df = []
+        pixel_length = 0.1030168618
         for pid in self.pids:
             row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
             ca = self.cas[pid]
             da = self.das[pid]
-            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
-            t_min = t_max - datetime.timedelta(hours=2)
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
             bids = ['c', 'p', 'b', 'f', 't', 'm', 's']
             for bid in bids:
                 row.update({bid: ca.returnClusterCounts(t_min, t_max, bid)})
             row.update({'c+p+b': row['c'] + row['p'] + row['b']})
             row.update({'f+t+m': row['f'] + row['t'] + row['m']})
-            vol_summary = da.returnvolumeSummary(t_min, t_max)
-            row.update({'total_signed_volume_change': vol_summary.depthSummedVolume,
-                        'total_abs_volume_change': vol_summary.depthAbsolutevolume,
-                        'castle_volume_change': vol_summary.depthCastlevolume,
-                        'pit_volume_change': vol_summary.depthPitVolume,
-                        'bower_index': vol_summary.depthBowerIndex})
+            bower_mask = np.abs(da.returnBowerLocations(t_min, t_max, force_window=True))
+            abs_height_change = np.abs(da.returnHeightChange(t_min, t_max))
+            total_abs_vol_change = np.nansum(abs_height_change) * (pixel_length ** 2)
+            inbower_abs_vol_change = np.nansum(abs_height_change * bower_mask) * (pixel_length ** 2)
+            row.update({'total_abs_vol_change': total_abs_vol_change,
+                        'inbower_abs_vol_change': inbower_abs_vol_change})
             df.append(row)
         df = pd.DataFrame(df)
         return df
 
-    def collate_detail_data_cluster(self, dt=10):
+    def collate_detail_data_cluster(self, time_step=10, time_window=90):
         df = []
-        dt = datetime.timedelta(minutes=dt)
+        time_step = datetime.timedelta(minutes=time_step)
         bids = ['c', 'p', 'b', 'f', 't', 'm', 's', ['c', 'p', 'b'], ['f', 't', 'm']]
         for pid in self.pids:
             ca = self.cas[pid]
-            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
-            t_min = t_max - datetime.timedelta(hours=2)
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
             for bid in bids:
                 t0 = t_min
-                t1 = t0 + dt
+                t1 = t0 + time_step
                 while t1 <= t_max:
                     row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
                     row.update({'bid': '+'.join(bid) if type(bid) is list else bid})
@@ -894,31 +911,34 @@ class MultiSummaryPreparer:
                     row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
                     row.update({'n events': ca.returnClusterCounts(t0, t1, bid)})
                     df.append(row)
-                    t1 += dt
-                    t0 += dt
+                    t1 += time_step
+                    t0 += time_step
         df = pd.DataFrame(df)
         return df
 
-    def collate_detail_data_depth(self, dt=10):
+    def collate_detail_data_depth(self, time_step=10, time_window=90):
         df = []
-        dt = datetime.timedelta(minutes=dt)
+        time_step = datetime.timedelta(minutes=time_step)
+        pixel_length = 0.1030168618
         for pid in self.pids:
             da = self.das[pid]
-            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=10)
-            t_min = t_max - datetime.timedelta(hours=2)
-            vol_types = ["total_signed_volume_change", "total_abs_volume_change", "castle_volume_change",
-            for bid in bids:
-                t0 = t_min
-                t1 = t0 + dt
-                while t1 <= t_max:
-                    row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
-                    row.update({'bid': '+'.join(bid) if type(bid) is list else bid})
-                    row.update({'t_euth-t0': (self.euth_data.loc[pid, 'dissection_time'] - t0).seconds/60})
-                    row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
-                    row.update({'n events': ca.returnClusterCounts(t0, t1, bid)})
-                    df.append(row)
-                    t1 += dt
-                    t0 += dt
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
+            bower_mask = np.abs(da.returnBowerLocations(t_min, t_max, force_window=True))
+            t0 = t_min
+            t1 = t0 + time_step
+            while t1 <= t_max:
+                row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
+                row.update({'t_euth-t0': (self.euth_data.loc[pid, 'dissection_time'] - t0).seconds/60})
+                row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
+                abs_height_change = np.abs(da.returnHeightChange(t0, t1))
+                total_abs_vol_change = np.nansum(abs_height_change) * (pixel_length ** 2)
+                inbower_abs_vol_change = np.nansum(abs_height_change * bower_mask) * (pixel_length ** 2)
+                row.update({'total_abs_vol_change': total_abs_vol_change,
+                            'inbower_abs_vol_change': inbower_abs_vol_change})
+                df.append(row)
+                t1 += time_step
+                t0 += time_step
         df = pd.DataFrame(df)
         return df
 
@@ -927,7 +947,7 @@ class MultiSummaryPreparer:
         axes = axes.flatten()
         for i, behavior in enumerate(['c+p+b', 'f+t+m', 's']):
             sns.histplot(self.total_df, x=behavior, hue='behave_or_control', ax=axes[i], kde=True, bins=n_bins)
-            axes[i].set(title=behavior, xlabel='n events in 2 hours preceding euthanization')
+            axes[i].set(title=behavior, xlabel='n events in 90 minutes preceding euthanization')
         fig.tight_layout()
         fig.savefig(self.fm.localAnalysisStatesDir + 'behavioral_histograms.pdf')
         plt.close(fig)
@@ -936,7 +956,7 @@ class MultiSummaryPreparer:
         fig, axes = plt.subplots(2, 3, figsize=(11, 8.5), sharex='all', sharey='col')
         behaviors = ['c+p+b', 'f+t+m', 's']
         trial_types = ['C', 'B']
-        df = self.detail_df[self.detail_df.bid.isin(behaviors)]
+        df = self.cluster_detail_df[self.cluster_detail_df.bid.isin(behaviors)]
         for i, behavior in enumerate(behaviors):
             for j, trial_type in enumerate(trial_types):
                 sub_df = df[(df.bid == behavior) & (df['behave_or_control'] == trial_type)]
@@ -945,6 +965,22 @@ class MultiSummaryPreparer:
                 axes[j, i].set(title=title, xlabel='time until euthanization (minutes)', ylabel='n events')
         fig.tight_layout()
         fig.savefig(self.fm.localAnalysisStatesDir + 'behavioral_lineplots.pdf')
+        plt.close(fig)
+
+    def plot_vol_change_lineplot(self):
+        fig, ax = plt.subplots(1, 1, figsize=(5.5, 5.5))
+        df = self.depth_detail_df
+        for pid in self.pids:
+            sub_df = df[df.pid == pid]
+            color = 'red' if sub_df['behave_or_control'].iloc[0] == 'B' else 'blue'
+            sns.lineplot(x=sub_df['t_euth-t1']*-1, y=np.cumsum(sub_df['inbower_abs_vol_change']), ax=ax, color=color)
+            if (sub_df['inbower_abs_vol_change'].iloc[-1] > 0) and (sub_df['behave_or_control'].iloc[0] == 'C'):
+                print('non-zero in-bower depth change for control trial {}'.format(pid))
+            elif (sub_df['inbower_abs_vol_change'].iloc[-1] < 0.1) and (sub_df['behave_or_control'].iloc[0] == 'B'):
+                print('zero in-bower depth change for behave trial {}'.format(pid))
+        ax.set(xlabel='time before euthanization, minutes', ylabel='cumulative absolute in-bower volume change (cm^3)')
+        fig.tight_layout()
+        fig.savefig(self.fm.localAnalysisStatesDir + 'volume_lineplots.pdf')
         plt.close(fig)
 
     def merge_project_pdfs(self, filename):
@@ -961,16 +997,20 @@ class MultiSummaryPreparer:
     def generate_summary_spreadsheet(self):
         writer = pd.ExcelWriter(self.fm.localAnalysisStatesDir + 'SingleNucDataSummary.xlsx')
         self.total_df.to_excel(writer, 'Total')
-        self.detail_df.to_excel(writer, 'Detail')
-
+        self.cluster_detail_df.to_excel(writer, 'Cluster_Detail')
+        self.depth_detail_df.to_excel(writer, 'Depth_Detail')
         writer.save()
 
+    def generate_individual_plots(self):
+        for pid in self.pids:
+            self.sps[pid].createSinglenucFigures()
 
 
-class DepthAnalyzer():
+class DepthAnalyzer:
     # Contains code process depth data for figure creation
 
-    def __init__(self, fileManager):
+    def __init__(self, fileManager, smooth_depth=True):
+        self.smooth_depth = smooth_depth
         self.fileManager = fileManager
         self.lp = self.fileManager.lp
         self._loadData()
@@ -987,22 +1027,34 @@ class DepthAnalyzer():
                 line = next(f)
                 tray = line.rstrip().split(',')
                 self.tray_r = [int(x) for x in tray]
+        if self.smooth_depth:
+            try:
+                self.depth_data
+            except AttributeError:
+                self.depth_data = np.load(self.fileManager.localSmoothDepthFile)
+                self.depth_data[:, :self.tray_r[0], :] = np.nan
+                self.depth_data[:, self.tray_r[2]:, :] = np.nan
+                self.depth_data[:, :, :self.tray_r[1]] = np.nan
+                self.depth_data[:, :, self.tray_r[3]:] = np.nan
+        else:
+            try:
+                self.depth_data
+            except AttributeError:
+                self.depth_data = np.load(self.fileManager.localInterpDepthFile)
+                self.depth_data[:, :self.tray_r[0], :] = np.nan
+                self.depth_data[:, self.tray_r[2]:, :] = np.nan
+                self.depth_data[:, :, :self.tray_r[1]] = np.nan
+                self.depth_data[:, :, self.tray_r[3]:] = np.nan
+            except FileNotFoundError:
+                self.depth_data = None
 
-        try:
-            self.smoothDepthData
-        except AttributeError:
-            self.smoothDepthData = np.load(self.fileManager.localSmoothDepthFile)
-            self.smoothDepthData[:, :self.tray_r[0], :] = np.nan
-            self.smoothDepthData[:, self.tray_r[2]:, :] = np.nan
-            self.smoothDepthData[:, :, :self.tray_r[1]] = np.nan
-            self.smoothDepthData[:, :, self.tray_r[3]:] = np.nan
 
     def t_to_index(self, t):
         try:
             index = max([False if x.time <= t else True for x in self.lp.frames].index(True) - 1, 0)
         except ValueError:
             if t > self.lp.frames[-1].time:
-                index = -1
+                index = len(self.lp.frames) - 1
             else:
                 index = 0
         return index
@@ -1012,10 +1064,10 @@ class DepthAnalyzer():
         # the DepthAnalyzer when generating multiple DepthAnalyzer objects
         self._checkTimes(t0, t1)
         i0, i1 = (self.t_to_index(t) for t in [t0, t1])
-        self.smoothDepthData = self.smoothDepthData[i0:i1+1]
+        self.depth_data = self.depth_data[i0:i1 + 1]
         self.lp.frames = self.lp.frames[i0:i1+1]
 
-    def returnBowerLocations(self, t0, t1, cropped=True):
+    def returnBowerLocations(self, t0, t1, cropped=True, force_window=False):
         # Returns 2D numpy array using thresholding and minimum size data to identify bowers
         # Pits = -1, Castle = 1, No bower = 0
 
@@ -1023,7 +1075,7 @@ class DepthAnalyzer():
         self._checkTimes(t0, t1)
 
         # Identify total height change and time change
-        totalHeightChange = self.returnHeightChange(t0, t1, masked=False, cropped=cropped)
+        totalHeightChange = self.returnHeightChange(t0, t1, masked=False, cropped=cropped, force_window=force_window)
         timeChange = t1 - t0
 
         # Determine threshold and minimum size of bower to use based upon timeChange
@@ -1064,14 +1116,14 @@ class DepthAnalyzer():
             else:
                 first_index = 0
 
-        change = self.smoothDepthData[first_index]
+        change = self.depth_data[first_index]
 
         if cropped:
             change = change[self.tray_r[0]:self.tray_r[2], self.tray_r[1]:self.tray_r[3]]
 
         return change
 
-    def returnHeightChange(self, t0, t1, masked=False, cropped=True):
+    def returnHeightChange(self, t0, t1, masked=False, cropped=True, force_window=False):
         # return the height change, based on the smoothedDepthData numpy, from the frame closest to t0 to the frame
         # closest to t1. If cropped is True, crop the frame to include only the area defined by tray_r. If masked is
         # True, set the pixel value in all non-bower regions (see returnBowerLocations) to 0
@@ -1088,13 +1140,16 @@ class DepthAnalyzer():
                 first_index = -1
             else:
                 first_index = 0
+        if force_window:
+            while self.lp.frames[first_index].time < t0:
+                first_index += 1
 
         try:
             last_index = max([False if x.time <= t1 else True for x in self.lp.frames].index(True) - 1, 0)
         except ValueError:
             last_index = len(self.lp.frames) - 1
 
-        change = self.smoothDepthData[first_index] - self.smoothDepthData[last_index]
+        change = self.depth_data[first_index] - self.depth_data[last_index]
 
         if cropped:
             change = change[self.tray_r[0]:self.tray_r[2], self.tray_r[1]:self.tray_r[3]]
