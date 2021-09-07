@@ -233,6 +233,7 @@ class SummaryPreparer:
         plt.setp(volAx.get_xticklabels(), visible=False)
 
         figDaily.savefig(self.fm.localSummaryDir + 'DailyDepthSummary.pdf')
+        subprocess.run(['cp', self.fm.localSummaryDir + 'DailyDepthSummary.pdf', self.localAnalysisStatesDir + self.projectID + '_DepthSummary.pdf'])
         figHourly.savefig(self.fm.localSummaryDir + 'HourlyDepthSummary.pdf')
 
         plt.close('all')

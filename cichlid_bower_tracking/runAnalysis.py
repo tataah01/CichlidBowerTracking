@@ -119,4 +119,14 @@ while len(projectIDs) != 0:
 for i,p in enumerate(uploadProcesses):
     print('Finishing uploading process ' + str(i) + ': ' + str(datetime.datetime.now()), flush = True)
     p.communicate()
+
+paths = [x for x in os.listdir(fm_obj.localAnalysisStatesDir) if '_DepthSummary.pdf' in x]
+writer = pypdf.PdfFileWriter()
+for path in paths:
+    f = open(f_obj.localAnalysisStatesDir + path, 'rb')
+    reader = pypdf.PdfFileReader(f)
+    for page_number in range(reader.numPages):
+        writer.addPage(reader.getPage(page_number))
+with open(fm_obj.localAnalysisStatesDir + 'Collated_DepthSummary.pdf', 'wb') as f:
+    writer.write(f)
 print('Finished analysis: ' + str(datetime.datetime.now()), flush = True)
