@@ -6,6 +6,7 @@ import numpy as np
 import seaborn as sns
 import datetime
 import os
+import subprocess
 from types import SimpleNamespace
 import sys
 from sklearn.neighbors import KernelDensity
