@@ -3,7 +3,6 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 class FileManager():
 	def __init__(self, projectID = None, modelID = None, summaryFile=None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
-
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node():
 			self._identifyPiDirectory()
