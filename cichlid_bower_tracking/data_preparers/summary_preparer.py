@@ -1,5 +1,6 @@
 from matplotlib import (cm, colors, gridspec, ticker)
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import pandas as pd
 import numpy as np
 import seaborn as sns
@@ -12,22 +13,30 @@ from skimage import morphology
 from math import sqrt
 import glob
 import re
+from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
+import pickle
+import PyPDF2 as pypdf
 
 class SummaryPreparer:
 
-    def __init__(self, FileManager):
+    def __init__(self, FileManager, ca=None, da=None):
         self.__version__ = '1.0.0'
         self.fm = FileManager
-        self.da_obj = None
-        self.ca_obj = None
+        self.projectID = self.fm.projectID
+        self.da_obj = da
+        self.ca_obj = ca
+        self.euth_data = None
         self.lp = None
+        self.pid = None
         self.validateDepthData()
         self.validateClusterData()
+        self.validateSinglenucData()
 
     def validateDepthData(self):
         # Determine whether or not the required data for depth figures in present, and initiate a DepthAnalyzer
         # object if it is. Otherwise, return False
-
+        if self.da_obj is not None:
+            return
         # List out required files
         reqs = [self.fm.localLogfile,
                 self.fm.localSummaryDir,
@@ -46,6 +55,8 @@ class SummaryPreparer:
     def validateClusterData(self):
         # Determine whether or not the required data for cluster figures in present, and initiate a ClusterAnalyzer
         # object if it is. Otherwise, return False
+        if self.ca_obj is not None:
+            return
 
         # List out required files
         reqs = [self.fm.localLogfile,
@@ -59,8 +70,27 @@ class SummaryPreparer:
                 return False
 
         # If all required files were present, initiate the LogParser and ClusterAnalyzer
-        self.lp = LP(self.fm.localLogfile)
+        self.lp = self.fm.lp
         self.ca_obj = ClusterAnalyzer(self.fm)
+
+    def validateSinglenucData(self):
+        # confirm that files required for both cluster and depth analysis are present, that euthanization data
+        # is accessible, and that the project ID is present in the euthanization data
+        if self.ca_obj is None:
+            self.validateClusterData()
+        if self.da_obj is None:
+            self.validateDepthData()
+        if (self.da_obj is None) or (self.ca_obj is None):
+            return False
+
+        try:
+            self.euth_data = pd.read_csv(self.fm.localEuthData, index_col='pid', parse_dates=['dissection_time'],
+                                         infer_datetime_format=True)
+            self.euth_data = self.euth_data.loc[self.projectID]
+            self.euth_data.dissection_time = self.euth_data.dissection_time.to_pydatetime()
+
+        except:
+            return False
 
     def createDepthFigures(self, hourlyDelta=2):
         # Create all figures based on depth data. Adjust hourlyDelta to influence the resolution of the
@@ -190,15 +220,15 @@ class SummaryPreparer:
         bottomGrid = gridspec.GridSpecFromSubplotSpec(2, 1, subplot_spec=gridDaily[2], hspace=0.05)
         bIAx = figDaily.add_subplot(bottomGrid[1])
         bIAx.axhline(linewidth=1, alpha=0.5, y=0)
-        bIAx.scatter(dailyDT['Midpoint'], dailyDT['bowerIndex'])
-        bIAx.scatter(hourlyDT['Midpoint'], hourlyDT['bowerIndex'])
+        bIAx.scatter(dailyDT['Midpoint'], dailyDT['depthBowerIndex'])
+        bIAx.scatter(hourlyDT['Midpoint'], hourlyDT['depthBowerIndex'])
         bIAx.set_xlabel('Day')
         bIAx.set_ylabel('Bower\nIndex')
         bIAx.xaxis.set_major_locator(ticker.MultipleLocator(base=1.0))
 
         volAx = figDaily.add_subplot(bottomGrid[0], sharex=bIAx)
-        volAx.plot(dailyDT['Midpoint'], dailyDT['bowerVolume'])
-        volAx.plot(hourlyDT['Midpoint'], hourlyDT['bowerVolume'])
+        volAx.plot(dailyDT['Midpoint'], dailyDT['depthBowerVolume'])
+        volAx.plot(hourlyDT['Midpoint'], hourlyDT['depthBowerVolume'])
         volAx.set_ylabel('Volume\nChange')
         plt.setp(volAx.get_xticklabels(), visible=False)
 
@@ -532,7 +562,246 @@ class SummaryPreparer:
             all_data.to_csv(self.fm.localSummaryDir + 'paceSummary.csv')
 
         else:
-            print('no .out files in troubleshooting directory, skipping pace summary')
+            pass
+
+    def createSinglenucFigures(self, time_window=90, dt=10):
+
+        # confirm that the required data is present
+        if self.euth_data is None:
+            return
+
+        n_plots = int(time_window/dt)
+        half_viridis = colors.LinearSegmentedColormap.from_list('name', cm.viridis(np.linspace(0.5, 1)))
+
+        # determine time window immediately before euthanization
+        t1 = self.euth_data.dissection_time - datetime.timedelta(minutes=5)
+        t0 = t1 - datetime.timedelta(minutes=time_window)
+
+        # generate a parent figure
+        fig = plt.figure(figsize=(17, 22))
+        fig.suptitle(self.projectID + ' activity in 90 minutes preceding euthanization')
+        outer_grid = gridspec.GridSpec(11, 1)
+
+        # plot whole-period metrics at the top of the parent figure
+        curr_grid = gridspec.GridSpecFromSubplotSpec(1, 5, subplot_spec=outer_grid[0:2])
+
+        curr_ax = fig.add_subplot(curr_grid[0])
+        height_change = self.da_obj.returnHeightChange(t0, t1, cropped=True)
+        v = np.nanquantile(np.abs(height_change), 0.99)
+        curr_ax.imshow(height_change, vmin=-v, vmax=v)
+        curr_ax.set_title('Depth Change')
+        curr_ax.set(aspect='equal')
+        cbar = fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-v, vmax=v), cmap=cm.get_cmap('viridis', 30)),
+                            ax=curr_ax, use_gridspec=False, shrink=0.7, location='bottom')
+        cbar.set_label('depth change (cm)')
+        cbar.set_ticks([-v, 0, v])
+        cbar.set_ticklabels(['{0:.2f}'.format(-v), '0', '{0:.2f}'.format(v)])
+        curr_ax.tick_params(colors=[0, 0, 0, 0])
+
+        curr_ax = fig.add_subplot(curr_grid[1])
+        depth_bowers = self.da_obj.returnBowerLocations(t0, t1, cropped=True)
+        curr_ax.imshow(depth_bowers, vmin=-1, vmax=1)
+        curr_ax.set_title('Depth Bowers')
+        curr_ax.set(aspect='equal')
+        cbar = fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-1, vmax=1), cmap=cm.get_cmap('viridis', 3)),
+                            ax=curr_ax, use_gridspec=False, shrink=0.7, location='bottom')
+        cbar.set_label('bower region')
+        cbar.set_ticks([-1, 0, 1])
+        cbar.set_ticklabels(['-', '0', '+'])
+        curr_ax.tick_params(colors=[0, 0, 0, 0])
+
+        curr_ax = fig.add_subplot(curr_grid[2])
+        scoops = self.ca_obj.returnClusterKDE(t0, t1, 'c', cropped=True)
+        spits = self.ca_obj.returnClusterKDE(t0, t1, 'p', cropped=True)
+        z = spits - scoops
+        v = 0.75*np.max(np.abs(z))
+        curr_ax.imshow(z, vmin=-v, vmax=v)
+        cbar = fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-v, vmax=v), cmap=cm.get_cmap('viridis', 30)),
+                            ax=curr_ax, use_gridspec=False, shrink=0.7, location='bottom')
+        cbar.set_label('spit-scoop difference\n'+r'$events/cm^2$')
+        cbar.set_ticks([-v, 0, v])
+        cbar.set_ticklabels(['{0:.2f}'.format(-v), '0', '{0:.2f}'.format(v)])
+        curr_ax.set_title('Spit-scoop KDE')
+        curr_ax.set(aspect='equal')
+        curr_ax.tick_params(colors=[0, 0, 0, 0])
+
+        curr_ax = fig.add_subplot(curr_grid[3])
+        cluster_bowers = self.ca_obj.returnBowerLocations(t0, t1, cropped=True)
+        curr_ax.imshow(cluster_bowers, vmin=-1, vmax=1)
+        curr_ax.set_title('Spit-Scoop Bowers')
+        curr_ax.set(aspect='equal')
+        curr_ax.tick_params(colors=[0, 0, 0, 0])
+        cbar = fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-1, vmax=1), cmap=cm.get_cmap('viridis', 3)),
+                            ax=curr_ax, use_gridspec=False, shrink=0.7, location='bottom')
+        cbar.set_label('bower region')
+        cbar.set_ticks([-1, 0, 1])
+        cbar.set_ticklabels(['-', '0', '+'])
+
+        curr_ax = fig.add_subplot(curr_grid[4])
+        bower_intersection = np.where((depth_bowers == cluster_bowers) & (depth_bowers != 0), True, False)
+        bower_intersection_area = np.count_nonzero(bower_intersection)
+        bower_union = np.where((depth_bowers != 0) | (cluster_bowers != 0), True, False)
+        bower_union_area = np.count_nonzero(bower_union)
+        if bower_intersection_area == bower_union_area == 0:
+            similarity = 1.0
+        elif (bower_intersection_area == 0) | (bower_union_area == 0):
+            similarity = 0.0
+        else:
+            similarity = bower_intersection_area / bower_union_area
+        curr_ax.imshow(-1 * ((2 * bower_intersection) - bower_union), cmap='bwr', vmin=-1, vmax=1)
+        curr_ax.set_title('Overlap')
+        curr_ax.set(aspect='equal')
+        curr_ax.tick_params(colors=[0, 0, 0, 0])
+        cbar = fig.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-1, vmax=1), cmap=cm.get_cmap('bwr', 3)),
+                            ax=curr_ax, use_gridspec=False, shrink=0.7, location='bottom')
+        cbar.set_label('J = {0:.3f}'.format(similarity))
+        cbar.set_ticks([-1, 1])
+        cbar.set_ticklabels(['N', 'Y'])
+        curr_ax.set_title('Overlap')
+        #
+        # plot detailed depth change over the pre-euthanization period
+        wr = [1] + ([5] * n_plots) + [1]
+        curr_grid = gridspec.GridSpecFromSubplotSpec(1, n_plots+2, subplot_spec=outer_grid[3], width_ratios=wr)
+        dt = (t1 - t0)/n_plots
+        t0_curr = t0
+        v_max = 0
+        axes = [fig.add_subplot(curr_grid[i]) for i in range(n_plots+1)]
+        plot_axes = axes[1:]
+        text_ax = axes[0]
+
+        for plot_ax in plot_axes:
+            height_change = self.da_obj.returnHeightChange(t0_curr, t0_curr+dt, cropped=True)
+            v = np.nanquantile(np.abs(height_change), 0.99)
+            v_max = v if v > v_max else v_max
+            plot_ax.imshow(height_change, vmin=-1, vmax=1)
+            plot_ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False, which='both')
+            mins_to_euth = ((self.euth_data.dissection_time - t0_curr) - (dt/2)).seconds/60
+            plot_ax.set_title(r'$t_{euth} - $' + '{0:.0f} m'.format(mins_to_euth), fontdict={'fontsize': 12})
+            abs_height_change = np.nansum(np.abs(height_change))
+            abs_vol_change = abs_height_change * (self.fm.pixelLength ** 2)
+            plot_ax.set_xlabel('|dV|={0:.2f}'.format(abs_vol_change) + r' $cm^3$', fontdict={'fontsize': 9}, labelpad=1)
+            plot_ax.set(aspect='equal')
+            t0_curr = t0_curr + dt
+        v_max = np.round(v_max, 2)
+        for plot_ax in plot_axes:
+            plot_ax.get_images()[0].set_clim(-v_max, v_max)
+
+        cax_parent = fig.add_subplot(curr_grid[-1])
+        cax_parent.axis('off')
+        cax = inset_axes(cax_parent, height='100%', width='70%', loc='center')
+        cbar = plt.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-v_max, vmax=v_max),
+                                              cmap='viridis'), cax=cax, shrink=0.7)
+        cbar.set_label('cm', size=9)
+        cbar.set_ticks([-v_max, 0, v_max])
+        cbar.set_ticklabels(['{0:.2f}'.format(-v_max), '0', '{0:.2f}'.format(v_max)])
+
+        text_ax.text(0.5, 0.5, 'sand-height\nchange', size=9, ha='center', va='center', rotation='vertical')
+        text_ax.axis('off')
+
+
+        # plot detailed spit-scoop kde's over the pre-euthanization period
+        wr = [1] + ([5] * n_plots) + [1]
+        curr_grid = gridspec.GridSpecFromSubplotSpec(1, n_plots+2, subplot_spec=outer_grid[4], width_ratios=wr)
+        v_max = 0
+        dt = (t1 - t0)/n_plots
+        t0_curr = t0
+        axes = [fig.add_subplot(curr_grid[i]) for i in range(n_plots+1)]
+        plot_axes = axes[1:]
+        text_ax = axes[0]
+
+        for plot_ax in plot_axes:
+            scoops = self.ca_obj.returnClusterKDE(t0_curr, t0_curr+dt, 'c', cropped=True)
+            spits = self.ca_obj.returnClusterKDE(t0_curr, t0_curr+dt, 'p', cropped=True)
+            z = spits - scoops
+            v = 0.75*np.max(np.abs(z))
+            v_max = v if v > v_max else v_max
+            n_events = self.ca_obj.returnClusterCounts(t0=t0_curr, t1=t0_curr+dt, bid=['p', 'c'], cropped=True)
+            plot_ax.imshow(z, vmin=-1, vmax=1, cmap='viridis')
+            plot_ax.set_xlabel('N = {}'.format(n_events), fontdict={'fontsize': 9}, labelpad=1)
+            plot_ax.set(aspect='equal')
+            plot_ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False, which='both')
+            t0_curr = t0_curr + dt
+        v_max = np.round(v_max, 2)
+        for plot_ax in plot_axes:
+            plot_ax.get_images()[0].set_clim(-v_max, v_max)
+
+        cax_parent = fig.add_subplot(curr_grid[-1])
+        cax_parent.axis('off')
+        cax = inset_axes(cax_parent, height='100%', width='70%', loc='center')
+        cbar = plt.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=-v_max, vmax=v_max),
+                                              cmap='viridis'), cax=cax, shrink=0.7)
+        cbar.set_label(r'$(events/cm^2)$', size=9)
+        cbar.set_ticks([-v_max, 0, v_max])
+        cbar.set_ticklabels(['{0:.2f}'.format(-v_max), '0', '{0:.2f}'.format(v_max)])
+
+        text_ax.text(0.5, 0.5, 'spit-scoop\ndifference', size=9, ha='center', va='center', rotation='vertical')
+        text_ax.axis('off')
+
+        # plot detailed kde's for individual behaviors of interest
+        bids = ['c', 'p', 'b', 'f', 't', 'm', 's']
+        v_max = 0
+        dt = (t1 - t0) / n_plots
+        wr = [1] + ([5] * n_plots) + [1]
+        curr_grid = gridspec.GridSpecFromSubplotSpec(len(bids), n_plots + 2, subplot_spec=outer_grid[5:5+len(bids)],
+                                                     width_ratios=wr)
+        plot_axes = []
+
+        for row, bid in enumerate(bids):
+            t0_curr = t0
+            axes = [fig.add_subplot(curr_grid[row, i]) for i in range(n_plots + 1)]
+            axes[0].axis('off')
+            axes[0].text(0.5, 0.5, self.ca_obj.bid_labels[bid], size=9, ha='center', va='center', rotation='vertical')
+            for plot_ax in axes[1:]:
+                plot_axes.append(plot_ax)
+                kde = self.ca_obj.returnClusterKDE(t0_curr, t0_curr + dt, bid, cropped=True)
+                n_events = self.ca_obj.returnClusterCounts(t0=t0_curr, t1=t0_curr + dt, bid=bid, cropped=True)
+                v = 0.75 * np.max(kde)
+                v_max = v if v > v_max else v_max
+                plot_ax.imshow(kde, vmin=0, vmax=1, cmap=half_viridis)
+                plot_ax.tick_params(bottom=False, left=False, labelbottom=False, labelleft=False, which='both')
+                plot_ax.set_xlabel('N={}'.format(n_events), fontdict={'fontsize': 9}, labelpad=1)
+                plot_ax.set(aspect='equal')
+                t0_curr = t0_curr + dt
+        for plot_ax in plot_axes:
+            plot_ax.get_images()[0].set_clim(0, v_max)
+
+        cax_parent = fig.add_subplot(curr_grid[:, -1])
+        cax_parent.axis('off')
+        cax = inset_axes(cax_parent, height='100%', width='70%', loc='center')
+        cbar = plt.colorbar(cm.ScalarMappable(norm=colors.Normalize(vmin=0, vmax=v_max),
+                                              cmap=half_viridis), cax=cax, shrink=0.7)
+        cbar.set_label(r'$(events/cm^2)$', size=9)
+
+        fig.savefig(self.fm.localSummaryDir + 'SingleNucFigures.pdf')
+        plt.close(fig=fig)
+
+        # generate a summary csv
+
+        def get_row(t0, t1):
+            ca_data = vars(self.ca_obj.returnClusterSummary(t0, t1))
+            da_data = vars(self.da_obj.returnVolumeSummary(t0, t1))
+            row = {'t0': t0, 't1': t1,
+                   't_euth-t0': (self.euth_data.dissection_time - t0).seconds/60,
+                   't_euth-t1': (self.euth_data.dissection_time - t1).seconds/60}
+            row.update(ca_data)
+            row.update(da_data)
+            return row
+
+        total_df = pd.DataFrame([get_row(t0, t1)])
+        detail_df = []
+        t0_curr = t0
+        dt = (t1 - t0) / n_plots
+        t1_curr = t0 + dt
+        while t1_curr <= t1:
+            detail_df.append(get_row(t0_curr, t1_curr))
+            t0_curr = t0_curr + dt
+            t1_curr = t1_curr + dt
+        detail_df = pd.DataFrame(detail_df)
+
+        writer = pd.ExcelWriter(self.fm.localSummaryDir + 'SingleNucDataSummary.xlsx')
+        total_df.to_excel(writer, 'Total')
+        detail_df.to_excel(writer, 'Detail')
+        writer.save()
 
     def createFullSummary(self, clusterHourlyDelta=1, depthHourlyDelta=2):
         # Attempt to create all possible figures and summary files. If files required for a particular figure are
@@ -542,13 +811,208 @@ class SummaryPreparer:
         self.createClusterFigures(hourlyDelta=clusterHourlyDelta)
         self.createCombinedFigures()
         self.createPaceSummary()
+        self.createSinglenucFigures()
 
-class DepthAnalyzer():
+class MultiSummaryPreparer:
+    # class for creating figures that summarize/compare data from multiple projects. Built for the single-nuc projects,
+    # but could be adapted more generally with some modification
+    def __init__(self, fileManager, use_pickle=True, smooth_depth=True):
+        self.smooth_depth = smooth_depth
+        self.fm = fileManager
+        self.fm.downloadData(self.fm.localSummaryFile)
+        self.fm.downloadData(self.fm.localEuthData)
+        self.analysis_states = pd.read_csv(self.fm.localSummaryFile, index_col='projectID')
+        self.euth_data = pd.read_csv(self.fm.localEuthData, index_col='pid', parse_dates=['dissection_time'],
+                                     infer_datetime_format=True)
+        self.pids = list(self.analysis_states.index)
+        self.das_pickle = self.fm.localAnalysisStatesDir + 'das.pkl'
+        self.cas_pickle = self.fm.localAnalysisStatesDir + 'cas.pkl'
+        if use_pickle and os.path.exists(self.cas_pickle) and os.path.exists(self.das_pickle):
+            with open(self.cas_pickle, 'rb') as f:
+                self.cas = pickle.load(f)
+            with open(self.das_pickle, 'rb') as f:
+                self.das = pickle.load(f)
+            if self.das[self.pids[0]].smooth_depth != self.smooth_depth:
+                print('pickled depth analyzers do not match the chosen option for smooth_depth. Recreating')
+                self.load_data()
+        else:
+            self.cas = {}
+            self.das = {}
+            self.load_data()
+        self.sps = {pid: SummaryPreparer(self.cas[pid].fileManager, self.cas[pid], self.das[pid]) for pid in self.pids}
+        self.bid_labels = self.cas[list(self.cas)[0]].bid_labels
+        self.total_df = self.collate_total_data()
+        self.cluster_detail_df = self.collate_detail_data_cluster()
+        self.depth_detail_df = self.collate_detail_data_depth()
+
+    def plot_all(self):
+        self.plot_vol_change_lineplot()
+        self.plot_build_feed_spawn_lineplots()
+        self.plot_build_feed_spawn_histograms()
+        self.generate_summary_spreadsheet()
+
+    def load_data(self, time_window=90):
+        for pid in self.pids:
+            print(pid)
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
+            fm = FM(projectID=pid, summaryFile=os.path.basename(self.fm.localSummaryFile))
+            fm.downloadProjectData('Summary')
+            fm.downloadData(fm.localInterpDepthFile)
+            self.cas.update({pid: ClusterAnalyzer(fm)})
+            self.das.update({pid: DepthAnalyzer(fm, smooth_depth=self.smooth_depth)})
+            self.das[pid].clip_data(t_min, t_max)
+
+    def save_pickle(self):
+        with open(self.cas_pickle, 'wb') as f:
+            pickle.dump(self.cas, f)
+        with open(self.das_pickle, 'wb') as f:
+            pickle.dump(self.das, f)
+
+    def collate_total_data(self, time_window=90):
+        df = []
+        pixel_length = 0.1030168618
+        for pid in self.pids:
+            row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
+            ca = self.cas[pid]
+            da = self.das[pid]
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
+            bids = ['c', 'p', 'b', 'f', 't', 'm', 's']
+            for bid in bids:
+                row.update({bid: ca.returnClusterCounts(t_min, t_max, bid)})
+            row.update({'c+p+b': row['c'] + row['p'] + row['b']})
+            row.update({'f+t+m': row['f'] + row['t'] + row['m']})
+            bower_mask = np.abs(da.returnBowerLocations(t_min, t_max, force_window=True))
+            abs_height_change = np.abs(da.returnHeightChange(t_min, t_max))
+            total_abs_vol_change = np.nansum(abs_height_change) * (pixel_length ** 2)
+            inbower_abs_vol_change = np.nansum(abs_height_change * bower_mask) * (pixel_length ** 2)
+            row.update({'total_abs_vol_change': total_abs_vol_change,
+                        'inbower_abs_vol_change': inbower_abs_vol_change})
+            df.append(row)
+        df = pd.DataFrame(df)
+        return df
+
+    def collate_detail_data_cluster(self, time_step=10, time_window=90):
+        df = []
+        time_step = datetime.timedelta(minutes=time_step)
+        bids = ['c', 'p', 'b', 'f', 't', 'm', 's', ['c', 'p', 'b'], ['f', 't', 'm']]
+        for pid in self.pids:
+            ca = self.cas[pid]
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
+            for bid in bids:
+                t0 = t_min
+                t1 = t0 + time_step
+                while t1 <= t_max:
+                    row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
+                    row.update({'bid': '+'.join(bid) if type(bid) is list else bid})
+                    row.update({'t_euth-t0': (self.euth_data.loc[pid, 'dissection_time'] - t0).seconds/60})
+                    row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
+                    row.update({'n events': ca.returnClusterCounts(t0, t1, bid)})
+                    df.append(row)
+                    t1 += time_step
+                    t0 += time_step
+        df = pd.DataFrame(df)
+        return df
+
+    def collate_detail_data_depth(self, time_step=10, time_window=90):
+        df = []
+        time_step = datetime.timedelta(minutes=time_step)
+        pixel_length = 0.1030168618
+        for pid in self.pids:
+            da = self.das[pid]
+            t_max = self.euth_data.loc[pid, 'dissection_time'] - datetime.timedelta(minutes=5)
+            t_min = t_max - datetime.timedelta(minutes=time_window)
+            bower_mask = np.abs(da.returnBowerLocations(t_min, t_max, force_window=True))
+            t0 = t_min
+            t1 = t0 + time_step
+            while t1 <= t_max:
+                row = {'pid': pid, 'behave_or_control': self.euth_data.loc[pid, 'behave_or_control']}
+                row.update({'t_euth-t0': (self.euth_data.loc[pid, 'dissection_time'] - t0).seconds/60})
+                row.update({'t_euth-t1': (self.euth_data.loc[pid, 'dissection_time'] - t1).seconds/60})
+                abs_height_change = np.abs(da.returnHeightChange(t0, t1))
+                total_abs_vol_change = np.nansum(abs_height_change) * (pixel_length ** 2)
+                inbower_abs_vol_change = np.nansum(abs_height_change * bower_mask) * (pixel_length ** 2)
+                row.update({'total_abs_vol_change': total_abs_vol_change,
+                            'inbower_abs_vol_change': inbower_abs_vol_change})
+                df.append(row)
+                t1 += time_step
+                t0 += time_step
+        df = pd.DataFrame(df)
+        return df
+
+    def plot_build_feed_spawn_histograms(self, n_bins=30):
+        fig, axes = plt.subplots(3, 1, figsize=(5.5, 8.5))
+        axes = axes.flatten()
+        for i, behavior in enumerate(['c+p+b', 'f+t+m', 's']):
+            sns.histplot(self.total_df, x=behavior, hue='behave_or_control', ax=axes[i], kde=True, bins=n_bins)
+            axes[i].set(title=behavior, xlabel='n events in 90 minutes preceding euthanization')
+        fig.tight_layout()
+        fig.savefig(self.fm.localAnalysisStatesDir + 'behavioral_histograms.pdf')
+        plt.close(fig)
+
+    def plot_build_feed_spawn_lineplots(self):
+        fig, axes = plt.subplots(2, 3, figsize=(11, 8.5), sharex='all', sharey='col')
+        behaviors = ['c+p+b', 'f+t+m', 's']
+        trial_types = ['C', 'B']
+        df = self.cluster_detail_df[self.cluster_detail_df.bid.isin(behaviors)]
+        for i, behavior in enumerate(behaviors):
+            for j, trial_type in enumerate(trial_types):
+                sub_df = df[(df.bid == behavior) & (df['behave_or_control'] == trial_type)]
+                sns.lineplot(data=sub_df, x=sub_df['t_euth-t1'] * -1, y='n events', ax=axes[j, i], hue='pid', alpha=0.5, legend=False)
+                title = behavior + (' Behave' if trial_type == 'B' else ' Control')
+                axes[j, i].set(title=title, xlabel='time until euthanization (minutes)', ylabel='n events')
+        fig.tight_layout()
+        fig.savefig(self.fm.localAnalysisStatesDir + 'behavioral_lineplots.pdf')
+        plt.close(fig)
+
+    def plot_vol_change_lineplot(self):
+        fig, ax = plt.subplots(1, 1, figsize=(5.5, 5.5))
+        df = self.depth_detail_df
+        for pid in self.pids:
+            sub_df = df[df.pid == pid]
+            color = 'red' if sub_df['behave_or_control'].iloc[0] == 'B' else 'blue'
+            sns.lineplot(x=sub_df['t_euth-t1']*-1, y=np.cumsum(sub_df['inbower_abs_vol_change']), ax=ax, color=color)
+            if (sub_df['inbower_abs_vol_change'].iloc[-1] > 0) and (sub_df['behave_or_control'].iloc[0] == 'C'):
+                print('non-zero in-bower depth change for control trial {}'.format(pid))
+            elif (sub_df['inbower_abs_vol_change'].iloc[-1] < 0.1) and (sub_df['behave_or_control'].iloc[0] == 'B'):
+                print('zero in-bower depth change for behave trial {}'.format(pid))
+        ax.set(xlabel='time before euthanization, minutes', ylabel='cumulative absolute in-bower volume change (cm^3)')
+        fig.tight_layout()
+        fig.savefig(self.fm.localAnalysisStatesDir + 'volume_lineplots.pdf')
+        plt.close(fig)
+
+    def merge_project_pdfs(self, filename):
+        paths = [ca.fileManager.localSummaryDir + filename for ca in list(self.cas.values())]
+        writer = pypdf.PdfFileWriter()
+        for path in paths:
+            f = open(path, 'rb')
+            reader = pypdf.PdfFileReader(f)
+            for page_number in range(reader.numPages):
+                writer.addPage(reader.getPage(page_number))
+        with open(self.fm.localAnalysisStatesDir + 'Collated' + filename, 'wb') as f:
+            writer.write(f)
+
+    def generate_summary_spreadsheet(self):
+        writer = pd.ExcelWriter(self.fm.localAnalysisStatesDir + 'SingleNucDataSummary.xlsx')
+        self.total_df.to_excel(writer, 'Total')
+        self.cluster_detail_df.to_excel(writer, 'Cluster_Detail')
+        self.depth_detail_df.to_excel(writer, 'Depth_Detail')
+        writer.save()
+
+    def generate_individual_plots(self):
+        for pid in self.pids:
+            self.sps[pid].createSinglenucFigures()
+
+
+class DepthAnalyzer:
     # Contains code process depth data for figure creation
 
-    def __init__(self, fileManager):
+    def __init__(self, fileManager, smooth_depth=True):
+        self.smooth_depth = smooth_depth
         self.fileManager = fileManager
-        self.lp = LP(self.fileManager.localLogfile)
+        self.lp = self.fileManager.lp
         self._loadData()
         self.goodPixels = (self.tray_r[2] - self.tray_r[0]) * (self.tray_r[3] - self.tray_r[1])
 
@@ -563,17 +1027,47 @@ class DepthAnalyzer():
                 line = next(f)
                 tray = line.rstrip().split(',')
                 self.tray_r = [int(x) for x in tray]
+        if self.smooth_depth:
+            try:
+                self.depth_data
+            except AttributeError:
+                self.depth_data = np.load(self.fileManager.localSmoothDepthFile)
+                self.depth_data[:, :self.tray_r[0], :] = np.nan
+                self.depth_data[:, self.tray_r[2]:, :] = np.nan
+                self.depth_data[:, :, :self.tray_r[1]] = np.nan
+                self.depth_data[:, :, self.tray_r[3]:] = np.nan
+        else:
+            try:
+                self.depth_data
+            except AttributeError:
+                self.depth_data = np.load(self.fileManager.localInterpDepthFile)
+                self.depth_data[:, :self.tray_r[0], :] = np.nan
+                self.depth_data[:, self.tray_r[2]:, :] = np.nan
+                self.depth_data[:, :, :self.tray_r[1]] = np.nan
+                self.depth_data[:, :, self.tray_r[3]:] = np.nan
+            except FileNotFoundError:
+                self.depth_data = None
 
+
+    def t_to_index(self, t):
         try:
-            self.smoothDepthData
-        except AttributeError:
-            self.smoothDepthData = np.load(self.fileManager.localSmoothDepthFile)
-            self.smoothDepthData[:, :self.tray_r[0], :] = np.nan
-            self.smoothDepthData[:, self.tray_r[2]:, :] = np.nan
-            self.smoothDepthData[:, :, :self.tray_r[1]] = np.nan
-            self.smoothDepthData[:, :, self.tray_r[3]:] = np.nan
+            index = max([False if x.time <= t else True for x in self.lp.frames].index(True) - 1, 0)
+        except ValueError:
+            if t > self.lp.frames[-1].time:
+                index = len(self.lp.frames) - 1
+            else:
+                index = 0
+        return index
 
-    def returnBowerLocations(self, t0, t1, cropped=False):
+    def clip_data(self, t0, t1):
+        # clips the data and log parser to a particular time range. Useful for reducing the size of
+        # the DepthAnalyzer when generating multiple DepthAnalyzer objects
+        self._checkTimes(t0, t1)
+        i0, i1 = (self.t_to_index(t) for t in [t0, t1])
+        self.depth_data = self.depth_data[i0:i1 + 1]
+        self.lp.frames = self.lp.frames[i0:i1+1]
+
+    def returnBowerLocations(self, t0, t1, cropped=True, force_window=False):
         # Returns 2D numpy array using thresholding and minimum size data to identify bowers
         # Pits = -1, Castle = 1, No bower = 0
 
@@ -581,7 +1075,7 @@ class DepthAnalyzer():
         self._checkTimes(t0, t1)
 
         # Identify total height change and time change
-        totalHeightChange = self.returnHeightChange(t0, t1, masked=False, cropped=False)
+        totalHeightChange = self.returnHeightChange(t0, t1, masked=False, cropped=cropped, force_window=force_window)
         timeChange = t1 - t0
 
         # Determine threshold and minimum size of bower to use based upon timeChange
@@ -602,12 +1096,10 @@ class DepthAnalyzer():
         tPit = morphology.remove_small_objects(tPit, minPixels).astype(int)
 
         bowers = tCastle - tPit
-        if cropped:
-            bowers = bowers[self.tray_r[0]:self.tray_r[2], self.tray_r[1]:self.tray_r[3]]
 
         return bowers
 
-    def returnHeight(self, t, cropped=False):
+    def returnHeight(self, t, cropped=True):
         # return the frame from the smoothedDepthData numpy closest to time t. If cropped is True, crop the frame
         # to include only the area defined by tray_r
 
@@ -624,14 +1116,14 @@ class DepthAnalyzer():
             else:
                 first_index = 0
 
-        change = self.smoothDepthData[first_index]
+        change = self.depth_data[first_index]
 
         if cropped:
             change = change[self.tray_r[0]:self.tray_r[2], self.tray_r[1]:self.tray_r[3]]
 
         return change
 
-    def returnHeightChange(self, t0, t1, masked=False, cropped=False):
+    def returnHeightChange(self, t0, t1, masked=False, cropped=True, force_window=False):
         # return the height change, based on the smoothedDepthData numpy, from the frame closest to t0 to the frame
         # closest to t1. If cropped is True, crop the frame to include only the area defined by tray_r. If masked is
         # True, set the pixel value in all non-bower regions (see returnBowerLocations) to 0
@@ -648,19 +1140,24 @@ class DepthAnalyzer():
                 first_index = -1
             else:
                 first_index = 0
+        if force_window:
+            while self.lp.frames[first_index].time < t0:
+                first_index += 1
 
         try:
             last_index = max([False if x.time <= t1 else True for x in self.lp.frames].index(True) - 1, 0)
         except ValueError:
             last_index = len(self.lp.frames) - 1
 
-        change = self.smoothDepthData[first_index] - self.smoothDepthData[last_index]
-
-        if masked:
-            change[self.returnBowerLocations(t0, t1) == 0] = 0
+        change = self.depth_data[first_index] - self.depth_data[last_index]
 
         if cropped:
             change = change[self.tray_r[0]:self.tray_r[2], self.tray_r[1]:self.tray_r[3]]
+
+        if masked:
+            change[self.returnBowerLocations(t0, t1, cropped=cropped) == 0] = 0
+
+
 
         return change
 
@@ -681,34 +1178,40 @@ class DepthAnalyzer():
         outData = SimpleNamespace()
         # Get data
         outData.projectID = self.lp.projectID
-        outData.absoluteVolume = np.nansum(heightChangeAbs) * pixelLength ** 2
-        outData.summedVolume = np.nansum(heightChange) * pixelLength ** 2
-        outData.castleArea = np.count_nonzero(bowerLocations == 1) * pixelLength ** 2
-        outData.pitArea = np.count_nonzero(bowerLocations == -1) * pixelLength ** 2
-        outData.castleVolume = np.nansum(heightChange[bowerLocations == 1]) * pixelLength ** 2
-        outData.pitVolume = np.nansum(heightChange[bowerLocations == -1]) * -1 * pixelLength ** 2
-        outData.bowerVolume = outData.castleVolume + outData.pitVolume
+        outData.depthAbsoluteVolume = np.nansum(heightChangeAbs) * pixelLength ** 2
+        outData.depthSummedVolume = np.nansum(heightChange) * pixelLength ** 2
+        outData.depthCastleArea = np.count_nonzero(bowerLocations == 1) * pixelLength ** 2
+        outData.depthPitArea = np.count_nonzero(bowerLocations == -1) * pixelLength ** 2
+        outData.depthCastleVolume = np.nansum(heightChange[bowerLocations == 1]) * pixelLength ** 2
+        outData.depthPitVolume = np.nansum(heightChange[bowerLocations == -1]) * -1 * pixelLength ** 2
+        outData.depthBowerVolume = outData.depthCastleVolume + outData.depthPitVolume
 
         flattenedData = heightChangeAbs.flatten()
         sortedData = np.sort(flattenedData[~np.isnan(flattenedData)])
         threshold = sortedData[-1 * bowerIndex_pixels]
-        thresholdCastleVolume = np.nansum(heightChangeAbs[(bowerLocations == 1) & (heightChangeAbs > threshold)])
-        thresholdPitVolume = np.nansum(heightChangeAbs[(bowerLocations == -1) & (heightChangeAbs > threshold)])
+        outData.thresholdCastleVolume = np.nansum(heightChangeAbs[(bowerLocations == 1) & (heightChangeAbs > threshold)])
+        outData.thresholdPitVolume = np.nansum(heightChangeAbs[(bowerLocations == -1) & (heightChangeAbs > threshold)])
 
-        outData.bowerIndex = (thresholdCastleVolume - thresholdPitVolume) / (thresholdCastleVolume + thresholdPitVolume)
+        outData.depthBowerIndex = (outData.thresholdCastleVolume - outData.thresholdPitVolume) / (outData.thresholdCastleVolume + outData.thresholdPitVolume)
 
         return outData
 
     def _checkTimes(self, t0, t1=None):
         # validate the given times
-
         if t1 is None:
             if type(t0) != datetime.datetime:
-                raise Exception('Timepoints to must be datetime.datetime objects')
+                try:
+                    t0 = t0.to_pydatetime()
+                except AttributeError:
+                    raise Exception('Timepoints to must be datetime.datetime objects')
             return
         # Make sure times are appropriate datetime objects
         if type(t0) != datetime.datetime or type(t1) != datetime.datetime:
-            raise Exception('Timepoints to must be datetime.datetime objects')
+            try:
+                t0 = t0.to_pydatetime()
+                t1 = t1.to_pydatetime()
+            except AttributeError:
+                raise Exception('Timepoints to must be datetime.datetime objects')
         if t0 > t1:
             print('Warning: Second timepoint ' + str(t1) + ' is earlier than first timepoint ' + str(t0),
                   file=sys.stderr)
@@ -719,7 +1222,10 @@ class ClusterAnalyzer:
     def __init__(self, fileManager):
         self.fileManager = fileManager
         self.bids = ['c', 'p', 'b', 'f', 't', 'm', 's', 'd', 'o', 'x']
-        self.lp = LP(fileManager.localLogfile)
+        self.bid_labels = {'c':'bower scoop', 'p': 'bower spit', 'b': 'bower multiple',
+                           'f': 'feed scoop', 't': 'feed spit', 'm': 'feed multiple',
+                           's': 'spawn', 'd': 'drop sand', 'o': 'fish other', 'x': 'no fish other'}
+        self.lp = self.fileManager.lp
         self._loadData()
 
     def _loadData(self):
@@ -751,7 +1257,7 @@ class ClusterAnalyzer:
 
         self.clusterData.to_csv(self.fileManager.localAllLabeledClustersFile)
 
-    def sliceDataframe(self, t0=None, t1=None, bid=None, columns=None, input_frame=None, cropped=False):
+    def sliceDataframe(self, t0=None, t1=None, bid=None, columns=None, input_frame=None, cropped=True):
         # utility function to access specific slices of the Dataframe based on the AllClusterData csv.
         #
         # t0: return only rows with timestamps after t0
@@ -763,12 +1269,12 @@ class ClusterAnalyzer:
         # cropped: If True, return only rows corresponding to events that occur within the area defined by tray_r
 
         df_slice = self.clusterData if input_frame is None else input_frame
-        df_slice = df_slice.dropna(subset=['Model18_All_pred']).sort_index()
+        df_slice = df_slice.dropna(subset=['Prediction']).sort_index()
         if t0 is not None:
             self._checkTimes(t0, t1)
             df_slice = df_slice[t0:t1]
         if bid is not None:
-            df_slice = df_slice[df_slice.Model18_All_pred.isin(bid if type(bid) is list else [bid])]
+            df_slice = df_slice[df_slice.Prediction.isin(bid if type(bid) is list else [bid])]
         if cropped:
             df_slice = df_slice[(df_slice.X_depth > self.tray_r[0]) & (df_slice.X_depth < self.tray_r[2]) &
                                 (df_slice.Y_depth > self.tray_r[1]) & (df_slice.Y_depth < self.tray_r[3])]
@@ -778,7 +1284,7 @@ class ClusterAnalyzer:
             df_slice = df_slice[columns]
         return df_slice
 
-    def returnClusterCounts(self, t0, t1, bid='all', cropped=False):
+    def returnClusterCounts(self, t0, t1, bid='all', cropped=True):
         # return the number of behavioral events for a given behavior id (bid), or all bids, between t0 and t1
         #
         # t0: beginning of desired time frame
@@ -787,17 +1293,16 @@ class ClusterAnalyzer:
         #      bid only. If 'all' (default behavior) return a dict of counts for all bids, keyed by bid.
         # cropped: If True, count only events occuring within the area defined by tray_r
         self._checkTimes(t0, t1)
-        df_slice = self.sliceDataframe(cropped=cropped)
         if bid == 'all':
-            df_slice = self.sliceDataframe(t0=t0, t1=t1, input_frame=df_slice)
-            row = df_slice.Model18_All_pred.value_counts().to_dict
+            df_slice = self.sliceDataframe(t0=t0, t1=t1, cropped=cropped)
+            row = df_slice.Prediction.value_counts().to_dict
             return row
         else:
-            df_slice = self.sliceDataframe(t0=t0, t1=t1, bid=bid, input_frame=df_slice)
-            cell = df_slice.Model18_All_pred.count()
+            df_slice = self.sliceDataframe(t0=t0, t1=t1, bid=bid, cropped=cropped)
+            cell = df_slice.Prediction.count()
             return cell
 
-    def returnClusterKDE(self, t0, t1, bid, cropped=False, bandwidth=None):
+    def returnClusterKDE(self, t0, t1, bid, cropped=True, bandwidth=None):
         # Geneate a kernel density estimate corresponding to the number events per cm^2 over a given timeframe for
         # a particular behavior id (bid)
         #
@@ -824,7 +1329,7 @@ class ClusterAnalyzer:
             z = (z * n_events) / (z.sum() * (self.fileManager.pixelLength ** 2))
         return z
 
-    def returnBowerLocations(self, t0, t1, cropped=False, bandwidth=None):
+    def returnBowerLocations(self, t0, t1, cropped=True, bandwidth=None):
         # Returns 2D numpy array using thresholding and minimum size data to identify bowers based on KDEs of spit and
         # scoop densities. Pits = -1, Castle = 1, No bower = 0
         #
@@ -871,13 +1376,13 @@ class ClusterAnalyzer:
         outData = SimpleNamespace()
         # Get data
         outData.projectID = self.lp.projectID
-        outData.absoluteKdeVolume = np.nansum(clusterKdeAbs) * pixelLength ** 2
-        outData.summedKdeVolume = np.nansum(clusterKde) * pixelLength ** 2
-        outData.castleArea = np.count_nonzero(bowerLocations == 1) * pixelLength ** 2
-        outData.pitArea = np.count_nonzero(bowerLocations == -1) * pixelLength ** 2
-        outData.castleKdeVolume = np.nansum(clusterKde[bowerLocations == 1]) * pixelLength ** 2
-        outData.pitKdeVolume = np.nansum(clusterKde[bowerLocations == -1]) * -1 * pixelLength ** 2
-        outData.bowerKdeVolume = outData.castleKdeVolume + outData.pitKdeVolume
+        outData.kdeAbsoluteVolume = np.nansum(clusterKdeAbs) * pixelLength ** 2
+        outData.kdeSummedVolume = np.nansum(clusterKde) * pixelLength ** 2
+        outData.kdeCastleArea = np.count_nonzero(bowerLocations == 1) * pixelLength ** 2
+        outData.kdePitArea = np.count_nonzero(bowerLocations == -1) * pixelLength ** 2
+        outData.kdeCastleVolume = np.nansum(clusterKde[bowerLocations == 1]) * pixelLength ** 2
+        outData.kdePitVolume = np.nansum(clusterKde[bowerLocations == -1]) * -1 * pixelLength ** 2
+        outData.kdeBowerVolume = outData.kdeCastleVolume + outData.kdePitVolume
 
         flattenedData = clusterKdeAbs.flatten()
         sortedData = np.sort(flattenedData[~np.isnan(flattenedData)])
@@ -888,7 +1393,7 @@ class ClusterAnalyzer:
         thresholdCastleKdeVolume = np.nansum(clusterKdeAbs[(bowerLocations == 1) & (clusterKdeAbs > threshold)])
         thresholdPitKdeVolume = np.nansum(clusterKdeAbs[(bowerLocations == -1) & (clusterKdeAbs > threshold)])
 
-        outData.bowerIndex = (thresholdCastleKdeVolume - thresholdPitKdeVolume) / (thresholdCastleKdeVolume + thresholdPitKdeVolume)
+        outData.kdeBowerIndex = (thresholdCastleKdeVolume - thresholdPitKdeVolume) / (thresholdCastleKdeVolume + thresholdPitKdeVolume)
 
         return outData
 
@@ -896,11 +1401,19 @@ class ClusterAnalyzer:
         # validate the given times
         if t1 is None:
             if type(t0) != datetime.datetime:
-                raise Exception('Timepoints to must be datetime.datetime objects')
+                try:
+                    t0 = t0.to_pydatetime()
+                except AttributeError:
+                    raise Exception('Timepoints to must be datetime.datetime objects')
             return
         # Make sure times are appropriate datetime objects
         if type(t0) != datetime.datetime or type(t1) != datetime.datetime:
-            raise Exception('Timepoints to must be datetime.datetime objects')
+            try:
+                t0 = t0.to_pydatetime()
+                t1 = t1.to_pydatetime()
+            except AttributeError:
+                raise Exception('Timepoints to must be datetime.datetime objects')
         if t0 > t1:
             print('Warning: Second timepoint ' + str(t1) + ' is earlier than first timepoint ' + str(t0),
                   file=sys.stderr)
+
