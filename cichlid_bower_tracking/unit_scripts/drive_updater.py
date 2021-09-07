@@ -1,4 +1,4 @@
-import argparse, datetime, gspread, time
+import argparse, datetime, gspread, time, pdb
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 import matplotlib
@@ -9,26 +9,31 @@ import numpy as np
 from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
-
+import oauth2client
 
 parser = argparse.ArgumentParser()
 parser.add_argument('Logfile', type = str, help = 'Name of logfile')
+parser.add_argument('Row', type = int, help = 'Row of Raspberry Pi')
+parser.add_argument('Column', type = int, help = 'Column of hyperlink')
 args = parser.parse_args()
 
 
 class DriveUpdater:
-    def __init__(self, logfile):
+    def __init__(self, logfile, row, column):
         self.lp = LP(logfile)
         self.fileManager = FM(projectID = self.lp.projectID)
         self.node = self.lp.uname.split("node='")[1].split("'")[0]
         self.lastFrameTime = self.lp.frames[-1].time
         self.masterDirectory = self.fileManager.localMasterDir
         self.projectDirectory = self.fileManager.localProjectDir
+        
+        self._createImage()
         self.credentialDrive = self.fileManager.localCredentialDrive
         self.credentialSpreadsheet = self.fileManager.localCredentialSpreadsheet
-        self._createImage()
+
+        self._authenticateGoogleSpreadSheets()
         f = self.uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
-        self.insertImage(f)
+        self.insertImage(f, row, column)
 
     def _createImage(self):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
@@ -80,7 +85,12 @@ class DriveUpdater:
         drive = GoogleDrive(self.gauth)
         folder_id = "'151cke-0p-Kx-QjJbU45huK31YfiUs6po'"  #'Public Images' folder ID
         
-        file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
+        try:
+            file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
+        except oauth2client.clientsecrets.InvalidClientSecretsError:
+            self._authenticateGoogleDrive()
+            file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
+        #print(file_list)
         # check if file name already exists so we can replace it
         flag = False
         count = 0
@@ -106,36 +116,29 @@ class DriveUpdater:
             # print("Uploaded", name, "as new file")
         return f
 
-    def insertImage(self, f):
-        self._authenticateGoogleSpreadSheets()
-        pi_ws = self.controllerGS.worksheet('RaspberryPi')
-        headers = pi_ws.row_values(1)
-        raPiID_col = headers.index('RaspberryPiID') + 1
-        image_col = headers.index('Image') + 1
-        row = pi_ws.col_values(raPiID_col).index(self.node) + 1
+    def insertImage(self, f, row, column):
+        gs = gspread.service_account(filename=self.credentialSpreadsheet)
+        self.controllerGS = gs.open('Controller')
+        self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
         
         info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
 
-        pi_ws.update_cell(row, image_col, info)     
+        self.pi_ws.update_cell(row, column, info)     
     
     def _authenticateGoogleSpreadSheets(self):
-        scope = [
-            "https://spreadsheets.google.com/feeds",
-            "https://www.googleapis.com/auth/spreadsheets"
-        ]
-        credentials = ServiceAccountCredentials.from_json_keyfile_name(self.credentialSpreadsheet, scope)
-        try:
-            gs = gspread.authorize(credentials)
-            while True:
-                try:
-                    self.controllerGS = gs.open('Controller')
-                    pi_ws = self.controllerGS.worksheet('RaspberryPi')
-                    break
-                except:
-                    time.sleep(1)
-        except gspread.exceptions.RequestError:
-            time.sleep(2)
-            self._authenticateGoogleSpreadSheets()
+        for i in range(0,3): # Try to autheticate three times before failing
+            try:
+                gs = gspread.service_account(filename=self.credentialSpreadsheet)
+            except Exception as e:
+                continue
+            try:
+                self.controllerGS = gs.open('Controller')
+                self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
+                return
+            except Exception as e:
+                continue
+        print('Error authenticating google drive updater. Quitting')
+        raise Exception
 
     def _authenticateGoogleDrive(self):
         self.gauth = GoogleAuth()
@@ -153,4 +156,4 @@ class DriveUpdater:
         # Save the current credentials to a file
         self.gauth.SaveCredentialsFile(self.credentialDrive)
 
-dr_obj = DriveUpdater(args.Logfile)
+dr_obj = DriveUpdater(args.Logfile, args.Row, args.Column)

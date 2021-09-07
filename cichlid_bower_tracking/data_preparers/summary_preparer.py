@@ -1416,3 +1416,4 @@ class ClusterAnalyzer:
         if t0 > t1:
             print('Warning: Second timepoint ' + str(t1) + ' is earlier than first timepoint ' + str(t0),
                   file=sys.stderr)
+
