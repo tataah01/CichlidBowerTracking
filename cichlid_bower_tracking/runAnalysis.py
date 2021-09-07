@@ -27,9 +27,7 @@ elif args.SummaryFile is not None:
     fm_obj = FM(summaryFile = args.SummaryFile)
     summary_file = fm_obj.localSummaryFile
     fm_obj.downloadData(summary_file)
-    dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
-
-    pdb.set_trace()
+    dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
     projectIDs = list(dt[dt[args.AnalysisType] == 'FALSE'].projectID) # Only run analysis on projects that need it
 else:
     print('either a summary file name or list of project ids must be provided. Exiting')
