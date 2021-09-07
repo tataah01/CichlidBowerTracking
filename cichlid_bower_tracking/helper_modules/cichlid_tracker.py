@@ -17,6 +17,9 @@ from PIL import Image
 # from oauth2client.service_account import ServiceAccountCredentials
 import matplotlib.image
 
+sys.path.append(sys.path[0] + '/unit_scripts')
+sys.path.append(sys.path[0] + '/helper_modules')
+
 class CichlidTracker:
     def __init__(self):
         
@@ -43,7 +46,7 @@ class CichlidTracker:
         self.credentialSpreadsheet  = self.fileManager.localCredentialSpreadsheet # Rename to make code readable
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
         self._identifyTank() #Stored in self.tankID
-        self._identifyServiceAccount() 
+        self._identifyServiceAccount()
         # 6: Connect to Google Spreadsheets
         #self._modifyPiGS('Error', '')
 
@@ -163,7 +166,7 @@ class CichlidTracker:
         self._modifyPiGS('Command', 'None', ping = False)
         self._modifyPiGS('Status', 'Running', ping = False)
         self._modifyPiGS('Error', '', ping = False)
-        
+
 
         if command == 'New':
             # Project Directory should not exist. If it does, report error
@@ -244,7 +247,7 @@ class CichlidTracker:
             #self._modifyPiGS('Command', 'None')
             #self._modifyPiGS('Status', 'Running')
             #self._modifyPiGS('Error', '')
- 
+
             # Grab new time
             now = datetime.datetime.now()
             
@@ -278,7 +281,7 @@ class CichlidTracker:
                 else:
                     if command == 'Snapshots':
                         out = self._captureFrame(current_frame_time, snapshots = True)
-                    else:    
+                    else:
                         out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             else:
                 while datetime.datetime.now() < current_frame_time:
@@ -287,7 +290,7 @@ class CichlidTracker:
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
             #self._modifyPiGS('Status', 'Running')
- 
+
             
             # Check google doc to determine if recording has changed.
             try:
@@ -298,21 +301,21 @@ class CichlidTracker:
                 if command == 'Snapshots':
                     self._modifyPiGS('Command', 'None')
                     self._modifyPiGS('Status', 'Writing Snapshots')
- 
+
                     self._modifyPiGS(command = 'None', status = 'Writing Snapshots')
                     continue
                 else:
                     break
             else:
                 self._modifyPiGS('Error', '')
- 
+
     def _authenticateGoogleSpreadSheets(self):
         # scope = [
         #     "https://spreadsheets.google.com/feeds",
         #     "https://www.googleapis.com/auth/spreadsheets"
         # ]
         # credentials = ServiceAccountCredentials.from_json_keyfile_name(self.credentialSpreadsheet, scope)
-        
+
         # Get IP address
         s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
         s.connect(("8.8.8.8", 80))
@@ -389,14 +392,14 @@ class CichlidTracker:
             tankID = self._getPiGS('TankID')
             if tankID not in ['None','']:
                 self.tankID = tankID
-                
+
                 self._modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera), ping = False)
                 #self._modifyPiGS('Status', 'AwaitingCommand')
                 break
             else:
                 self._modifyPiGS('Error','Awaiting assignment of TankID')
                 time.sleep(20)
-    
+
     def _identifyServiceAccount(self):
         while True:
             serviceAccount = self._getPiGS('ServiceAccount')
@@ -474,7 +477,7 @@ class CichlidTracker:
         
         if self.device == 'realsense':
             depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
-            
+
             #except RuntimeError:
             #    self._googlePrint('No frame received from Kinect. Restarting')
             #    self._start_kinect()
@@ -486,7 +489,7 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
 
     def _returnCommand(self):
-        
+
         command, projectID = self._getPiGS(['Command','ProjectID'])
         return command, projectID
 
@@ -550,10 +553,10 @@ class CichlidTracker:
         for i in range(3):
             try:
                 row, column, ping_column = self._getRowColumn(column_name)
-                
+
                 #print('Write request: ' + str(datetime.datetime.now()))
                 self.pi_ws.update_cell(row, column, new_value)
-                
+
                 if ping:
                     #print('Write request: ' + str(datetime.datetime.now()))
                     self.pi_ws.update_cell(row, ping_column, str(datetime.datetime.now()))

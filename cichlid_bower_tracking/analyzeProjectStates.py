@@ -19,14 +19,13 @@ else:
 	fm_obj.createDirectory(fm_obj.localAnalysisStatesDir)
 	summary_file = fm_obj.localAnalysisStatesDir + 'AllProjects.csv'
 	projectIDs = fm_obj.getAllProjectIDs()
-	dt = pd.DataFrame(columns = ['projectID', 'tankID', 'StartingFiles', 'Prep', 'Depth', 'Cluster', 'ClusterClassification'])
+	dt = pd.DataFrame(columns = ['projectID', 'tankID', 'StartingFiles', 'Prep', 'Depth', 'Cluster', 'ClusterClassification', 'LabeledVideos', 'LabeledFrames', 'Summary'])
 
-columns = ['projectID', 'tankID', 'StartingFiles', 'Prep', 'Depth', 'Cluster', 'ClusterClassification', 'LabeledVideos', 'LabeledFrames']
+columns = ['projectID', 'tankID', 'StartingFiles', 'Prep', 'Depth', 'Cluster', 'ClusterClassification', 'LabeledVideos', 'LabeledFrames', 'Summary']
 
 for c in columns:
 	if c not in dt.columns:
 		dt[c] = False
-
 
 for projectID in projectIDs:
 	fm_obj.createProjectData(projectID)

@@ -21,7 +21,7 @@ class ClusterPreparer():
 	def validateInputData(self):
 		
 		assert os.path.exists(self.videoObj.localVideoFile)
-		
+
 		assert os.path.exists(self.fileManager.localTroubleshootingDir)
 		assert os.path.exists(self.fileManager.localAnalysisDir)
 		assert os.path.exists(self.fileManager.localTempDir)
@@ -46,7 +46,7 @@ class ClusterPreparer():
 		command.extend(['--ML_videos_directory', self.videoObj.localManualLabelClipsDir])
 		command.extend(['--Video_start_time', str(self.videoObj.startTime)])
 		command.extend(['--VideoID', self.videoObj.baseName])
-		
+
 		if not os.path.isdir('CichlidActionDetection'):
 			subprocess.run(['git', 'clone', 'https://www.github.com/ptmcgrat/CichlidActionDetection'])
 

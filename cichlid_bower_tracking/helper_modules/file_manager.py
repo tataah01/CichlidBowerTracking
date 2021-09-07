@@ -2,7 +2,7 @@ import os, subprocess, pdb, platform, shutil
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 class FileManager():
-	def __init__(self, projectID = None, modelID = None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
+	def __init__(self, projectID = None, modelID = None, summaryFile=None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
 
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node():
@@ -40,7 +40,13 @@ class FileManager():
 			print(modelID)
 			self.createMLData(modelID)
 
-		self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/'
+		if summaryFile is not None:
+			self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/' + summaryFile.split('.')[0] + '/'
+			self.localSummaryFile = self.localAnalysisStatesDir + summaryFile
+			self.localEuthData = self.localAnalysisStatesDir + 'euthanization_data.csv'
+		else:
+			self.localEuthData = None
+
 		# Create file names and parameters
 		self.createPiData()
 		self.createAnnotationData()
@@ -61,7 +67,7 @@ class FileManager():
 	def getProjectStates(self):
 
 		# Dictionary to hold row of data
-		row_data = {'projectID':self.projectID, 'tankID':'', 'StartingFiles':False, 'Prep':False, 'Depth':False, 'Cluster':False, 'ClusterClassification':False}
+		row_data = {'projectID':self.projectID, 'tankID':'', 'StartingFiles':False, 'Prep':False, 'Depth':False, 'Cluster':False, 'ClusterClassification':False, 'Summary': False}
 
 		# List the files needed for each analysis
 		necessaryFiles = {}
@@ -70,6 +76,7 @@ class FileManager():
 		necessaryFiles['Depth'] = [self.localSmoothDepthFile]
 		necessaryFiles['Cluster'] = [self.localAllClipsDir, self.localManualLabelClipsDir, self.localManualLabelFramesDir]
 		necessaryFiles['ClusterClassification'] = [self.localAllLabeledClustersFile]
+		necessaryFiles['Summary'] = [self.localSummaryDir, self.localAllLabeledClustersFile, self.localSmoothDepthFile, self.localTrayFile, self.localTransMFile, self.localLogfile]
 
 		print('Starting and downloading logfile for project ' + self.projectID)
 		# Try to download and read logfile
@@ -186,7 +193,7 @@ class FileManager():
 		self.localNewLabeledFramesDir = self.localTempDir + 'NewLabeledFrames/'
 		self.localNewLabeledVideosFile = self.localTempDir + 'NewLabeledVideos.csv'
 		self.localNewLabeledClipsDir = self.localTempDir + 'NewLabeledClips/'
-		
+
 		self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
 		self.localLabeledFramesProjectDir = self.localBoxedFishDir + projectID + '/'
 
@@ -194,6 +201,9 @@ class FileManager():
 		# Files created by summary preparer
 		self.localDepthSummaryFile = self.localSummaryDir + 'DataSummary.xlsx'
 		self.localDepthSummaryFigure = self.localSummaryDir + 'DailyDepthSummary.pdf'
+
+		# miscellaneous files
+
 
 
 	def createMLData(self, modelID):
@@ -301,7 +311,9 @@ class FileManager():
 			self.createDirectory(self.localSummaryDir)
 			self.downloadData(self.localLogfile)
 			self.downloadData(self.localAnalysisDir)
-			self.downloadData(self.localPaceDir)
+			self.downloadData(self.localPaceDir, allow_errors=True, quiet=True)
+			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
+			self.downloadData(self.localSummaryDir, allow_errors=True, quiet=True)
 
 		elif dtype == 'All':
 			self.createDirectory(self.localMasterDir)
@@ -318,6 +330,7 @@ class FileManager():
 			self.downloadData(self.localVideoDir)
 			self.downloadData(self.localFrameDir, tarred = True)
 			self.downloadData(self.local3DModelDir)
+			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
 
 		else:
 			raise KeyError('Unknown key: ' + dtype)
@@ -510,8 +523,9 @@ class FileManager():
 			os.makedirs(directory)
 
 
-	def downloadData(self, local_data, tarred = False, tarred_subdirs = False):
-
+	def downloadData(self, local_data, tarred = False, tarred_subdirs = False, allow_errors=False, quiet=False):
+		if local_data is None:
+			return
 		relative_name = local_data.rstrip('/').split('/')[-1] + '.tar' if tarred else local_data.rstrip('/').split('/')[-1]
 		local_path = local_data.split(local_data.rstrip('/').split('/')[-1])[0]
 		cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
@@ -523,10 +537,22 @@ class FileManager():
 		elif relative_name in cloud_objects: #file
 			output = subprocess.run(['rclone', 'copy', cloud_path + relative_name, local_path], capture_output = True, encoding = 'utf-8')
 		else:
-			raise FileNotFoundError('Cant find file for download: ' + cloud_path + relative_name)
+			if allow_errors:
+				if not quiet:
+					print('Warning: Cannot find {}. Continuing'.format(cloud_path + relative_name))
+				else:
+					pass
+			else:
+				raise FileNotFoundError('Cant find file for download: ' + cloud_path + relative_name)
 
 		if not os.path.exists(local_path + relative_name):
-			raise FileNotFoundError('Error downloading: ' + local_path + relative_name)
+			if allow_errors:
+				if not quiet:
+					print('Warning. Cannot download {}. Continuing'.format(local_path + relative_name))
+				else:
+					pass
+			else:
+				raise FileNotFoundError('Error downloading: ' + local_path + relative_name)
 
 		if tarred:
 			# Untar directory

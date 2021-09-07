@@ -13,11 +13,11 @@ from cichlid_bower_tracking.data_preparers.summary_preparer import SummaryPrepar
 class ProjectPreparer():
 	# This class takes in a projectID and runs all the appropriate analysis
 
-	def __init__(self, projectID = None, modelID = None, workers = None):
+	def __init__(self, projectID = None, modelID = None, workers = None, summaryFile=None):
 		self.projectID = projectID
 		if modelID == 'None':
 			modelID = None
-		self.fileManager = FM(projectID = projectID, modelID = modelID)
+		self.fileManager = FM(projectID = projectID, modelID = modelID, summaryFile=summaryFile)
 		self.modelID = modelID
 		if not self._checkProjectID():
 			raise Exception(projectID + ' is not valid.')
@@ -78,7 +78,7 @@ class ProjectPreparer():
 		mlf_obj.labelFrames()
 	
 	def createModel(self, MLtype, projectIDs, gpu):
-		if MLtype == '3DResnet': 
+		if MLtype == '3DResnet':
 			tdm_obj = TDMP(self.fileManager, projectIDs, self.modelID, gpu)
 			tdm_obj.validateInputData()
 			tdm_obj.create3DModel()
