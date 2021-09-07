@@ -24,7 +24,6 @@ args = parser.parse_args()
 if args.ProjectIDs is not None:
     projectIDs = args.ProjectIDs  # Specified at the command line
 elif args.SummaryFile is not None:
-    pdb.set_trace()
     fm_obj = FM(summaryFile = args.SummaryFile)
     summary_file = fm_obj.localSummaryFile
     fm_obj.downloadData(summary_file)
