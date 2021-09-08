@@ -8,10 +8,10 @@ parser.add_argument('--SummaryFile', type = str, help = 'Restrict analysis to pr
 
 args = parser.parse_args()
 
-fm_obj = FM() 
+fm_obj = FM(summaryFile = args.SummaryFile) 
 
 if args.SummaryFile is not None:
-	summary_file = fm_obj.localAnalysisStatesDir + args.SummaryFile
+	summary_file = fm_obj.localSummaryFile
 	fm_obj.downloadData(summary_file)
 	dt = pd.read_csv(summary_file, index_col=False)
 	projectIDs = list(dt.projectID)
