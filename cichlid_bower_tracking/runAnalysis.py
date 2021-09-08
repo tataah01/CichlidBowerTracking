@@ -2,7 +2,7 @@
 # 1. Make summary file on Dropbox
 # 2. Handle Sigint to make sure uploads complete
 
-import argparse, subprocess, pdb, datetime, os, sys
+import argparse, subprocess, pdb, datetime, os, sys, pypdf
 import pandas as pd
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
