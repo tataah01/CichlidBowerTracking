@@ -16,6 +16,7 @@ import glob
 import re
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 import pickle
+import pdb
 import PyPDF2 as pypdf
 
 class SummaryPreparer:
@@ -1190,7 +1191,10 @@ class DepthAnalyzer:
 
         flattenedData = heightChangeAbs.flatten()
         sortedData = np.sort(flattenedData[~np.isnan(flattenedData)])
-        threshold = sortedData[-1 * bowerIndex_pixels]
+        try:
+            threshold = sortedData[-1 * bowerIndex_pixels]
+        except IndexError:
+            pdb.set_trace()
         outData.thresholdCastleVolume = np.nansum(heightChangeAbs[(bowerLocations == 1) & (heightChangeAbs > threshold)])
         outData.thresholdPitVolume = np.nansum(heightChangeAbs[(bowerLocations == -1) & (heightChangeAbs > threshold)])
 
