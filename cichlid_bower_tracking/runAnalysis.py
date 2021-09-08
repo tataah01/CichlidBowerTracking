@@ -125,7 +125,7 @@ if args.AnalysisType == 'Summary':
     paths = [x for x in os.listdir(fm_obj.localAnalysisStatesDir) if '_DepthSummary.pdf' in x]
     writer = pypdf.PdfFileWriter()
     for path in paths:
-        f = open(f_obj.localAnalysisStatesDir + path, 'rb')
+        f = open(fm_obj.localAnalysisStatesDir + path, 'rb')
         reader = pypdf.PdfFileReader(f)
         for page_number in range(reader.numPages):
             writer.addPage(reader.getPage(page_number))
