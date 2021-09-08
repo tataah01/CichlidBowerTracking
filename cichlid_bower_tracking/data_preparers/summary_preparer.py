@@ -1175,8 +1175,8 @@ class DepthAnalyzer:
 
         bowerLocations = self.returnBowerLocations(t0, t1)
         if len(bowerLocations) == 0:
-            self.new_r = [min(self.r[0],self.r[2]), min(self.r[1],self.r[3]), max(self.r[0],self.r[2]), max(self.r[1],self.r[3])]
-            self.r = self.new_r
+            self.new_r = [min(self.tray_r[0],self.tray_r[2]), min(self.tray_r[1],self.tray_r[3]), max(self.tray_r[0],self.tray_r[2]), max(self.tray_r[1],self.tray_r[3])]
+            self.tray_r = self.new_r
             bowerLocations = self.returnBowerLocations(t0, t1)
 
 
