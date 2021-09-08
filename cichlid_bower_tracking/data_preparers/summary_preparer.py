@@ -1174,6 +1174,12 @@ class DepthAnalyzer:
         bowerIndex_pixels = int(self.goodPixels * self.fileManager.bowerIndexFraction)
 
         bowerLocations = self.returnBowerLocations(t0, t1)
+        if len(bowerLocations) == 0:
+            self.new_r = [min(self.r[0],self.r[2]), min(self.r[1],self.r[3]), max(self.r[0],self.r[2]), max(self.r[1],self.r[3])]
+            self.r = self.new_r
+            bowerLocations = self.returnBowerLocations(t0, t1)
+
+
         heightChange = self.returnHeightChange(t0, t1)
         heightChangeAbs = heightChange.copy()
         heightChangeAbs = np.abs(heightChangeAbs)
