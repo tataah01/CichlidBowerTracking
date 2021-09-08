@@ -1174,10 +1174,6 @@ class DepthAnalyzer:
         bowerIndex_pixels = int(self.goodPixels * self.fileManager.bowerIndexFraction)
 
         bowerLocations = self.returnBowerLocations(t0, t1)
-        if len(bowerLocations) == 0:
-            self.new_r = [min(self.tray_r[0],self.tray_r[2]), min(self.tray_r[1],self.tray_r[3]), max(self.tray_r[0],self.tray_r[2]), max(self.tray_r[1],self.tray_r[3])]
-            self.tray_r = self.new_r
-            bowerLocations = self.returnBowerLocations(t0, t1)
 
 
         heightChange = self.returnHeightChange(t0, t1)
@@ -1251,6 +1247,11 @@ class ClusterAnalyzer:
             line = next(f)
             tray = line.rstrip().split(',')
             self.tray_r = [int(x) for x in tray]
+            if self.tray_r[0] > self.tray_r[2]:
+                self.tray_r = [self.tray_r[2], self.tray_r[1], self.tray_r[0], self.tray_r[3]]
+            if self.tray_r[1] > self.tray_r[3]:
+                self.tray_r = [self.tray_r[0], self.tray_r[3], self.tray_r[2], self.tray_r[1]]
+
         self.cropped_dims = [self.tray_r[2] - self.tray_r[0], self.tray_r[3] - self.tray_r[1]]
         self.goodPixels = (self.tray_r[2] - self.tray_r[0]) * (self.tray_r[3] - self.tray_r[1])
 
