@@ -18,6 +18,7 @@ class DepthPreparer:
 		
 		self.__version__ = '1.0.0'
 		self.fileManager = fileManager
+		self.device = self.fileManager.lp.device
 		self.createLogFile()
 
 	def validateInputData(self):
@@ -59,7 +60,10 @@ class DepthPreparer:
 				rawDepthData[i] = data
 
 		# Convert to cm
-		rawDepthData = 100/(-0.0037*rawDepthData + 3.33)
+		if self.device == 'kinect':
+			rawDepthData = 100/(-0.0037*rawDepthData + 3.33)
+		elif self.device == 'realsense':
+			rawDepthData *= 100
 		rawDepthData[(rawDepthData < 40) | (rawDepthData > 80)] = np.nan # Values that are too close or too far are set to np.nan
 
 		np.save(self.fileManager.localRawDepthFile, rawDepthData)

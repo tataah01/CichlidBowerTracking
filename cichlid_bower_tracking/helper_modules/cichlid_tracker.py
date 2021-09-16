@@ -386,7 +386,7 @@ class CichlidTracker:
             self.device = 'kinect'
         else:
             self.device = 'realsense'
-       
+
     def _identifyTank(self):
         while True:
             tankID = self._getPiGS('TankID')
@@ -476,7 +476,9 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
         
         if self.device == 'realsense':
-            depth_frame = self.pipeline.wait_for_frames(1000).get_depth_frame().as_depth_frame()
+            frames = self.pipeline.wait_for_frames(1000)
+            frames = self.align.process(frames)
+            depth_frame = frames.get_depth_frame().as_depth_frame()
 
             #except RuntimeError:
             #    self._googlePrint('No frame received from Kinect. Restarting')
@@ -594,6 +596,7 @@ class CichlidTracker:
         elif self.device == 'realsense':
             # Create a context object. This object owns the handles to all connected realsense devices
             self.pipeline = rs.pipeline()
+            self.align = rs.align(rs.stream.color)
 
             # Configure streams
             config = rs.config()
