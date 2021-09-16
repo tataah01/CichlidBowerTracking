@@ -72,7 +72,7 @@ class DriveUpdater:
         ax1.imshow(img_1)
         ax2.imshow(img_2)
         ax3.imshow(dpth_3)
-        ax4.imshow(dpth_4 - dpth_3, vmin = -.02, vmax = .02)
+        ax4.imshow(dpth_4 - dpth_3, vmin = -.02, vmax = .02) # +- 2 cms
         ax5.imshow(dpth_5 - dpth_3, vmin = -.02, vmax = .02)
         ax6.imshow(dpth_6 - dpth_3, vmin = -.02, vmax = .02)
         
