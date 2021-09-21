@@ -340,7 +340,7 @@ class CichlidTracker:
 
             try:
                 if len(dt.loc[dt.RaspberryPiID == platform.node()]) == 0:
-                    self.pi_ws.append_row([platform.node(),self.ip,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
+                    self.pi_ws.append_row([platform.node(),self.IP,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
                     return True
                 else:
                     return True
