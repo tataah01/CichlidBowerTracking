@@ -1,4 +1,4 @@
-import argparse, datetime, gspread, time, pdb
+import argparse, datetime, gspread, time, pdb, warnings
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 import matplotlib
@@ -57,21 +57,23 @@ class DriveUpdater:
         except:
             img_2 = img_1
 
-        dpth_3a = np.load(self.projectDirectory + self.lp.frames[-2].npy_file)
-        dpth_3b = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-        dpth_3 = np.nanmax(np.dstack((dpth_3a, dpth_3b)), axis=2)
+        with warnings.catch_warnings():
+            warnings.filterwarnings("ignore", message="All-NaN slice encountered")
+            dpth_3a = np.load(self.projectDirectory + self.lp.frames[-2].npy_file)
+            dpth_3b = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
+            dpth_3 = np.nanmax(np.dstack((dpth_3a, dpth_3b)), axis=2)
 
-        dpth_4a = np.load(self.projectDirectory + self.lp.frames[0].npy_file)
-        dpth_4b = np.load(self.projectDirectory + self.lp.frames[1].npy_file)
-        dpth_4 = np.nanmax(np.dstack((dpth_4a, dpth_4b)), axis=2)
+            dpth_4a = np.load(self.projectDirectory + self.lp.frames[0].npy_file)
+            dpth_4b = np.load(self.projectDirectory + self.lp.frames[1].npy_file)
+            dpth_4 = np.nanmax(np.dstack((dpth_4a, dpth_4b)), axis=2)
 
-        dpth_5a = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
-        dpth_5b = np.load(self.projectDirectory + lastDayFrames[1].npy_file)
-        dpth_5 = np.nanmax(np.dstack((dpth_5a, dpth_5b)), axis=2)
+            dpth_5a = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
+            dpth_5b = np.load(self.projectDirectory + lastDayFrames[1].npy_file)
+            dpth_5 = np.nanmax(np.dstack((dpth_5a, dpth_5b)), axis=2)
 
-        dpth_6a = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
-        dpth_6b = np.load(self.projectDirectory + lastHourFrames[1].npy_file)
-        dpth_6 = np.nanmax(np.dstack((dpth_6a, dpth_6b)), axis=2)
+            dpth_6a = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+            dpth_6b = np.load(self.projectDirectory + lastHourFrames[1].npy_file)
+            dpth_6 = np.nanmax(np.dstack((dpth_6a, dpth_6b)), axis=2)
 
 
         ### TITLES ###
