@@ -76,7 +76,7 @@ class DepthPreparer:
 		goodDataStart = np.count_nonzero(~np.isnan(interpDepthData[:100]), axis = 0) # number of good data points in the first 5 hours
 
 		numFrames = len(self.lp.frames)
-		nans = np.cumsum(np.isnan(interpDepthData), axis = 0)
+		nans = np.cumsum(np.isnan(interpDepthData), axis = 0, dtype=np.int16)
 		
 		# Process each pixel
 		for i in range(rawDepthData.shape[1]):

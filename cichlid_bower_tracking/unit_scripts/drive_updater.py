@@ -56,10 +56,23 @@ class DriveUpdater:
             img_2 = img.imread(self.projectDirectory + self.lp.movies[-1].pic_file)
         except:
             img_2 = img_1
-        dpth_3 = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-        dpth_4 = np.load(self.projectDirectory + self.lp.frames[0].npy_file)
-        dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
-        dpth_6 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+
+        dpth_3a = np.load(self.projectDirectory + self.lp.frames[-2].npy_file)
+        dpth_3b = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
+        dpth_3 = np.nanmax(np.dstack((dpth_3a, dpth_3b)), axis=2)
+
+        dpth_4a = np.load(self.projectDirectory + self.lp.frames[0].npy_file)
+        dpth_4b = np.load(self.projectDirectory + self.lp.frames[1].npy_file)
+        dpth_4 = np.nanmax(np.dstack((dpth_4a, dpth_4b)), axis=2)
+
+        dpth_5a = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
+        dpth_5b = np.load(self.projectDirectory + lastDayFrames[1].npy_file)
+        dpth_5 = np.nanmax(np.dstack((dpth_5a, dpth_5b)), axis=2)
+
+        dpth_6a = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+        dpth_6b = np.load(self.projectDirectory + lastHourFrames[1].npy_file)
+        dpth_6 = np.nanmax(np.dstack((dpth_6a, dpth_6b)), axis=2)
+
 
         ### TITLES ###
         ax1.set_title('Kinect RGB Picture')
@@ -74,12 +87,12 @@ class DriveUpdater:
         ax3.imshow(dpth_3)
         ax4.imshow(dpth_4 - dpth_3, vmin = -.02, vmax = .02) # +- 2 cms
         ax5.imshow(dpth_5 - dpth_3, vmin = -.02, vmax = .02)
-        ax6.imshow(dpth_6 - dpth_3, vmin = -.02, vmax = .02)
+        ax6.imshow(dpth_6 - dpth_3, vmin = -.02, vmax = .02) # +- 1 cms
         
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
-        #return self.graph_summary_fname       
-    
+        #return self.graph_summary_fname
+
     def uploadImage(self, image_file, name): #name should have format 't###_icon' or 't###_link'
         self._authenticateGoogleDrive()
         drive = GoogleDrive(self.gauth)
