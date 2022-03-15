@@ -235,7 +235,10 @@ class SummaryPreparer:
         plt.setp(volAx.get_xticklabels(), visible=False)
 
         figDaily.savefig(self.fm.localSummaryDir + 'DailyDepthSummary.pdf')
-        subprocess.run(['cp', self.fm.localSummaryDir + 'DailyDepthSummary.pdf', self.fm.localAnalysisStatesDir + self.projectID + '_DepthSummary.pdf'])
+        try:
+            subprocess.run(['cp', self.fm.localSummaryDir + 'DailyDepthSummary.pdf', self.fm.localAnalysisStatesDir + self.projectID + '_DepthSummary.pdf'])
+        except AttributeError:
+            pass
         figHourly.savefig(self.fm.localSummaryDir + 'HourlyDepthSummary.pdf')
 
         plt.close('all')
