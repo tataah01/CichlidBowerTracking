@@ -688,7 +688,7 @@ class CichlidTracker:
 
         color = self._returnRegColor()                        
         
-        self._print('FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,GP: ' + str(np.count_nonzero(~np.isnan(med))))
+        self._print('FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,LOF: ' + self._video_recording())
         
         np.save(self.projectDirectory +'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
         matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
