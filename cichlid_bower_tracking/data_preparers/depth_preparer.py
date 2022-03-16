@@ -50,7 +50,7 @@ class DepthPreparer:
 	def createSmoothedArray(self, totalGoodData = 0.3, minGoodData = 0.5, minUnits = 5, tunits = 71, order = 4):
 		# Download raw data and create new array to store it
 		rawDepthData = np.empty(shape = (len(self.lp.frames), self.lp.height, self.lp.width))
-		for i, frame in enumerate(self.lp.frames):                
+		for i, frame in enumerate(self.lp.frames):
 			try:
 				data = np.load(self.fileManager.localProjectDir + frame.npy_file)
 			except FileNotFoundError:
@@ -59,11 +59,29 @@ class DepthPreparer:
 			else:
 				rawDepthData[i] = data
 
+
 		# Convert to cm
 		if self.device == 'kinect':
 			rawDepthData = 100/(-0.0037*rawDepthData + 3.33)
 		elif self.device == 'realsense':
 			rawDepthData *= 100
+			# Nighttime data is bad. Set it to average of before and after lights go off.
+			good_frame = -1
+			for i, frame in enumerate(self.lp.frames):
+				if not frame.lof: # If the lights are off, continue
+					continue
+				if i != good_frame + 1: # The lights are back on, interpolate from good_frame + 1 to i - -1
+					avg_data = np.mean(np.array([rawDepthData[good_frame], rawDepthData[i]]), axis = 0)
+					for j in range(good_frame + 1, i):
+						rawDepthData[j] = avg_data
+
+				good_frame = i
+
+			if not frame.lof: # last frame the lights are off:
+				for j in range(good_frame+1, i):
+					rawDepthData[j] = rawDepthData[good_frame]
+
+
 		rawDepthData[(rawDepthData < 40) | (rawDepthData > 80)] = np.nan # Values that are too close or too far are set to np.nan
 
 		np.save(self.fileManager.localRawDepthFile, rawDepthData)

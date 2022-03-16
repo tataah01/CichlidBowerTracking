@@ -43,8 +43,8 @@ if args.Workers is None:
     workers = os.cpu_count()
 else:
     workers = args.Workers
-if args.ModelID is None:
-    args.ModelID = 'Model18_All'
+#if args.ModelID is None:
+#    args.ModelID = 'Model18_All'
 
 # To run analysis efficiently, we download and upload data in the background while the main script runs
 uploadProcesses = [] # Keep track of all of the processes still uploading so we don't quit before they finish
@@ -96,6 +96,12 @@ while len(projectIDs) != 0:
             print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
             p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
 
+    else:
+        projectIDs = projectIDs[1:]
+        if len(projectIDs) != 0:
+            print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
+            p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
+
     # Pause script until current analysis is complete and data for next project is downloaded
     p1.communicate()
     if p1.returncode != 0:
@@ -126,6 +132,7 @@ for i,p in enumerate(uploadProcesses):
     print('Finishing uploading process ' + str(i) + ': ' + str(datetime.datetime.now()), flush = True)
     p.communicate()
 
+"""
 if args.AnalysisType == 'Summary':
     paths = [x for x in os.listdir(fm_obj.localAnalysisStatesDir) if '_DepthSummary.pdf' in x]
     writer = pypdf.PdfFileWriter()
@@ -138,3 +145,4 @@ if args.AnalysisType == 'Summary':
         writer.write(f)
     print('Finished analysis: ' + str(datetime.datetime.now()), flush = True)
     fm_obj.uploadData(fm_obj.localAnalysisStatesDir + 'Collated_DepthSummary.pdf')
+"""

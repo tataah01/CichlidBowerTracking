@@ -39,6 +39,7 @@ class LogParser:
                         self.tankID
                         self.projectID
                     except AttributeError:
+
                         self.system, self.device, self.camera, self.uname, self.tankID, self.projectID = self._ret_data(line, ['System', 'Device', 'Camera','Uname', 'TankID', 'ProjectID'])
                     else:
                         raise LogFormatError('It appears MasterStart is present twice in the Logfile. Unable to deal')
@@ -66,7 +67,7 @@ class LogParser:
                     self.speeds.append(self._ret_data(line, 'Rate'))
                     
                 if info_type == 'FrameCaptured':
-                    t_list = self._ret_data(line, ['NpyFile','PicFile','Time','AvgMed','AvgStd','GP'])
+                    t_list = self._ret_data(line, ['NpyFile','PicFile','Time','AvgMed','AvgStd','GP','LOF'])
                     # Is this a Mark file?
                     try:
                         t_list[2].year
@@ -80,7 +81,7 @@ class LogParser:
                     self.frames.append(FrameObj(*t_list))
 
                 if info_type == 'BackgroundCaptured':
-                    t_list = self._ret_data(line, ['NpyFile','PicFile','Time','AvgMed','AvgStd','GP'])
+                    t_list = self._ret_data(line, ['NpyFile','PicFile','Time','AvgMed','AvgStd','GP','LOF'])
                     self.backgrounds.append(FrameObj(*t_list))
                     
                 if info_type == 'PiCameraStarted':
@@ -166,11 +167,17 @@ class LogParser:
                 continue
             except ValueError:
                 pass
-            
             # Is it a tuple?
             if t_data[0] == '(' and t_data[-1] == ')':
                 out_data.append(tuple(int(x) for x in t_data[1:-1].split(', ')))
                 continue
+            # Is it a boolean?
+            if t_data == 'True': 
+                out_data.append(True)
+                continue
+            if t_data == 'False':
+                out_data.append(False)
+                continue 
             # Is it an int?
             try:
                 out_data.append(int(t_data))
@@ -192,13 +199,14 @@ class LogParser:
         return out_data
 
 class FrameObj:
-    def __init__(self, npy_file, pic_file, time, med, std, gp):
+    def __init__(self, npy_file, pic_file, time, med, std, gp, lof):
         self.npy_file = npy_file
         self.pic_file = pic_file
         self.time = time
         self.med = med
         self.std = std
         self.gp = gp
+        self.lof = lof
         self.rel_day = 0
         self.frameDir = npy_file.replace(npy_file.split('/')[-1],'')
 
