@@ -521,6 +521,8 @@ class CichlidTracker:
             except requests.exceptions.ReadTimeout as e:
                 self._googlePrint('Requests read timeout error encountered')
                 continue
+            except Exception as e:
+                self._googlePrint(f'uncaught exception in _getPiGS: {str(e)}')
 
             dt = pd.DataFrame(data[1:], columns = data[0])
             self.dt = dt
