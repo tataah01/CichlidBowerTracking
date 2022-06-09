@@ -521,6 +521,8 @@ class CichlidTracker:
             except requests.exceptions.ReadTimeout as e:
                 self._googlePrint('Requests read timeout error encountered')
                 continue
+            except Exception as e:
+                self._googlePrint(f'uncaught exception in _getPiGS: {str(e)}')
 
             except requests.exceptions.ConnectionError as e:
                 self._googlePrint('Requests connection error encountered')
@@ -693,7 +695,7 @@ class CichlidTracker:
 
         color = self._returnRegColor()                        
         
-        self._print('FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,LOF: ' + self._video_recording())
+        self._print('FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,LOF: ' + str(self._video_recording()))
         
         np.save(self.projectDirectory +'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
         matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
