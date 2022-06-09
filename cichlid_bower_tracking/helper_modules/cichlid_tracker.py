@@ -297,7 +297,7 @@ class CichlidTracker:
                 command, projectID = self._returnCommand()
             except KeyError:
                 continue                
-            if command != 'None':
+            if command != 'None' and command is not None:
                 if command == 'Snapshots':
                     self._modifyPiGS('Command', 'None')
                     self._modifyPiGS('Status', 'Writing Snapshots')
@@ -521,6 +521,11 @@ class CichlidTracker:
             except requests.exceptions.ReadTimeout as e:
                 self._googlePrint('Requests read timeout error encountered')
                 continue
+
+            except requests.exceptions.ConnectionError as e:
+                self._googlePrint('Requests connection error encountered')
+                continue
+
 
             dt = pd.DataFrame(data[1:], columns = data[0])
             self.dt = dt
