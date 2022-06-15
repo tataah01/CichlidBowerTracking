@@ -195,7 +195,7 @@ class CichlidTracker:
             #self.r = logObj.bounding_shape
             self.frameCounter = logObj.lastFrameCounter + 1
             self.videoCounter = logObj.lastVideoCounter + 1
-            if self.system != logObj.system or self.device != logObj.device or self.piCamera != logObj.camera:
+            if self.system != logObj.system or self.device != logObj.device:
                 self._reinstructError('Restart error. LogData: ' + ','.join([str(x) for x in [logObj.system,logObj.device,logObj.camera]]) + ',, SystemData: ' + ','.join([str(x) for x in [self.system, self.device, self.camera]]))
                 return
             if self.device != 'None':
