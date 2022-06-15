@@ -565,31 +565,38 @@ class FileManager():
 
 	def uploadData(self, local_data, tarred = False):
 
-		relative_name = local_data.rstrip('/').split('/')[-1]
-		local_path = local_data.split(relative_name)[0]
-		cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
+		attempt = 1
+		while True:
+			relative_name = local_data.rstrip('/').split('/')[-1]
+			local_path = local_data.split(relative_name)[0]
+			cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
 
-		if tarred:
-			output = subprocess.run(['tar', '-cvf', local_path + relative_name + '.tar', '-C', local_path, relative_name], capture_output = True, encoding = 'utf-8')
+			if tarred:
+				output = subprocess.run(['tar', '-cvf', local_path + relative_name + '.tar', '-C', local_path, relative_name], capture_output = True, encoding = 'utf-8')
+				if output.returncode != 0:
+					print(output.stderr)
+					if attempt < 3:
+						attempt += 1
+						continue
+					raise Exception('Error in tarring ' + local_data)
+				relative_name += '.tar'
+
+			if os.path.isdir(local_path + relative_name):
+				output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path + relative_name], capture_output = True, encoding = 'utf-8')
+				#subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path + relative_name], check = True) #Troubleshooting directory will have depth data in it when you upload the cluster data
+
+			elif os.path.isfile(local_path + relative_name):
+				print(['rclone', 'copy', local_path + relative_name, cloud_path])
+				output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path], capture_output = True, encoding = 'utf-8')
+				output = subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path], check = True, capture_output = True, encoding = 'utf-8')
+			else:
+				raise Exception(local_data + ' does not exist for upload')
+
 			if output.returncode != 0:
-				print(output.stderr)
-				raise Exception('Error in tarring ' + local_data)
-			relative_name += '.tar'
-
-		if os.path.isdir(local_path + relative_name):
-			output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path + relative_name], capture_output = True, encoding = 'utf-8')
-			#subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path + relative_name], check = True) #Troubleshooting directory will have depth data in it when you upload the cluster data
-
-		elif os.path.isfile(local_path + relative_name):
-			print(['rclone', 'copy', local_path + relative_name, cloud_path])
-			output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path], capture_output = True, encoding = 'utf-8')
-			output = subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path], check = True, capture_output = True, encoding = 'utf-8')
-		else:
-			raise Exception(local_data + ' does not exist for upload')
-
-		if output.returncode != 0:
-			pdb.set_trace()
-			raise Exception('Error in uploading file: ' + output.stderr)
+				if attempt < 3:
+					attempt += 1
+					continue
+				raise Exception('Error in uploading file: ' + output.stderr)
 
 	def uploadAndMerge(self, local_data, master_file, tarred = False, ID = False):
 		if os.path.isfile(local_data):
