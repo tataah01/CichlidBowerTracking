@@ -196,7 +196,8 @@ class CichlidTracker:
             self.frameCounter = logObj.lastFrameCounter + 1
             self.videoCounter = logObj.lastVideoCounter + 1
             if self.system != logObj.system or self.device != logObj.device or self.piCamera != logObj.camera:
-                self._reinstructError('Restart error. System, device, or camera does not match what is in logfile')
+                self._reinstructError('Restart error. LogData: ' + ','.join([str(x) for x in [logObj.system,logObj.device,logObj.camera]]) + ',, SystemData: ' + ','.join([str(x) for x in [self.system, self.device, self.camera]]))
+                return
             if self.device != 'None':
                 row, column, ping_column = self._getRowColumn('Image')
                 subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, str(row), str(column)])
@@ -430,6 +431,7 @@ class CichlidTracker:
             #self._modifyPiGS('Command', 'None')
             #self._modifyPiGS('Status', 'AwaitingCommands', ping = False)
             self._modifyPiGS('Error', 'InstructError: ' + message, ping = False)
+            self._print(message)
         except Exception as e:
             self._googlePrint(e)
             pass
