@@ -598,7 +598,7 @@ class FileManager():
 					continue
 				raise Exception('Error in uploading file: ' + output.stderr)
 			else:
-				break
+				return
 
 	def uploadAndMerge(self, local_data, master_file, tarred = False, ID = False):
 		if os.path.isfile(local_data):
