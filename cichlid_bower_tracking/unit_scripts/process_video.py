@@ -24,6 +24,9 @@ if '.h264' not in args.VideoFile:
 	raise Exception(args.VideoFile + ' not an h264 file')
 
 # Convert h264 to mp4
+if os.path.exists(args.VideoFile.replace('.h264', '.mp4')):
+	logPrinter(args.VideoFile.replace('.h264', '.mp4') + ' already exits. Deleting')
+	subprocess.run(['rm', '-f', args.VideoFile.replace('.h264', '.mp4')])
 command = ['ffmpeg', '-r', str(args.Framerate), '-i', args.VideoFile, '-threads', '1', '-c:v', 'copy', '-r', str(args.Framerate), args.VideoFile.replace('.h264', '.mp4')]
 logPrinter('Beginning conversion of video: ' + args.VideoFile.split('/')[-1], indent = False)
 logPrinter(command)
