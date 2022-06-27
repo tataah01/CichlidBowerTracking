@@ -681,6 +681,7 @@ class CichlidTracker:
                 break
             time.sleep(10)
         
+        pdb.set_trace()
         med = np.nanmean(all_data, axis = 0)
         
         std = np.nanstd(all_data, axis = 0)
