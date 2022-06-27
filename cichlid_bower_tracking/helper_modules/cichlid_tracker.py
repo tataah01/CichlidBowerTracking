@@ -21,14 +21,15 @@ sys.path.append(sys.path[0] + '/unit_scripts')
 sys.path.append(sys.path[0] + '/helper_modules')
 
 class CichlidTracker:
-    def __init__(self):
+    def __init__(self, all_data):
         
+        self.all_data = all_data # Flag to keep all data if desired
 
         # 1: Define valid commands and ignore warnings
-        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete', 'Snapshots']
+        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete']
         np.seterr(invalid='ignore')
 
-        # 2: Determine which Kinect is attached (This script can handle v1 or v2 Kinects)
+        # 2: Determine which depth sensor is attached (This script can handle DepthSense cameras)
         self._identifyDevice() #Stored in self.device
         self.system = platform.node()
 
@@ -47,20 +48,18 @@ class CichlidTracker:
         self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
         self._identifyTank() #Stored in self.tankID
         self._identifyServiceAccount()
-        # 6: Connect to Google Spreadsheets
-        #self._modifyPiGS('Error', '')
-
-        # 7: Keep track of processes spawned to convert and upload videofiles
+       
+        # 6: Keep track of processes spawned to convert and upload videofiles
         self.processes = [] 
 
-        # 8: Set size of frame
+        # 7: Set size of frame
         try:
             self.r
         except AttributeError:
             self.r = (0,0,640,480)
 
         # 9: Await instructions
-        print('Monitor commands')
+        print('Monitoring commands')
         self.monitorCommands()
         
     def __del__(self):
@@ -74,14 +73,9 @@ class CichlidTracker:
                 self.camera.stop_recording()
                 self._print('PiCameraStopped: Time=' + str(datetime.datetime.now()) + ', File=Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
 
-        try:
-            if self.device == 'kinect2':
-                self.K2device.stop()
-            if self.device == 'kinect':
-                freenect.sync_stop()
-                freenect.shutdown(self.a)
-        except AttributeError:
-            pass
+        if self.device == 'realsense':
+            self.pipeline.stop()
+
         self._closeFiles()
 
     def monitorCommands(self, delta = 20):
@@ -104,7 +98,7 @@ class CichlidTracker:
             time.sleep(delta)
 
     def runCommand(self, command, projectID):
-        # This function is used to run a specific command found int he  master Controller Google Spreadsheet
+        # This function is used to run a specific command found in the  master Controller Google Spreadsheet
         self.projectID = projectID
 
         # Rename files to make code more readable 
@@ -131,19 +125,12 @@ class CichlidTracker:
                     self.processes.append(subprocess.Popen(command))
 
             try:
-                if self.device == 'kinect2':
-                    self.K2device.stop()
-                if self.device == 'kinect':
-                    freenect.sync_stop()
-                    freenect.shutdown(self.a)
-                if self.device == 'None':
-                    pass
+                if self.device == 'realsense':
+                    self.pipeline.stop()
             except Exception as e:
                 self._googlePrint(e)
                 self._print('ErrorStopping kinect')
                 
-         
-
             self._closeFiles()
 
             self._modifyPiGS('Command', 'None', ping = False)
@@ -176,12 +163,11 @@ class CichlidTracker:
         if command == 'Rewrite':
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
-            os.makedirs(self.projectDirectory)
             
         if command in ['New','Rewrite']:
             self.masterStart = datetime.datetime.now()
-            if command == 'New':
-                os.makedirs(self.projectDirectory)
+            
+            os.makedirs(self.projectDirectory)
             os.makedirs(self.frameDirectory)
             os.makedirs(self.videoDirectory)
             os.makedirs(self.backupDirectory)
@@ -192,7 +178,6 @@ class CichlidTracker:
         if command == 'Restart':
             logObj = LP(self.loggerFile)
             self.masterStart = logObj.master_start
-            #self.r = logObj.bounding_shape
             self.frameCounter = logObj.lastFrameCounter + 1
             self.videoCounter = logObj.lastVideoCounter + 1
             if self.system != logObj.system or self.device != logObj.device:
@@ -202,6 +187,7 @@ class CichlidTracker:
                 row, column, ping_column = self._getRowColumn('Image')
                 subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, str(row), str(column)])
                 pass
+
         self.lf = open(self.loggerFile, 'a', buffering = 1) # line buffered
         self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
         self._modifyPiGS('MasterStart',str(self.masterStart), ping = False)
@@ -245,9 +231,6 @@ class CichlidTracker:
         command = ''
         
         while True:
-            #self._modifyPiGS('Command', 'None')
-            #self._modifyPiGS('Status', 'Running')
-            #self._modifyPiGS('Error', '')
 
             # Grab new time
             now = datetime.datetime.now()
@@ -271,26 +254,18 @@ class CichlidTracker:
             # Capture a frame and background if necessary
             if self.device != 'None':
                 if now > current_background_time:
-                    if command == 'Snapshots':
-                        out = self._captureFrame(current_frame_time, snapshots = True)
-                    else:
-                        out = self._captureFrame(current_frame_time)
+                    out = self._captureFrame(current_frame_time, keep_all_data = self.all_data)
                     if out is not None:
                         current_background_time += datetime.timedelta(seconds = 60 * background_delta)
                     row, column, ping_column = self._getRowColumn('Image')
                     subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile, str(row), str(column)])
                 else:
-                    if command == 'Snapshots':
-                        out = self._captureFrame(current_frame_time, snapshots = True)
-                    else:
-                        out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
+                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold, keep_all_data = self.all_data)
             else:
                 while datetime.datetime.now() < current_frame_time:
                     time.sleep(5)
 
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
-
-            #self._modifyPiGS('Status', 'Running')
 
             
             # Check google doc to determine if recording has changed.
@@ -299,14 +274,7 @@ class CichlidTracker:
             except KeyError:
                 continue                
             if command != 'None' and command is not None:
-                if command == 'Snapshots':
-                    self._modifyPiGS('Command', 'None')
-                    self._modifyPiGS('Status', 'Writing Snapshots')
-
-                    self._modifyPiGS(command = 'None', status = 'Writing Snapshots')
-                    continue
-                else:
-                    break
+                break
             else:
                 self._modifyPiGS('Error', '')
 
@@ -352,18 +320,6 @@ class CichlidTracker:
         return False
             
     def _identifyDevice(self):
-        try:
-            global freenect
-            import freenect
-            self.a = freenect.init()
-            if freenect.num_devices(self.a) == 0:
-                kinect = False
-            elif freenect.num_devices(self.a) > 1:
-                self._initError('Multiple Kinect1s attached. Unsure how to handle')
-            else:
-                kinect = True
-        except ImportError:
-            kinect = False
 
         try:
             global rs
@@ -371,22 +327,11 @@ class CichlidTracker:
 
             ctx = rs.context()
             if len(ctx.devices) == 0:
-                realsense = False
+                self.device = 'None'
             elif len(ctx.devices) > 1:
                 self._initError('Multiple RealSense devices attached. Unsure how to handle')
             else:
-                realsense = True
-        except ImportError:
-            realsense = False
-
-        if kinect and realsense:
-            self._initError('Kinect1 and RealSense devices attached. Unsure how to handle')
-        elif (not kinect) and (not realsense):
-            self.device = 'None'
-        elif kinect:
-            self.device = 'kinect'
-        else:
-            self.device = 'realsense'
+                self.device = 'realsense'
 
     def _identifyTank(self):
         while True:
@@ -472,11 +417,7 @@ class CichlidTracker:
             
     def _returnDepth(self):
         # This function returns a float64 npy array containing one frame of data with all bad data as NaNs
-        if self.device == 'kinect':
-            data = freenect.sync_get_depth()[0].astype('float64')
-            data[data == 2047] = np.nan # 2047 indicates bad data from Kinect 
-            return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
-        
+
         if self.device == 'realsense':
             frames = self.pipeline.wait_for_frames(1000)
             frames = self.align.process(frames)
@@ -496,7 +437,6 @@ class CichlidTracker:
 
         command, projectID = self._getPiGS(['Command','ProjectID'])
         return command, projectID
-
 
     def _getPiGS(self, column_names):
         # Make this compatible with both lists and also strings
@@ -598,11 +538,8 @@ class CichlidTracker:
             return False
             
     def _start_kinect(self):
-        if self.device == 'kinect':
-            freenect.sync_get_depth() #Grabbing a frame initializes the device
-            freenect.sync_get_video()
 
-        elif self.device == 'realsense':
+        if self.device == 'realsense':
             # Create a context object. This object owns the handles to all connected realsense devices
             self.pipeline = rs.pipeline()
             self.align = rs.align(rs.stream.color)
@@ -688,17 +625,16 @@ class CichlidTracker:
         
         med[np.isnan(std)] = np.nan
 
+        bad_std_avg_pixels = (std > stdev_threshold).sum()
         med[std > stdev_threshold] = np.nan
         std[std > stdev_threshold] = np.nan
 
 
         counts = np.count_nonzero(~np.isnan(all_data), axis = 0)
 
+        bad_count_avg_pixels = (counts<count_threshold).sum()
         med[counts < count_threshold] = np.nan
         std[counts < count_threshold] = np.nan
-
-        bad_std_avg_pixels = (std > stdev_threshold).sum()
-        bad_count_avg_pixels = (counts<count_threshold).sum()
 
         color = self._returnRegColor()                        
         
