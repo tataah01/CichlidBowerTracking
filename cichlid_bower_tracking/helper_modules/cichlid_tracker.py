@@ -332,6 +332,8 @@ class CichlidTracker:
                 self._initError('Multiple RealSense devices attached. Unsure how to handle')
             else:
                 self.device = 'realsense'
+        except Exception:
+            self.device = 'None'
 
     def _identifyTank(self):
         while True:
