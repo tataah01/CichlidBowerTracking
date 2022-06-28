@@ -615,7 +615,7 @@ class CichlidTracker:
                 break
             time.sleep(10)
         
-        if keep_all_data:
+        if (endtime.minute > 0 and endtime.minute <= 5) or keep_all_data:
             self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i))
             np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
 
