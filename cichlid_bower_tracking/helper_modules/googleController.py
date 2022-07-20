@@ -1,7 +1,7 @@
 import socket,gspread,datetime
 
 class GoogleController:
-	def __init__(self, credentialSpreadsheet, googleError):
+	def __init__(self, credentialSpreadsheet):
 		self.credentialSpreadsheet = credentialSpreadsheet
 
 		self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
