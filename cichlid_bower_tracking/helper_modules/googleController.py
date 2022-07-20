@@ -70,7 +70,7 @@ class GoogleController:
 		self._googlePrint('Failed contancting controller for three tries')
 		return [None]*len(column_names)
 
-   def modifyPiGS(self, column_name, new_value, ping = True):
+	def modifyPiGS(self, column_name, new_value, ping = True):
 		for i in range(3):
 			try:
 				row, column, ping_column = self._getRowColumn(column_name)
