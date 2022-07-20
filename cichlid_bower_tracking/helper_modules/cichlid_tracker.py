@@ -533,6 +533,7 @@ class CichlidTracker:
             self.fileManager.uploadData(self.videoDirectory)
             #print(self.loggerFile)
             self.fileManager.uploadData(self.loggerFile)
+            self.fileManager.uploadData(self.googleErrorFile)
             self.googleController.odifyPiGS('Error','UploadSuccessful, ready for delete')
 
         except Exception as e:
