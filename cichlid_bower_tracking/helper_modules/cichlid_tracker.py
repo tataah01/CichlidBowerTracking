@@ -162,7 +162,7 @@ class CichlidTracker:
         if command == 'Rewrite':
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
-            if self.fileManager.checkFileExists(self.projectDirectory)
+            if self.fileManager.checkFileExists(self.projectDirectory):
                 self._reinstructError('Rewrite command cannot be run if ouput directory already exists on the cloud. Delete the data on Dropbox')
             
         if command in ['New','Rewrite']:
