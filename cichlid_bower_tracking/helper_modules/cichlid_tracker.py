@@ -110,7 +110,6 @@ class CichlidTracker:
         if command not in self.commands:
             self._reinstructError(command + ' is not a valid command. Options are ' + str(self.commands))
 
-        self.googleController.addProjectID(self.projectID, self.googleErrorFile)
             
         if command == 'Stop':
             
@@ -174,6 +173,9 @@ class CichlidTracker:
             os.makedirs(self.frameDirectory)
             os.makedirs(self.videoDirectory)
             os.makedirs(self.backupDirectory)
+
+            self.googleController.addProjectID(self.projectID, self.googleErrorFile)
+
             #self._createDropboxFolders()
             self.frameCounter = 1
             self.videoCounter = 1
