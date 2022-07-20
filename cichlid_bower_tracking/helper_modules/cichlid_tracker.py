@@ -38,6 +38,7 @@ class CichlidTracker:
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.googleController = GC(self.fileManager.localCredentialSpreadsheet)
         self.tankID = self.googleController.tankID
+        self.googleController.modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera), ping = False)
 
         # 6: Keep track of processes spawned to convert and upload videofiles
         self.processes = [] 
