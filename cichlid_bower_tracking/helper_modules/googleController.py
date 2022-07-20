@@ -1,4 +1,5 @@
 import socket,gspread,datetime,time
+import pandas as pd
 
 class GoogleController:
 	def __init__(self, credentialSpreadsheet):
@@ -139,7 +140,7 @@ class GoogleController:
 
 	def _identifyTank(self):
 		while True:
-			tankID = self._getPiGS('TankID')
+			tankID = self.getPiGS('TankID')
 			if tankID not in ['None','']:
 				self.tankID = tankID
 

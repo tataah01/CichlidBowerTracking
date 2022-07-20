@@ -1,4 +1,4 @@
-import platform, sys, os, shutil, datetime, subprocess, gspread, time, socket, pdb, time, requests
+import platform, sys, os, shutil, datetime, subprocess, pdb
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 from cichlid_bower_tracking.helper_modules.googleController import GoogleController as GC
@@ -37,7 +37,8 @@ class CichlidTracker:
         # 5: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.googleController = GC(self.fileManager.localCredentialSpreadsheet)
-       
+        self.tankID = self.googleController.tankID
+
         # 6: Keep track of processes spawned to convert and upload videofiles
         self.processes = [] 
 
