@@ -156,6 +156,6 @@ class DriveUpdater:
         self.gauth.SaveCredentialsFile(self.credentialDrive)
 
 try:
-    dr_obj = DriveUpdater(args.Logfile, args.CredentialFile)
+    dr_obj = DriveUpdater(args.Logfile)
 except Exception as e:
     print(f'skipping drive update due to error: {e}')
