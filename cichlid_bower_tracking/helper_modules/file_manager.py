@@ -141,7 +141,7 @@ class FileManager():
 		if self.analysisID is None:
 			self.localProjectDir = self.localMasterDir + '__ProjectData/' + projectID + '/'
 		else:
-			self.localProjectDir = self.localMasterDir + '__ProjectData/' + analysisID + '/' + projectID + '/'
+			self.localProjectDir = self.localMasterDir + '__ProjectData/' + self.analysisID + '/' + projectID + '/'
 
 		# Create logfile
 		self.localLogfile = self.localProjectDir + 'Logfile.txt'
