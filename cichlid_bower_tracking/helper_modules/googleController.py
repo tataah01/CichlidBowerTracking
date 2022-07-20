@@ -1,4 +1,4 @@
-import socket,gspread,datetime,time
+import socket,gspread,datetime,time, platform
 import pandas as pd
 
 class GoogleController:
