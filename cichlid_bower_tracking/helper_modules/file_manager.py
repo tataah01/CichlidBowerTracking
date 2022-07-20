@@ -39,7 +39,6 @@ class FileManager():
 				self.downloadData(self.localLogfile)
 				self.lp = LP(self.localLogfile)
 			except FileNotFoundError:
-				self.lp = LP(self.localLogfile)
 				pass 
 
 		self.modelID = modelID
