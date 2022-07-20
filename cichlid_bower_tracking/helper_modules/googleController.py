@@ -1,4 +1,4 @@
-import socket,gspread,datetime
+import socket,gspread,datetime,time
 
 class GoogleController:
 	def __init__(self, credentialSpreadsheet):
