@@ -2,7 +2,7 @@ import os, subprocess, pdb, platform, shutil
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 class FileManager():
-	def __init__(self, projectID = None, modelID = None, summaryFile=None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
+	def __init__(self, projectID = None, modelID = None, analysisID=None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node() or 'sv-' in platform.node():
 			self._identifyPiDirectory()
@@ -22,7 +22,16 @@ class FileManager():
 			if output.stderr == '':
 				self.cloudMasterDir = self.rcloneRemote + 'BioSci-' + masterDir
 			else:
-				raise Exception('Cant find master directory (' + masterDir + ') in rclone remote (' + rcloneRemote + '')
+				self.cloudMasterDir = self.rcloneRemote + masterDir
+				#raise Exception('Cant find master directory (' + masterDir + ') in rclone remote (' + rcloneRemote + '')
+
+		self.analysisID = analysisID
+		if analysisID is not None:
+			self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/' + analysisID + '/'
+			self.localSummaryFile = self.localAnalysisStatesDir + analysisID + '.csv'
+		else:
+			self.localEuthData = None
+	
 
 		if projectID is not None:
 			self.createProjectData(projectID)
@@ -30,6 +39,7 @@ class FileManager():
 				self.downloadData(self.localLogfile)
 				self.lp = LP(self.localLogfile)
 			except FileNotFoundError:
+				self.lp = LP(self.localLogfile)
 				pass 
 
 		self.modelID = modelID
@@ -39,19 +49,11 @@ class FileManager():
 			print(modelID)
 			self.createMLData(modelID)
 
-		if summaryFile is not None:
-			self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/' + summaryFile.split('.')[0] + '/'
-			self.localSummaryFile = self.localAnalysisStatesDir + summaryFile
-			self.localEuthData = self.localAnalysisStatesDir + 'euthanization_data.csv'
-		else:
-			self.localEuthData = None
-
 		# Create file names and parameters
 		self.createPiData()
 		self.createAnnotationData()
 
 		self._createParameters()
-
 
 	def createPiData(self):
 		self.localCredentialDir = self.localMasterDir + '__CredentialFiles/'
@@ -71,27 +73,25 @@ class FileManager():
 		# List the files needed for each analysis
 		necessaryFiles = {}
 		necessaryFiles['StartingFiles'] = [self.localLogfile, self.localPrepDir, self.localFrameTarredDir, self.localVideoDir, self.localFirstFrame, self.localLastFrame, self.localPiRGB, self.localDepthRGB]
-		necessaryFiles['Prep'] = [self.localTrayFile,self.localTransMFile,self.localVideoCropFile]
+		necessaryFiles['Prep'] = [self.localDepthCropFile,self.localTransMFile,self.localVideoCropFile]
 		necessaryFiles['Depth'] = [self.localSmoothDepthFile]
 		necessaryFiles['Cluster'] = [self.localAllClipsDir, self.localManualLabelClipsDir, self.localManualLabelFramesDir]
 		necessaryFiles['ClusterClassification'] = [self.localAllLabeledClustersFile]
 		necessaryFiles['Summary'] = [self.localSummaryDir, self.localAllLabeledClustersFile, self.localSmoothDepthFile, self.localTrayFile, self.localTransMFile, self.localLogfile]
 
-		print('Starting and downloading logfile for project ' + self.projectID)
+		print('Checking project ' + self.projectID + ': ', end = '')
 		# Try to download and read logfile
 		try:
 			self.downloadData(self.localLogfile)
 		except FileNotFoundError:
-			print('  Cantfind Log File')
+			print('No Logfile. Continuing...')
 			row_data['StartingFiles'] = False
-			pdb.set_trace()
 			return row_data
 
 		self.lp = LP(self.localLogfile)
 		if self.lp.malformed_file:
 			row_data['StartingFiles'] = False
-			print('  Malformed Log File')
-			pdb.set_trace()
+			print('Malformed Log File. Continuing...')
 			return row_data
 
 		# Get additional files necessary for analysis based on videos
@@ -103,10 +103,8 @@ class FileManager():
 			necessaryFiles['Cluster'].append(vid_obj.localManualLabelClipsDir[:-1] + '.tar')
 			necessaryFiles['Cluster'].append(vid_obj.localManualLabelFramesDir[:-1] + '.tar')
 
-
 		row_data['tankID'] = self.lp.tankID
 		# Check if files exists
-		print('Checking if individual files exist')
 
 		directories = {}
 
@@ -121,7 +119,7 @@ class FileManager():
 
 		for analysis_type, local_files in necessaryFiles.items():
 			row_data[analysis_type] = all([os.path.basename(x) in directories[os.path.dirname(os.path.realpath(x))] for x in local_files])
-
+		print('Individual file info added to csv file')
 		return row_data
 		
 	def checkFileExists(self, local_data):
@@ -140,7 +138,10 @@ class FileManager():
 	def createProjectData(self, projectID):
 		self.createAnnotationData()
 		self.projectID = projectID
-		self.localProjectDir = self.localMasterDir + '__ProjectData/' + projectID + '/'
+		if self.analysisID is None:
+			self.localProjectDir = self.localMasterDir + '__ProjectData/' + projectID + '/'
+		else:
+			self.localProjectDir = self.localMasterDir + '__ProjectData/' + analysisID + '/' + projectID + '/'
 
 		# Create logfile
 		self.localLogfile = self.localProjectDir + 'Logfile.txt'
@@ -171,10 +172,9 @@ class FileManager():
 		self.localPaceDir = self.localProjectDir + 'Pace/'
 
 		# Files created by prep preparer
-		self.localTrayFile = self.localAnalysisDir + 'DepthCrop.txt'
+		self.localDepthCropFile = self.localAnalysisDir + 'DepthCrop.txt'
 		self.localTransMFile = self.localAnalysisDir + 'TransMFile.npy'
-		self.localVideoCropFile = self.localAnalysisDir + 'VideoCrop.npy'
-		self.localVideoPointsFile = self.localAnalysisDir + 'VideoPoints.npy'
+		self.localVideoCropFile = self.localAnalysisDir + 'VideoCrop.txt'
 		self.localPrepSummaryFigure = self.localSummaryDir + 'PrepSummary.pdf'
 
 		# Files created by depth preparer
@@ -243,10 +243,13 @@ class FileManager():
 			self.createDirectory(self.localAnalysisDir)
 			self.createDirectory(self.localTroubleshootingDir)
 			self.createDirectory(self.localLogfileDir)
+			self.createDirectory(self.localSummaryDir)
+
 			#self.createDirectory(self.localPaceDir)
 
 			self.downloadData(self.localLogfile)
 			self.downloadData(self.localFrameDir, tarred = True)
+			self.downloadData(self.localDepthCropFile)
 
 		elif dtype == 'Cluster':
 			#self.createMLData()
@@ -337,10 +340,9 @@ class FileManager():
 	def uploadProjectData(self, dtype, videoIndex, delete, no_upload):
 		if dtype == 'Prep':
 			if not no_upload:
-				self.uploadData(self.localTrayFile)
+				self.uploadData(self.localDepthCropFile)
 				self.uploadData(self.localTransMFile)
 				self.uploadData(self.localVideoCropFile)
-				self.uploadData(self.localVideoPointsFile)
 				self.uploadData(self.localPrepSummaryFigure)
 				self.uploadData(self.localPrepLogfile)
 
@@ -521,7 +523,6 @@ class FileManager():
 		if not os.path.exists(directory):
 			os.makedirs(directory)
 
-
 	def downloadData(self, local_data, tarred = False, tarred_subdirs = False, allow_errors=False, quiet=False):
 		if local_data is None:
 			return
@@ -586,7 +587,7 @@ class FileManager():
 				#subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path + relative_name], check = True) #Troubleshooting directory will have depth data in it when you upload the cluster data
 
 			elif os.path.isfile(local_path + relative_name):
-				print(['rclone', 'copy', local_path + relative_name, cloud_path])
+				#print(['rclone', 'copy', local_path + relative_name, cloud_path])
 				output = subprocess.run(['rclone', 'copy', local_path + relative_name, cloud_path], capture_output = True, encoding = 'utf-8')
 				output = subprocess.run(['rclone', 'check', local_path + relative_name, cloud_path], check = True, capture_output = True, encoding = 'utf-8')
 			else:

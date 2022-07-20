@@ -1,6 +1,8 @@
 import argparse, datetime, gspread, time, pdb, warnings
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
+from cichlid_bower_tracking.helper_modules.google_controller import GoogleController as GC
+
 import matplotlib
 matplotlib.use('Pdf')  # Enables creation of pdf without needing to worry about X11 forwarding when ssh'ing into the Pi
 import matplotlib.pyplot as plt
@@ -13,32 +15,35 @@ import oauth2client
 
 parser = argparse.ArgumentParser()
 parser.add_argument('Logfile', type = str, help = 'Name of logfile')
-parser.add_argument('Row', type = int, help = 'Row of Raspberry Pi')
-parser.add_argument('Column', type = int, help = 'Column of hyperlink')
+
 args = parser.parse_args()
 
 
 class DriveUpdater:
-    def __init__(self, logfile, row, column):
+    def __init__(self, logfile):
         self.lp = LP(logfile)
+        self.credentialFile = credentialFile
+
         self.fileManager = FM(projectID = self.lp.projectID)
         self.node = self.lp.uname.split("node='")[1].split("'")[0]
         self.lastFrameTime = self.lp.frames[-1].time
         self.masterDirectory = self.fileManager.localMasterDir
         self.projectDirectory = self.fileManager.localProjectDir
         
-        self._createImage()
-        self.credentialDrive = self.fileManager.localCredentialDrive
-        self.credentialSpreadsheet = self.fileManager.localCredentialSpreadsheet
+        self.googleController = GC(self.fileManager.localCredentialSpreadsheet)
+        self.googleController.addProjectID(self.lp.projectID, self.fileManager.localProjectDir + 'GoogleErrors.txt')
 
-        self._authenticateGoogleSpreadSheets()
-        f = self.uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
-        self.insertImage(f, row, column)
+        self._createImage()
+
+        self.credentialDrive = self.fileManager.localCredentialDrive
+
+        f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
 
     def _createImage(self):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
-        t_change = str(self.lastFrameTime - self.lp.frames[0].time)
+        daylightFrames = [x for x in self.lpframes if x.time.hour >= 8 and x.time.hour <= 18]
+        t_change = str(self.lastFrameTime - daylightFrames[0].time)
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
@@ -63,8 +68,8 @@ class DriveUpdater:
             dpth_3b = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
             dpth_3 = np.nanmax(np.dstack((dpth_3a, dpth_3b)), axis=2)
 
-            dpth_4a = np.load(self.projectDirectory + self.lp.frames[0].npy_file)
-            dpth_4b = np.load(self.projectDirectory + self.lp.frames[1].npy_file)
+            dpth_4a = np.load(self.projectDirectory + daylightFrames[0].npy_file)
+            dpth_4b = np.load(self.projectDirectory + daylightFrames[1].npy_file)
             dpth_4 = np.nanmax(np.dstack((dpth_4a, dpth_4b)), axis=2)
 
             dpth_5a = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
@@ -95,7 +100,7 @@ class DriveUpdater:
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
         #return self.graph_summary_fname
 
-    def uploadImage(self, image_file, name): #name should have format 't###_icon' or 't###_link'
+    def _uploadImage(self, image_file, name): #name should have format 't###_icon' or 't###_link'
         self._authenticateGoogleDrive()
         drive = GoogleDrive(self.gauth)
         folder_id = "'151cke-0p-Kx-QjJbU45huK31YfiUs6po'"  #'Public Images' folder ID
@@ -129,32 +134,11 @@ class DriveUpdater:
             f.SetContentFile(image_file)
             f.Upload()                   
             # print("Uploaded", name, "as new file")
-        return f
-
-    def insertImage(self, f, row, column):
-        gs = gspread.service_account(filename=self.credentialSpreadsheet)
-        self.controllerGS = gs.open('Controller')
-        self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
         
         info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
-
-        self.pi_ws.update_cell(row, column, info)     
+        self.googleController.modifyPiGS('Image', info, ping = False)
+        return f
     
-    def _authenticateGoogleSpreadSheets(self):
-        for i in range(0,3): # Try to autheticate three times before failing
-            try:
-                gs = gspread.service_account(filename=self.credentialSpreadsheet)
-            except Exception as e:
-                continue
-            try:
-                self.controllerGS = gs.open('Controller')
-                self.pi_ws = self.controllerGS.worksheet('RaspberryPi')
-                return
-            except Exception as e:
-                continue
-        print('Error authenticating google drive updater. Quitting')
-        raise Exception
-
     def _authenticateGoogleDrive(self):
         self.gauth = GoogleAuth()
         # Try to load saved client credentials
@@ -171,8 +155,7 @@ class DriveUpdater:
         # Save the current credentials to a file
         self.gauth.SaveCredentialsFile(self.credentialDrive)
 
-
 try:
-    dr_obj = DriveUpdater(args.Logfile, args.Row, args.Column)
+    dr_obj = DriveUpdater(args.Logfile, args.CredentialFile)
 except Exception as e:
     print(f'skipping drive update due to error: {e}')
