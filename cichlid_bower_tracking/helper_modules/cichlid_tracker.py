@@ -353,8 +353,8 @@ class CichlidTracker:
 
     def _returnCommand(self):
 
-        command, projectID = self.googleController.getPiGS(['Command','ProjectID','AnalysisID'])
-        return command, projectID
+        command, projectID, analysisID = self.googleController.getPiGS(['Command','ProjectID','AnalysisID'])
+        return command, projectID, analysisID
 
     def _video_recording(self, time = None):
         if time is None:
