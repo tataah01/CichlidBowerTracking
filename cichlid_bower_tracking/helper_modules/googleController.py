@@ -150,7 +150,7 @@ class GoogleController:
 
 	def _identifyServiceAccount(self):
 		while True:
-			serviceAccount = self._getPiGS('ServiceAccount')
+			serviceAccount = self.getPiGS('ServiceAccount')
 			if serviceAccount not in ['None','']:
 				self.serviceAccount = serviceAccount
 				self.credentialSpreadsheet = self.credentialSpreadsheet.replace('_1.json', '_' + self.serviceAccount + '.json')
@@ -168,11 +168,3 @@ class GoogleController:
 		except AttributeError as e2: # log file not created yet so just print to stderr
 			print(str(datetime.datetime.now()) + ': ' + str(type(e)) + ': ' + str(e), flush = True)
 			time.sleep(20)
-
-	def _getRowColumn(self, column_name):
-		column = self.dt.columns.get_loc(column_name)
-		ping_column = self.dt.columns.get_loc('Ping')
-		row = pd.Index((self.dt.RaspberryPiID == platform.node())&(self.dt.IP == self.IP)).get_loc(True)
-		return (row + 2, column + 1, ping_column + 1) # 0 vs 1 indexing for pandas vs gspread + column names aren't in the pandas dataframe
-
- 
