@@ -13,7 +13,7 @@ class GoogleController:
 		self.googleErrorFile = googleErrorFile
 		self.g_lf = open(self.googleErrorFile, 'a', buffering = 1)
 
-   	def getPiGS(self, column_names):
+	def getPiGS(self, column_names):
 		# Make this compatible with both lists and also strings
 		if not isinstance(column_names, list):
 			column_names = [column_names]
