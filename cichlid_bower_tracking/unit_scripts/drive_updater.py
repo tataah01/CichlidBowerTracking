@@ -22,7 +22,6 @@ args = parser.parse_args()
 class DriveUpdater:
     def __init__(self, logfile):
         self.lp = LP(logfile)
-        self.credentialFile = credentialFile
 
         self.fileManager = FM(projectID = self.lp.projectID)
         self.node = self.lp.uname.split("node='")[1].split("'")[0]
