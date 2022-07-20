@@ -143,9 +143,6 @@ class GoogleController:
 			tankID = self.getPiGS('TankID')
 			if tankID not in ['None','']:
 				self.tankID = tankID
-
-				self.modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera), ping = False)
-				#self._modifyPiGS('Status', 'AwaitingCommand')
 				break
 			else:
 				self.modifyPiGS('Error','Awaiting assignment of TankID')
