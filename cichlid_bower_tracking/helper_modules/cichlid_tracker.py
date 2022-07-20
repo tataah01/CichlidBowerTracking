@@ -272,13 +272,13 @@ class CichlidTracker:
 
             # Check google doc to determine if recording has changed.
             try:
-                command, projectID = self._returnCommand()
+                command, projectID, analysisID = self._returnCommand()
             except KeyError:
                 continue                
             if command != 'None' and command is not None:
                 break
             else:
-                self._modifyPiGS('Error', '')
+                self.googleController.modifyPiGS('Error', '')
 
     def _identifyDevice(self):
 
