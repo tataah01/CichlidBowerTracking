@@ -258,12 +258,12 @@ class CichlidTracker:
             # Capture a frame and background if necessary
             if self.device != 'None':
                 if now > current_background_time:
-                    out = self._captureFrame(current_frame_time, keep_all_data = self.all_data)
+                    out = self._captureFrame(current_frame_time)
                     if out is not None:
                         current_background_time += datetime.timedelta(seconds = 60 * background_delta)
                     subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
                 else:
-                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold, keep_all_data = self.all_data)
+                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
             else:
                 while datetime.datetime.now() < current_frame_time:
                     time.sleep(5)
@@ -416,7 +416,7 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy,,Units: cm')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = .05, count_threshold = 10, keep_all_data = False):
+    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = .05, count_threshold = 10):
         # Captures time averaged frame of depth data
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
@@ -442,7 +442,7 @@ class CichlidTracker:
                 break
             time.sleep(10)
         
-        if (endtime.minute > 0 and endtime.minute <= 5) or keep_all_data:
+        if (endtime.minute > 0 and endtime.minute <= 5):
             self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i))
             np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
 
