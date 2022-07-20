@@ -156,7 +156,7 @@ class CichlidTracker:
             # Project Directory should not exist. If it does, report error
             if os.path.exists(self.projectDirectory):
                 self._reinstructError('New command cannot be run if ouput directory already exists on the pi. Use Rewrite or Restart')
-            if self.fileManager.checkFileExists(self.projectDirectory)
+            if self.fileManager.checkFileExists(self.projectDirectory):
                 self._reinstructError('New command cannot be run if ouput directory already exists on the cloud. Did you forget to rename the project? If not delete the data on Dropbox')
 
         if command == 'Rewrite':
