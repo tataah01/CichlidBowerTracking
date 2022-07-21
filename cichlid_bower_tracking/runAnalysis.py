@@ -70,7 +70,7 @@ while len(projectIDs) != 0:
 
     # Run appropriate analysis script
     if args.AnalysisType == 'Prep':
-        p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.prep_data', projectID, analysisID])
+        p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.prep_data', projectID, args.AnalysisID])
     elif args.AnalysisType == 'Depth':
         p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.analyze_depth', projectID])
     elif args.AnalysisType == 'Cluster':
