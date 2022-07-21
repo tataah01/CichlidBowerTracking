@@ -154,7 +154,8 @@ class DriveUpdater:
         # Save the current credentials to a file
         self.gauth.SaveCredentialsFile(self.credentialDrive)
 
-try:
-    dr_obj = DriveUpdater(args.Logfile)
-except Exception as e:
-    print(f'skipping drive update due to error: {e}')
+dr_obj = DriveUpdater(args.Logfile)
+#try:
+#    dr_obj = DriveUpdater(args.Logfile)
+#except Exception as e:
+#    print(f'skipping drive update due to error: {e}')
