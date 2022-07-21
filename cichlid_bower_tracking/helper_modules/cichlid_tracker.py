@@ -72,7 +72,7 @@ class CichlidTracker:
     def monitorCommands(self, delta = 20):
         # This function checks the master Controller Google Spreadsheet to determine if a command was issued (delta = seconds to recheck)
         self.googleController.modifyPiGS('Status', 'AwaitingCommand')
-        self.googleController.modifyPiGS('Error', '', ping = False)
+        #self.googleController.modifyPiGS('Error', '', ping = False)
 
         while True:
             command, projectID, analysisID = self._returnCommand()
@@ -87,6 +87,8 @@ class CichlidTracker:
                 continue
 
             if command not in ['None',None]:
+                self.googleController.modifyPiGS('Error', '', ping = False)
+
                 print(command + '\t' + projectID + '\t' + analysisID)
                 self.fileManager = FM(analysisID = analysisID, projectID = projectID)
                 self.projectID = projectID
