@@ -39,6 +39,7 @@ class CichlidTracker:
         self.googleController = GC(self.fileManager.localCredentialSpreadsheet)
         self.tankID = self.googleController.tankID
         self.googleController.modifyPiGS('Capability', 'Device=' + self.device + ',Camera=' + str(self.piCamera), ping = False)
+        self.googleController.modifyPiGS('Error', '', ping = False)
 
         # 6: Keep track of processes spawned to convert and upload videofiles
         self.processes = [] 
@@ -92,8 +93,24 @@ class CichlidTracker:
                 print(command + '\t' + projectID + '\t' + analysisID)
                 self.fileManager = FM(analysisID = analysisID, projectID = projectID)
                 self.projectID = projectID
-                self.analysisID = analysisID
+                
+                try:
+                    if self.analysisID == analysisID:
+                        self.runCommand(command)
 
+                except AttributeError:
+                    pass
+
+                # Make sure Analysis File exists and is good
+
+                if not self.fileManager.checkFileExists(self.fileManager.localSummaryFile):
+                    self._reinstructError('Must create Analysis States csv file before running: ' + print(self.fileManager.localSummaryFile.split('Elements')[1]))
+                self.fileManager.downloadData(self.fileManager.localSummaryFile)
+                s_dt = pd.read_csv(self.fileManager.localSummaryFile)
+                if 'projectID' not in s_dt.columns:
+                    self._reinstructError('projectID column most be in analysis states csv file')
+
+                self.analysisID = analysisID
                 self.runCommand(command)
 
             time.sleep(delta)
@@ -180,8 +197,12 @@ class CichlidTracker:
             
             self.fileManager.downloadData(self.fileManager.localSummaryFile)
             s_dt = pd.read_csv(self.fileManager.localSummaryFile)
-            pdb.set_trace()
 
+            if self.projectID not in s_dt.projectID.values:
+                s_dt.loc[len(s_dt.index)] = ['']*len(s_dt.columns)
+                s_dt.loc[len(s_dt.index) - 1,'projectID'] = self.projectID
+                s_dt.to_csv(self.fileManager.localSummaryFile, index = False)
+                self.fileManager.uploadData(self.fileManager.localSummaryFile)
 
             #self._createDropboxFolders()
             self.frameCounter = 1
