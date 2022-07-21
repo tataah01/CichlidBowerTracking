@@ -1,43 +1,33 @@
-# To do
-# 1. Make summary file on Dropbox
-# 2. Handle Sigint to make sure uploads complete
-
 import argparse, subprocess, pdb, datetime, os, sys
-import PyPDF2 as pypdf
 import pandas as pd
+from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
-from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
 parser = argparse.ArgumentParser(
     description='This script is used to manually prepared projects for downstream analysis')
 parser.add_argument('AnalysisType', type=str, choices=['Prep', 'Depth', 'Cluster', 'ClusterClassification', 'Summary'],
                     help='Type of analysis to run')
-group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument('--ProjectIDs', type=str, nargs='+', help='Name of projectIDs to run analysis on')
+parser.add_argument('AnalysisID', type = str, help = 'ID of analysis state name')
+group.add_argument('--ProjectIDs', type=str, nargs='+', help='Name of projectIDs to restrict analysis to')
 group.add_argument('--SummaryFile', type=str, help='Name of csv file that specifies projects to analyze')
 parser.add_argument('--Workers', type=int, help='Number of workers')
 parser.add_argument('--ModelID', type=str, help='ModelID to use to classify clusters with')
-parser.add_argument('--Force', type=bool, default=False,
-                    help='if True, run the analysis even if the summary file indicates is has already been run. Default False')
-
 args = parser.parse_args()
 
 # Identify projects to run analysis on
-if args.ProjectIDs is not None:
-    projectIDs = args.ProjectIDs  # Specified at the command line
-elif args.SummaryFile is not None:
-    fm_obj = FM(summaryFile = args.SummaryFile)
-    summary_file = fm_obj.localSummaryFile
-    fm_obj.downloadData(summary_file)
-    dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
-    projectIDs = list(dt[dt[args.AnalysisType].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
-else:
-    print('either a summary file name or list of project ids must be provided. Exiting')
+fm_obj = FM(analysisID = args.AnalysisID)
+if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
+    print('Cant find ' + fm_obj.localSummaryFile)
     sys.exit()
+
+fm_obj.downloadData(fm_obj.localSummaryFile)
+dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
+projectIDs = list(dt[dt[args.AnalysisType].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
+
 
 if args.Workers is None:
     workers = os.cpu_count()
@@ -134,6 +124,7 @@ for i,p in enumerate(uploadProcesses):
 
 """
 if args.AnalysisType == 'Summary':
+    import PyPDF2 as pypdf
     paths = [x for x in os.listdir(fm_obj.localAnalysisStatesDir) if '_DepthSummary.pdf' in x]
     writer = pypdf.PdfFileWriter()
     for path in paths:

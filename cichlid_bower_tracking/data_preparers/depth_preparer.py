@@ -43,9 +43,10 @@ class DepthPreparer:
 		assert os.path.exists(self.fileManager.localAnalysisDir)
 		assert os.path.exists(self.fileManager.localDepthCropFile)
 
-		# Files created:
-		#self.fileManager.localRawDepthData, self.fileManager.localInterpDepthFile, self.fileManager.localSmoothDepthFile, self.fileManagerlocalRGBDepthVideo
-		#self.fileManager.localDepthLogfile
+	def createdFiles(self):
+		createdFiles = [self.fileManager.localRawDepthFile, self.fileManager.localInterpDepthFile, self.fileManager.localSmoothDepthFile]
+		createdFiles += [self.fileManager.localDepthSummaryFile, self.fileManager.localDailyDepthSummaryFigure, self.fileManager.localHourlyDepthSummaryFigure]
+		createdFiles += [self.fileManager.localRGBDepthVideo]
 
 	def createLogFile(self):
 		with open(self.fileManager.localDepthLogfile,'w') as f:
@@ -287,7 +288,7 @@ class DepthPreparer:
 		dailyDT = pd.DataFrame(dailyChangeData)
 		hourlyDT = pd.DataFrame(hourlyChangeData)
 
-		writer = pd.ExcelWriter(self.fileManager.localSummaryDir + 'DepthDataSummary.xlsx')
+		writer = pd.ExcelWriter(self.fileManager.localDepthSummaryFile)
 		totalDT.to_excel(writer, 'Total')
 		dailyDT.to_excel(writer, 'Daily')
 		hourlyDT.to_excel(writer, 'Hourly')
@@ -308,12 +309,8 @@ class DepthPreparer:
 		volAx.set_ylabel('Volume\nChange')
 		plt.setp(volAx.get_xticklabels(), visible=False)
 
-		figDaily.savefig(self.fileManager.localSummaryDir + 'DailyDepthSummary.pdf')
-		try:
-			subprocess.run(['cp', self.fileManager.localSummaryDir + 'DailyDepthSummary.pdf', self.fileManager.localAnalysisStatesDir + self.projectID + '_DepthSummary.pdf'])
-		except AttributeError:
-			pass
-		figHourly.savefig(self.fileManager.localSummaryDir + 'HourlyDepthSummary.pdf')
+		figDaily.savefig(self.localDailyDepthSummaryFigure)
+		figHourly.savefig(self.localHourlyDepthSummaryFigure)
 
 		plt.close('all')
 
