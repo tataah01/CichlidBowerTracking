@@ -181,6 +181,9 @@ class FileManager():
 		self.localRGBDepthVideo = self.localAnalysisDir + 'DepthRGBVideo.mp4'
 		self.localRawDepthFile = self.localTroubleshootingDir + 'rawDepthData.npy'
 		self.localInterpDepthFile = self.localTroubleshootingDir + 'interpDepthData.npy'
+		self.localDepthSummaryFile = self.localSummaryDir + 'DataSummary.xlsx'
+		self.localDailyDepthSummaryFigure = self.localSummaryDir + 'DailyDepthSummary.pdf'
+		self.localHourlyDepthSummaryFigure = self.localSummaryDir + 'DailyDepthSummary.pdf'
 
 		# Files created by cluster classifier preparer
 		self.localTempClassifierDir = self.localProjectDir + 'TempClassifier/'
@@ -197,8 +200,6 @@ class FileManager():
 
 
 		# Files created by summary preparer
-		self.localDepthSummaryFile = self.localSummaryDir + 'DataSummary.xlsx'
-		self.localDepthSummaryFigure = self.localSummaryDir + 'DailyDepthSummary.pdf'
 
 		# miscellaneous files
 
