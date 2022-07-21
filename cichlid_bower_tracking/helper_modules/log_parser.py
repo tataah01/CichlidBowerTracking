@@ -38,9 +38,10 @@ class LogParser:
                         self.uname
                         self.tankID
                         self.projectID
+                        self.analysisID
                     except AttributeError:
 
-                        self.system, self.device, self.camera, self.uname, self.tankID, self.projectID = self._ret_data(line, ['System', 'Device', 'Camera','Uname', 'TankID', 'ProjectID'])
+                        self.system, self.device, self.camera, self.uname, self.tankID, self.projectID, self.analysisID = self._ret_data(line, ['System', 'Device', 'Camera','Uname', 'TankID', 'ProjectID', 'AnalysisID'])
                     else:
                         raise LogFormatError('It appears MasterStart is present twice in the Logfile. Unable to deal')
                     #Check if error in Marks file (tankId and projectID are swapped)
