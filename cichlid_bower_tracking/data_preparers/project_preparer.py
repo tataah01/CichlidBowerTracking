@@ -5,11 +5,11 @@ from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 class ProjectPreparer():
 	# This class takes in a projectID and runs all the appropriate analysis
 
-	def __init__(self, projectID = None, modelID = None, workers = None, summaryFile=None):
+	def __init__(self, projectID = None, modelID = None, workers = None, analysisID=None):
 		self.projectID = projectID
 		if modelID == 'None':
 			modelID = None
-		self.fileManager = FM(projectID = projectID, modelID = modelID, analysisID=summaryFile)
+		self.fileManager = FM(projectID = projectID, modelID = modelID, analysisID=analysisID)
 		self.modelID = modelID
 		#if not self._checkProjectID():
 		#	raise Exception(projectID + ' is not valid.')
