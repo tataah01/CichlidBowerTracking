@@ -175,6 +175,11 @@ class CichlidTracker:
             os.makedirs(self.backupDirectory)
 
             self.googleController.addProjectID(self.projectID, self.googleErrorFile)
+            
+            self.fileManager.downloadData(self.localSummaryFile)
+            s_dt = pd.read_csv(self.localSummaryFile)
+            pdb.set_trace()
+
 
             #self._createDropboxFolders()
             self.frameCounter = 1
@@ -524,6 +529,7 @@ class CichlidTracker:
                 self.googleController.modifyPiGS('Status', 'Error: ' + self.frameDirectory + ' does not exist.')
                 return
         
+
         try:
             self.googleController.modifyPiGS('Status', 'Uploading data to cloud')
             if self.device != 'None':
