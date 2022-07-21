@@ -176,8 +176,8 @@ class CichlidTracker:
 
             self.googleController.addProjectID(self.projectID, self.googleErrorFile)
             
-            self.fileManager.downloadData(self.localSummaryFile)
-            s_dt = pd.read_csv(self.localSummaryFile)
+            self.fileManager.downloadData(self.fileManager.localSummaryFile)
+            s_dt = pd.read_csv(self.fileManager.localSummaryFile)
             pdb.set_trace()
 
 
