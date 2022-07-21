@@ -6,17 +6,35 @@ PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
-
 parser = argparse.ArgumentParser(
     description='This script is used to manually prepared projects for downstream analysis')
 parser.add_argument('AnalysisType', type=str, choices=['Prep', 'Depth', 'Cluster', 'ClusterClassification', 'Summary'],
                     help='Type of analysis to run')
 parser.add_argument('AnalysisID', type = str, help = 'ID of analysis state name')
-group.add_argument('--ProjectIDs', type=str, nargs='+', help='Name of projectIDs to restrict analysis to')
-group.add_argument('--SummaryFile', type=str, help='Name of csv file that specifies projects to analyze')
+parser.add_argument('--ProjectIDs', type=str, nargs='+', help='Name of projectIDs to restrict analysis to')
 parser.add_argument('--Workers', type=int, help='Number of workers')
 parser.add_argument('--ModelID', type=str, help='ModelID to use to classify clusters with')
 args = parser.parse_args()
+
+def get_projects(fm_obj, analysis_type, fil_projectIDs):
+    fm_obj.downloadData(fm_obj.localSummaryFile)
+    dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
+
+    # Identify projects to run on:
+    sub_dt = dt[dt.RunAnalysis.str.upper() == 'TRUE'] # Only analyze projects that are indicated
+    if analysis_type == 'Prep':
+        sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+    elif args.AnalysisType == 'Depth':
+        sub_dt = sub_dt[sub_t.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+
+    projectIDs = list(sub_dt[sub_dt[analysis_type].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
+
+    # Filter out projects if optional argment given
+    if fil_projectIDs is not None:
+        for projectID in projectIDs:
+            if projectID not in fil_projectIDs:
+                projectIDs.remove(projectID)
+    return projectIDs
 
 # Identify projects to run analysis on
 fm_obj = FM(analysisID = args.AnalysisID)
@@ -24,25 +42,23 @@ if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
     print('Cant find ' + fm_obj.localSummaryFile)
     sys.exit()
 
-fm_obj.downloadData(fm_obj.localSummaryFile)
-dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
-projectIDs = list(dt[dt[args.AnalysisType].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
+summary_file = fm_obj.localSummaryFile # Shorthand to make it easier to read
+projectIDs = get_projects(fm_obj, args.AnalysisType, args.ProjectIDs)
 
+print('This script will analyze the folllowing projectIDs: ' + ','.join(projectIDs))
 
+# Set workers
 if args.Workers is None:
     workers = os.cpu_count()
 else:
     workers = args.Workers
-#if args.ModelID is None:
-#    args.ModelID = 'Model18_All'
 
 # To run analysis efficiently, we download and upload data in the background while the main script runs
 uploadProcesses = [] # Keep track of all of the processes still uploading so we don't quit before they finish
 
-if args.SummaryFile is not None:
-    dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
-    dt.to_csv(summary_file, index = False)
-    fm_obj.uploadData(summary_file)
+dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
+dt.to_csv(summary_file, index = False)
+fm_obj.uploadData(summary_file)
 
 print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID)])
@@ -73,24 +89,15 @@ while len(projectIDs) != 0:
 
     # In the meantime, download data for next project in the background
 
-    if args.SummaryFile:
-        fm_obj.downloadData(summary_file)
-        dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
-        projectIDs = list(dt[dt[args.AnalysisType].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
+    projectIDs = get_projects(fm_obj, args.AnalysisType, args.ProjectIDs)
 
-        if len(projectIDs) != 0:
-            dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
-            dt.to_csv(summary_file, index = False)
-            fm_obj.uploadData(summary_file)
+    if len(projectIDs) != 0:
+        dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
+        dt.to_csv(summary_file, index = False)
+        fm_obj.uploadData(summary_file)
 
-            print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
-            p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
-
-    else:
-        projectIDs = projectIDs[1:]
-        if len(projectIDs) != 0:
-            print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
-            p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
+        print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
+        p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0]])
 
     # Pause script until current analysis is complete and data for next project is downloaded
     p1.communicate()
@@ -100,15 +107,14 @@ while len(projectIDs) != 0:
         p2.communicate() # Need to catch an exception if only one project is analyzed
     except NameError:
         pass
+
     #Modify summary file if necessary
-    if args.SummaryFile:
-        fm_obj.downloadData(summary_file)
-        dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
+    fm_obj.downloadData(summary_file)
+    dt = pd.read_csv(summary_file, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
 
-        dt.loc[dt.projectID == projectID,args.AnalysisType] = 'TRUE'
-        dt.to_csv(summary_file, index = False)
-        fm_obj.uploadData(summary_file)
-
+    dt.loc[dt.projectID == projectID,args.AnalysisType] = 'TRUE'
+    dt.to_csv(summary_file, index = False)
+    fm_obj.uploadData(summary_file)
 
     #Upload data and keep track of it
     print('Uploading: ' + projectID + ' ' + str(datetime.datetime.now()), flush = True)
