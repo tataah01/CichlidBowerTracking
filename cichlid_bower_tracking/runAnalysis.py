@@ -21,6 +21,7 @@ def get_projects(fm_obj, analysis_type, fil_projectIDs):
     dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
 
     # Identify projects to run on:
+    pdb.set_trace()
     sub_dt = dt[dt.RunAnalysis.str.upper() == 'TRUE'] # Only analyze projects that are indicated
     if analysis_type == 'Prep':
         sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
