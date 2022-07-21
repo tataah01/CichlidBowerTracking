@@ -350,7 +350,6 @@ class CichlidTracker:
 
             data = np.asanyarray(depth_frame.data)*depth_frame.get_units()*100 # Convert to centimeters
             data[data==0] = np.nan # 0 indicates bad data from RealSense
-            data[data>1] = np.nan # Anything further away than 1 m is a mistake
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
 
     def _returnCommand(self):
