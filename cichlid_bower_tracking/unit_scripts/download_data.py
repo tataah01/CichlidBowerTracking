@@ -13,6 +13,6 @@ args = parser.parse_args()
 #print('Downloading data for ' + args.ProjectID, file = sys.stderr)
 
 
-pp_obj = PP(args.ProjectID, args.ModelID, analysisID = args.analysisID)
+pp_obj = PP(args.ProjectID, args.ModelID, analysisID = args.AnalysisID)
 pp_obj.downloadData(args.DataType, videoIndex = args.VideoIndex)
 
