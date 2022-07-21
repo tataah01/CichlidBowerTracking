@@ -56,6 +56,7 @@ else:
 # To run analysis efficiently, we download and upload data in the background while the main script runs
 uploadProcesses = [] # Keep track of all of the processes still uploading so we don't quit before they finish
 
+dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
 dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
 dt.to_csv(summary_file, index = False)
 fm_obj.uploadData(summary_file)
