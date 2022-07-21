@@ -8,7 +8,7 @@ parser.add_argument('AnalysisID', type = str, help = 'Manually identify the proj
 
 args = parser.parse_args()
 
-fileManager = FM(projectID = args.ProjectID, summaryFile=args.AnalysisID)
+fileManager = FM(projectID = args.ProjectID, analysisID=args.AnalysisID)
 
 prp_obj = PrP(fileManager = fileManager)
 prp_obj.validateInputData()
