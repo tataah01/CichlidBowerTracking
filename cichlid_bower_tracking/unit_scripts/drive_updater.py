@@ -42,7 +42,7 @@ class DriveUpdater:
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
-        if len(daylightFrame) == 0:
+        if len(daylightFrames) == 0:
             t_change = str(self.lastFrameTime - daylightFrames[0].time)
         else:
             daylightFrames = lastDayFrames
