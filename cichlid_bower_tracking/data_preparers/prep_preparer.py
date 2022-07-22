@@ -68,7 +68,7 @@ class PrepPreparer:
 		# Read in depth and RGB data
 		firstFrame = np.load(self.fileManager.localFirstFrame)
 		lastFrame = np.load(self.fileManager.localLastFrame)
-		depthRGB = cv2.imread(self.fileManager.localLastDepthRGB)
+		lastDepthRGB = cv2.imread(self.fileManager.localLastDepthRGB)
 		firstDepthRGB = cv2.imread(self.fileManager.localFirstDepthRGB)
 
 		# Calculate depth change and average data for removing extreme data. 
@@ -95,7 +95,7 @@ class PrepPreparer:
 		while True:
 			# Query user to identify regions of the tray that are good
 			self.poly = []
-			self.original_pic = depthRGB
+			self.original_pic = lastDepthRGB
 			self.interactive_pic = self.original_pic.copy()
 			self.interactive_text = 'Click four points to crop. Right-click to start over. Press escape once you are finished'
 
@@ -118,13 +118,13 @@ class PrepPreparer:
 			ax2 = fig.add_subplot(2,2,2)
 			ax3 = fig.add_subplot(2,2,3)
 			ax4 = fig.add_subplot(2,2,4)
-			ax1.imshow(depthRGB)
+			ax1.imshow(lastDepthRGB)
 			ax1.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
 			ax1.set_title("Last Depth RGB")
 			ax2.imshow(depth_change_cmap)
 			ax2.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
 			ax2.set_title("Depth change over whole trial")
-			ax3.imshow(lastDepthRGB)
+			ax3.imshow(firstDepthRGB)
 			ax3.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
 			ax3.set_title("First DepthRGB")
 			ax4.imshow(last_depth_cmap)
