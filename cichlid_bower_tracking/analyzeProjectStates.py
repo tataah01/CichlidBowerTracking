@@ -10,10 +10,10 @@ args = parser.parse_args()
 
 fm_obj = FM(analysisID = args.AnalysisID) 
 
-	summary_file = fm_obj.localSummaryFile
-	fm_obj.downloadData(summary_file)
-	dt = pd.read_csv(summary_file, index_col=False)
-	projectIDs = list(dt.projectID)
+summary_file = fm_obj.localSummaryFile
+fm_obj.downloadData(summary_file)
+dt = pd.read_csv(summary_file, index_col=False)
+projectIDs = list(dt.projectID)
 
 columns = ['projectID', 'Notes', 'tankID', 'RunAnalysis', 'StartingFiles', 'Prep', 'Depth', 'Cluster', 'ClusterClassification', 'LabeledVideos', 'LabeledFrames', 'Summary']
 
