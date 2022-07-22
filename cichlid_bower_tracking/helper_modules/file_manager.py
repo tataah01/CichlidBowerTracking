@@ -39,6 +39,8 @@ class FileManager():
 				self.downloadData(self.localLogfile)
 				self.lp = LP(self.localLogfile)
 			except FileNotFoundError:
+				self.pdb.set_trace()
+				print(self.localLogfile)
 				pass 
 
 		self.modelID = modelID
