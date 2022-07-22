@@ -73,7 +73,7 @@ class FileManager():
 
 		# List the files needed for each analysis
 		necessaryFiles = {}
-		necessaryFiles['StartingFiles'] = [self.localLogfile, self.localPrepDir, self.localFrameTarredDir, self.localVideoDir, self.localFirstFrame, self.localLastFrame, self.localPiRGB, self.localDepthRGB]
+		necessaryFiles['StartingFiles'] = [self.localLogfile, self.localPrepDir, self.localFrameTarredDir, self.localVideoDir, self.localFirstFrame, self.localLastFrame, self.localPiRGB, self.localFirstDepthRGB, self.localLastDepthRGB]
 		necessaryFiles['Prep'] = [self.localDepthCropFile,self.localTransMFile,self.localVideoCropFile]
 		necessaryFiles['Depth'] = [self.localSmoothDepthFile]
 		necessaryFiles['Cluster'] = [self.localAllClipsDir, self.localManualLabelClipsDir, self.localManualLabelFramesDir]
