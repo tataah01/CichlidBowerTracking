@@ -78,7 +78,7 @@ class FileManager():
 		necessaryFiles['Depth'] = [self.localSmoothDepthFile]
 		necessaryFiles['Cluster'] = [self.localAllClipsDir, self.localManualLabelClipsDir, self.localManualLabelFramesDir]
 		necessaryFiles['ClusterClassification'] = [self.localAllLabeledClustersFile]
-		necessaryFiles['Summary'] = [self.localSummaryDir, self.localAllLabeledClustersFile, self.localSmoothDepthFile, self.localTrayFile, self.localTransMFile, self.localLogfile]
+		necessaryFiles['Summary'] = [self.localSummaryDir]
 
 		print('Checking project ' + self.projectID + ': ', end = '')
 		# Try to download and read logfile
