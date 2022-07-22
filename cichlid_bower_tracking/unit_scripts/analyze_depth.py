@@ -9,6 +9,6 @@ args = parser.parse_args()
 
 print('Analyzing depth data for ' + args.ProjectID, file = sys.stderr)
 
-pp_obj = PP(args.ProjectID, args.AnalysisID)
+pp_obj = PP(projectID = args.ProjectID, analysisID = args.AnalysisID)
 pp_obj.runDepthAnalysis()
 
