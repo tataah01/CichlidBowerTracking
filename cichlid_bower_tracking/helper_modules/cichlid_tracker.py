@@ -544,15 +544,15 @@ class CichlidTracker:
             # Filter depth objects for those that are in the daytime
             depthObjs = [x for x in lp.frames if (x.time > videoObj.startTime and self._video_recording(time = x.time))]
 
-            subprocess.call(['cp', self.projectDirectory + depthObjs[0].pic_file, prepDirectory + 'DepthRGB.jpg'])
+            subprocess.call(['cp', self.projectDirectory + depthObjs[0].pic_file, prepDirectory + 'FirstDepthRGB.jpg'])
             subprocess.call(['cp', self.projectDirectory + depthObjs[0].npy_file, prepDirectory + 'FirstDepth.npy'])
+            subprocess.call(['cp', self.projectDirectory + depthObjs[-1].pic_file, prepDirectory + 'LastDepthRGB.jpg'])
             subprocess.call(['cp', self.projectDirectory + depthObjs[-1].npy_file, prepDirectory + 'LastDepth.npy'])
 
             if not os.path.isdir(self.frameDirectory):
                 self.googleController.modifyPiGS('Status', 'Error: ' + self.frameDirectory + ' does not exist.')
                 return
         
-
         try:
             self.googleController.modifyPiGS('Status', 'Uploading data to cloud')
             if self.device != 'None':

@@ -61,6 +61,14 @@ class DepthPreparer:
 	def createSmoothedArray(self, goodDataCutoff = 0.8, minimumGoodData = 0.95, tunits = 71, order = 4, max_depth = 4, max_height = 8):
 		
 
+		# Delete this block once it is fixed
+		self.fileManager.downloadData(self.fileManager.localPrepDir)
+		subprocess.run(['mv', self.fileManager.localPrepDir + 'DepthRGB.jpg', self.fileManager.localPrepDir + 'FirstDepthRGB.jpg'])
+		lastFramePic = [x.pic_file for x in self.fileManager.lp.frames if x.lof is True][-1]
+		subprocess.run(['cp', self.fileManager.localProjectDir + lastFramePic, self.fileManager.localPrepDir + 'LastDepthRGB.jpg'])
+		self.fileManager.uploadData(self.fileManager.localPrepDir)
+		pdb.set_trace()
+
 		# Create arrays to store raw depth data and data in the daytime
 		rawDepthData = np.empty(shape = (len(self.lp.frames), self.lp.height, self.lp.width))
 		daytimeData = np.empty(shape = (sum([x.lof for x in self.lp.frames]), self.lp.height, self.lp.width))

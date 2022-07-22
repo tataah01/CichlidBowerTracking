@@ -158,7 +158,8 @@ class FileManager():
 		self.localFirstFrame = self.localPrepDir + 'FirstDepth.npy'
 		self.localLastFrame = self.localPrepDir + 'LastDepth.npy'
 		self.localPiRGB = self.localPrepDir + 'PiCameraRGB.jpg'
-		self.localDepthRGB = self.localPrepDir + 'DepthRGB.jpg'
+		self.localFirstDepthRGB = self.localPrepDir + 'FirstDepthRGB.jpg'
+		self.localLastDepthRGB = self.localPrepDir + 'LastDepthRGB.jpg'
 
 		# Directories created by analysis
 		self.localAnalysisDir = self.localProjectDir + 'MasterAnalysisFiles/'

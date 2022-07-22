@@ -25,7 +25,7 @@ def get_projects(fm_obj, analysis_type, fil_projectIDs):
     if analysis_type == 'Prep':
         sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
     elif args.AnalysisType == 'Depth':
-        sub_dt = sub_dt[sub_t.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+        sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
 
     projectIDs = list(sub_dt[sub_dt[analysis_type].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
 

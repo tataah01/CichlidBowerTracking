@@ -15,10 +15,15 @@ class PrepPreparer:
 		assert os.path.exists(self.fileManager.localFirstFrame)
 		assert os.path.exists(self.fileManager.localLastFrame)
 		assert os.path.exists(self.fileManager.localPiRGB)
-		assert os.path.exists(self.fileManager.localDepthRGB)
+		assert os.path.exists(self.fileManager.localFirstDepthRGB)
+		assert os.path.exists(self.fileManager.localLastDepthRGB)
 
 		assert os.path.exists(self.fileManager.localSummaryDir)
 		assert os.path.exists(self.fileManager.localAnalysisDir)
+
+	def createdFiles(self):
+		createdFiles = [self.fileManager.localDepthCropFile, self.fileManager.localVideoCropFile, self.fileManager.localTransMFile]
+		createdFiles += [self.localPrepSummaryFigure]
 
 		#self.uploads = [(self.fileManager.localSummaryDir, self.fileManager.cloudSummaryDir, '0'),
 		#				(self.fileManager.localAnalysisDir, self.fileManager.cloudAnalysisDir, '0')]
@@ -63,7 +68,8 @@ class PrepPreparer:
 		# Read in depth and RGB data
 		firstFrame = np.load(self.fileManager.localFirstFrame)
 		lastFrame = np.load(self.fileManager.localLastFrame)
-		depthRGB = cv2.imread(self.fileManager.localDepthRGB)
+		depthRGB = cv2.imread(self.fileManager.localLastDepthRGB)
+		firstDepthRGB = cv2.imread(self.fileManager.localFirstDepthRGB)
 
 		# Calculate depth change and average data for removing extreme data. 
 		difference = lastFrame - firstFrame
@@ -114,13 +120,13 @@ class PrepPreparer:
 			ax4 = fig.add_subplot(2,2,4)
 			ax1.imshow(depthRGB)
 			ax1.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
-			ax1.set_title("Depth RGB")
+			ax1.set_title("Last Depth RGB")
 			ax2.imshow(depth_change_cmap)
 			ax2.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
 			ax2.set_title("Depth change over whole trial")
-			ax3.imshow(first_depth_cmap)
+			ax3.imshow(lastDepthRGB)
 			ax3.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
-			ax3.set_title("Depth at early time point")
+			ax3.set_title("First DepthRGB")
 			ax4.imshow(last_depth_cmap)
 			ax4.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
 			ax4.set_title("Depth at late time point")
