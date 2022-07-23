@@ -19,7 +19,10 @@ columns = ['projectID', 'Notes', 'tankID', 'RunAnalysis', 'StartingFiles', 'Prep
 
 for c in columns:
 	if c not in dt.columns:
-		dt[c] = 'FALSE'
+		if c == 'RunAnalysis':
+			dt[c] = 'TRUE'
+		else
+			dt[c] = 'FALSE'
 
 for projectID in projectIDs:
 	fm_obj.createProjectData(projectID)
@@ -29,7 +32,10 @@ for projectID in projectIDs:
 	for k, v in out_data.items():
 		if k == 'projectID':
 			continue
-		dt.loc[dt.projectID == projectID, k] = str(v).upper()
+		if k == 'tankID':
+			dt.loc[dt.projectID == projectID, k] = str(v)
+		else:
+			dt.loc[dt.projectID == projectID, k] = str(v).upper()
 
 	subprocess.run(['rm', '-rf', fm_obj.localProjectDir])
 

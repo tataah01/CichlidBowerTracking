@@ -67,7 +67,6 @@ class DepthPreparer:
 		lastFramePic = [x.pic_file for x in self.fileManager.lp.frames if x.lof is True][-1]
 		subprocess.run(['cp', self.fileManager.localProjectDir + lastFramePic, self.fileManager.localPrepDir + 'LastDepthRGB.jpg'])
 		self.fileManager.uploadData(self.fileManager.localPrepDir)
-		pdb.set_trace()
 
 		# Create arrays to store raw depth data and data in the daytime
 		rawDepthData = np.empty(shape = (len(self.lp.frames), self.lp.height, self.lp.width))
