@@ -146,7 +146,7 @@ class PrepPreparer:
 	def _cropAndRegisterVideo(self):
 		im1 =  cv2.imread(self.fileManager.localPiRGB)
 		resized_depth_image = cv2.resize(self.labeledDepthRGB, im1.shape[0:2][::-1])
-		depthRGB = cv2.imread(self.fileManager.localDepthRGB)
+		depthRGB = cv2.imread(self.fileManager.localFirstDepthRGB)
 
 		while True:
 			self.poly = []
