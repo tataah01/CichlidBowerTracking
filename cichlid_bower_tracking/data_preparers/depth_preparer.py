@@ -316,8 +316,8 @@ class DepthPreparer:
 		volAx.set_ylabel('Volume\nChange')
 		plt.setp(volAx.get_xticklabels(), visible=False)
 
-		figDaily.savefig(self.localDailyDepthSummaryFigure)
-		figHourly.savefig(self.localHourlyDepthSummaryFigure)
+		figDaily.savefig(self.fileManager.localDailyDepthSummaryFigure)
+		figHourly.savefig(self.fileManager.localHourlyDepthSummaryFigure)
 
 		plt.close('all')
 
