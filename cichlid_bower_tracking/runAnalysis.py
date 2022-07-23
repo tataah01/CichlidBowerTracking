@@ -45,6 +45,10 @@ if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
 summary_file = fm_obj.localSummaryFile # Shorthand to make it easier to read
 projectIDs = get_projects(fm_obj, args.AnalysisType, args.ProjectIDs)
 
+if len(projectIDs) == 0:
+    print('No projects to analyze')
+    sys.exit()
+
 print('This script will analyze the folllowing projectIDs: ' + ','.join(projectIDs))
 
 # Set workers

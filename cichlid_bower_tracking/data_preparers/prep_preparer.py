@@ -1,7 +1,6 @@
 
 import matplotlib.pyplot as plt
 import matplotlib, datetime, cv2, pdb, os, sys, copy, warnings
-#from cichlid_bower_tracking.helper_modules.roipoly import roipoly
 import numpy as np
 
 class PrepPreparer:
@@ -193,7 +192,7 @@ class PrepPreparer:
 	def _summarizePrep(self):
 		firstFrame = np.load(self.fileManager.localFirstFrame)
 		lastFrame = np.load(self.fileManager.localLastFrame)
-		depthRGB = cv2.imread(self.fileManager.localDepthRGB)
+		depthRGB = cv2.imread(self.fileManager.localFirstDepthRGB)
 		#depthRGB = cv2.cvtColor(depthRGB,cv2.COLOR_BGR2GRAY)
 		piRGB =  cv2.imread(self.fileManager.localPiRGB)
 
