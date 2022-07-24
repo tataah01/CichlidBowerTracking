@@ -29,7 +29,6 @@ class ProjectPreparer():
 		self.fileManager.downloadProjectData(dtype, videoIndex)
 
 	def uploadData(self, dtype, videoIndex = None, delete = False, no_upload = False):
-		print(no_upload)
 		self.fileManager.uploadProjectData(dtype, videoIndex, delete, no_upload)
 
 	def runPrepAnalysis(self):

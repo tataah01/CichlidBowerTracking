@@ -21,7 +21,7 @@ for c in columns:
 	if c not in dt.columns:
 		if c == 'RunAnalysis':
 			dt[c] = 'TRUE'
-		else
+		else:
 			dt[c] = 'FALSE'
 
 for projectID in projectIDs:
