@@ -39,8 +39,7 @@ class FileManager():
 				self.downloadData(self.localLogfile)
 				self.lp = LP(self.localLogfile)
 			except FileNotFoundError:
-				pdb.set_trace()
-				print(self.localLogfile)
+				print('No logfile created yet for ' + projectID)
 				pass 
 
 		self.modelID = modelID
