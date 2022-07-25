@@ -104,7 +104,7 @@ class CichlidTracker:
                 # Make sure Analysis File exists and is good
 
                 if not self.fileManager.checkFileExists(self.fileManager.localSummaryFile):
-                    self._reinstructError('Must create Analysis States csv file before running: ' + print(self.fileManager.localSummaryFile.split('Elements')[1]))
+                    self._reinstructError('Must create Analysis States csv file before running: ' + self.fileManager.localSummaryFile.split('Elements')[1])
                 self.fileManager.downloadData(self.fileManager.localSummaryFile)
                 s_dt = pd.read_csv(self.fileManager.localSummaryFile)
                 if 'projectID' not in s_dt.columns:
