@@ -2,7 +2,7 @@ import os, subprocess, pdb, platform, shutil
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 
 class FileManager():
-	def __init__(self, projectID = None, modelID = None, analysisID=None, rcloneRemote = 'cichlidVideo:', masterDir = 'McGrath/Apps/CichlidPiData/'):
+	def __init__(self, projectID = None, modelID = None, analysisID=None, rcloneRemote = 'CichlidPiData:', masterDir = 'McGrath/Apps/CichlidPiData/'):
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node() or 'sv-' in platform.node():
 			self._identifyPiDirectory()
@@ -122,18 +122,7 @@ class FileManager():
 		print('Individual file info added to csv file')
 		return row_data
 		
-	def checkFileExists(self, local_data):
-		relative_name = local_data.rstrip('/').split('/')[-1]
-		local_path = local_data.split(relative_name)[0]
-		cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
 
-		output = subprocess.run(['rclone', 'lsf', cloud_path], capture_output = True, encoding = 'utf-8')
-		remotefiles = [x.rstrip('/') for x in output.stdout.split('\n')]
-
-		if relative_name in remotefiles:
-			return True
-		else:
-			return False
 
 	def createProjectData(self, projectID):
 		self.createAnnotationData()
@@ -629,4 +618,26 @@ class FileManager():
 			for nfile in os.listdir(local_data):
 				subprocess.run(['mv', local_data + nfile, master_file])
 			self.uploadData(master_file, tarred = True)
+
+	def checkFileExists(self, local_data):
+		relative_name = local_data.rstrip('/').split('/')[-1]
+		local_path = local_data.split(relative_name)[0]
+		cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
+
+		output = subprocess.run(['rclone', 'lsf', cloud_path], capture_output = True, encoding = 'utf-8')
+		remotefiles = [x.rstrip('/') for x in output.stdout.split('\n')]
+
+		if relative_name in remotefiles:
+			return True
+		else:
+			return False
+
+	def deleteCloudData(self, local_data):
+		if self.checkFileExits(local_data):
+			cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
+			output = subprocess.run(['rclone', 'delete', cloud_path], capture_output = True, encoding = 'utf-8')
+			if self.checkFileExits(local_data):
+				pdb.set_trace()
+			else:
+				return
 

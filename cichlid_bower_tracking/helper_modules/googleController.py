@@ -2,12 +2,14 @@ import socket,gspread,datetime,time, platform, requests
 import pandas as pd
 
 class GoogleController:
-	def __init__(self, credentialSpreadsheet):
+	def __init__(self, credentialSpreadsheet, nonPiFlag = False):
 		self.credentialSpreadsheet = credentialSpreadsheet
+		self.nonPiFlag = nonPiFlag
 
 		self._authenticateGoogleSpreadSheets() #Creates self.controllerGS
-		self._identifyTank() #Stored in self.tankID
-		self._identifyServiceAccount()
+		if not self.nonPiFlag:
+			self._identifyTank() #Stored in self.tankID
+			self._identifyServiceAccount()
 
 	def addProjectID(self, projectID, googleErrorFile):
 		self.projectID = projectID
@@ -125,17 +127,19 @@ class GoogleController:
 			except Exception as e:
 				self._googlePrint(e)
 				continue
-
-			try:
-				if len(dt.loc[dt.RaspberryPiID == platform.node()]) == 0:
-					self.pi_ws.append_row([platform.node(),self.IP,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
-					return True
-				else:
-					return True
-			except Exception as e:
-				self._googlePrint(e)
-				continue    
-			time.sleep(2)
+			if not self.nonPiFlag:
+				try:
+					if len(dt.loc[dt.RaspberryPiID == platform.node()]) == 0:
+						self.pi_ws.append_row([platform.node(),self.IP,'','','','','','None','Stopped','Error: Awaiting assignment of TankID',str(datetime.datetime.now())])
+						return True
+					else:
+						return True
+				except Exception as e:
+					self._googlePrint(e)
+					continue
+			else:
+				self.all_data = data
+				time.sleep(2)
 		return False
 
 	def _identifyTank(self):

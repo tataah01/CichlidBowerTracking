@@ -18,7 +18,7 @@ class CichlidTracker:
     def __init__(self):
 
         # 1: Define valid commands and ignore warnings
-        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete']
+        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete','DeleteEntireProject']
         np.seterr(invalid='ignore')
 
         # 2: Determine which depth sensor is attached (This script can handle DepthSense cameras)
@@ -166,6 +166,12 @@ class CichlidTracker:
             self.googleController.modifyPiGS('Command', 'None', ping = False)
             self.googleController.modifyPiGS('Status', 'AwaitingCommand', ping = False)
             return
+
+        if command == 'DeleteEntireProject':
+            if os.path.exists(self.projectDirectory):
+                shutil.rmtree(self.projectDirectory)
+            self.fileManager.deleteCloudData(self.projectDirectory)
+            return            
 
         self.googleController.modifyPiGS('Command', 'None', ping = False)
         self.googleController.modifyPiGS('Status', 'Running', ping = False)
