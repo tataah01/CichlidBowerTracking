@@ -137,16 +137,16 @@ class CichlidTracker:
                     self.camera.stop_recording()
                     self._print('PiCameraStopped: Time: ' + str(datetime.datetime.now()) + ',,File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
                     
-                    command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
-                    command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
-                    self._print(command)
-                    self.processes.append(subprocess.Popen(command))
+                    #command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
+                    #command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
+                    #self._print(command)
+                    #self.processes.append(subprocess.Popen(command))
 
             try:
                 if self.device == 'realsense':
                     self.pipeline.stop()
             except Exception as e:
-                self._print('ErrorStopping kinect')
+                self._print('ErrorStopping kinect: ' + str(e))
                 
             self._closeFiles()
 

@@ -39,7 +39,7 @@ class FileManager():
 				self.downloadData(self.localLogfile)
 				self.lp = LP(self.localLogfile)
 			except FileNotFoundError:
-				print('No logfile created yet for ' + projectID)
+				#print('No logfile created yet for ' + projectID)
 				pass 
 
 		self.modelID = modelID
@@ -633,7 +633,7 @@ class FileManager():
 			return False
 
 	def deleteCloudData(self, local_data):
-		if self.checkFileExits(local_data):
+		if self.checkFileExists(local_data):
 			cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
 			output = subprocess.run(['rclone', 'delete', cloud_path], capture_output = True, encoding = 'utf-8')
 			if self.checkFileExits(local_data):
