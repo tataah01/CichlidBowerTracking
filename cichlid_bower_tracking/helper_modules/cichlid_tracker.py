@@ -171,6 +171,9 @@ class CichlidTracker:
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
             self.fileManager.deleteCloudData(self.projectDirectory)
+            self.googleController.modifyPiGS('Command', 'None', ping = False)
+            self.googleController.modifyPiGS('Status', 'AwaitingCommand', ping = False)
+
             return            
 
         self.googleController.modifyPiGS('Command', 'None', ping = False)
