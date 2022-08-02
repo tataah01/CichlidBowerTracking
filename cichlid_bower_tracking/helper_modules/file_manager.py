@@ -634,7 +634,7 @@ class FileManager():
 
 	def deleteCloudData(self, local_data):
 		if self.checkFileExists(local_data):
-			cloud_path = local_path.replace(self.localMasterDir, self.cloudMasterDir)
+			cloud_path = local_data.replace(self.localMasterDir, self.cloudMasterDir)
 			output = subprocess.run(['rclone', 'delete', cloud_path], capture_output = True, encoding = 'utf-8')
 			if self.checkFileExits(local_data):
 				pdb.set_trace()
