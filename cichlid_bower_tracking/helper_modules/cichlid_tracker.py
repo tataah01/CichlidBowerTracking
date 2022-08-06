@@ -157,7 +157,7 @@ class CichlidTracker:
         if command == 'UploadData':
 
             self.googleController.modifyPiGS('Command', 'None')
-            self.googleController.uploadFiles()
+            self._uploadFiles()
             return
             
         if command == 'LocalDelete':
