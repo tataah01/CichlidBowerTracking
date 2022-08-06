@@ -573,7 +573,7 @@ class CichlidTracker:
             #print(self.loggerFile)
             self.fileManager.uploadData(self.loggerFile)
             self.fileManager.uploadData(self.googleErrorFile)
-            self.googleController.odifyPiGS('Error','UploadSuccessful, ready for delete')
+            self.googleController.modifyPiGS('Error','UploadSuccessful, ready for delete')
 
         except Exception as e:
             print('UploadError: ' + str(e))
