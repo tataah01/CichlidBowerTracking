@@ -50,7 +50,7 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(10,7))
+        fig = plt.figure(figsize=(10,10))
         fig.suptitle(self.lastFrameTime)
         ax1 = fig.add_subplot(3, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(3, 3, 2) #Pic from Camera
@@ -110,11 +110,11 @@ class DriveUpdater:
         ax5.imshow(daily_change, vmin = -1.5, vmax = 1.5)
         ax6.imshow(hourly_change, vmin = -1, vmax = 1) # +- 1 cms
         total_bower = total_change.copy()
-        total_bower[(total_change > 0.75) | (total_change < -0.75)] = 0
+        total_bower[(total_change < 0.75) & (total_change > -0.75)] = 0
         daily_bower = daily_change.copy()
-        daily_bower[(daily_change > 0.5) | (daily_change < -0.5)] = 0
+        daily_bower[(daily_change < 0.5) & (daily_change > -0.5)] = 0
         hourly_bower = hourly_change.copy()
-        hourly_bower[(hourly_change > 0.3) | (hourly_change < -0.3)] = 0
+        hourly_bower[(hourly_change < 0.3) & (hourly_change > -0.3)] = 0
         
         ax7.imshow(total_bower, vmin = -2, vmax = 2) # +- 2 cms
         ax8.imshow(daily_bower, vmin = -1, vmax = 1)
