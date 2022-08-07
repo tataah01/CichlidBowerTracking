@@ -50,17 +50,20 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(10,10))
+        fig = plt.figure(figsize=(10,13))
         fig.suptitle(self.lastFrameTime)
-        ax1 = fig.add_subplot(3, 3, 1) #Pic from Kinect
-        ax2 = fig.add_subplot(3, 3, 2) #Pic from Camera
-        ax3 = fig.add_subplot(3, 3, 3) #Depth from Kinect
-        ax4 = fig.add_subplot(3, 3, 4) #Total Depth Change
-        ax5 = fig.add_subplot(3, 3, 5) #Day Depth Change
-        ax6 = fig.add_subplot(3, 3, 6) #Hour Depth Change
-        ax7 = fig.add_subplot(3, 3, 7) #Total Depth Change 
-        ax8 = fig.add_subplot(3, 3, 8) #Day Depth Change
-        ax9 = fig.add_subplot(3, 3, 9) #Hour Depth Change
+        ax1 = fig.add_subplot(4, 3, 1) #Pic from Kinect
+        ax2 = fig.add_subplot(4, 3, 2) #Pic from Camera
+        ax3 = fig.add_subplot(4, 3, 3) #Depth from Kinect
+        ax4 = fig.add_subplot(4, 3, 4) #Total Depth Change
+        ax5 = fig.add_subplot(4, 3, 5) #Day Depth Change
+        ax6 = fig.add_subplot(4, 3, 6) #Hour Depth Change
+        ax7 = fig.add_subplot(4, 3, 7) #Total Depth Change 
+        ax8 = fig.add_subplot(4, 3, 8) #Day Depth Change
+        ax9 = fig.add_subplot(4, 3, 9) #Hour Depth Change
+        ax10 = fig.add_subplot(4, 3, 10) #Total Depth Change 
+        ax11 = fig.add_subplot(4, 3, 11) #Day Depth Change
+        ax12 = fig.add_subplot(4, 3, 12) #Hour Depth Change
 
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
         try:
@@ -76,10 +79,10 @@ class DriveUpdater:
             dpth_6 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
 
         median_height = np.nanmedian(dpth_3)
-        dpth_3[(dpth_3 > median_height + 4) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_4[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_5[(dpth_5 > median_height + 4) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_6[(dpth_6 > median_height + 4) | (dpth_6 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_5[(dpth_5 > median_height + 8) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_6[(dpth_6 > median_height + 8) | (dpth_6 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
 
 
         total_change = dpth_4 - dpth_3
@@ -97,10 +100,13 @@ class DriveUpdater:
         ax7.set_title('Total Bower\n'+t_change)
         ax8.set_title('Last 24 hours bower\n'+d_change)
         ax9.set_title('Last 1 hour bower\n'+h_change)
+        ax10.set_title('Hour ago Depth')
+        ax11.set_title('24 hour ago Depth')
+        ax12.set_title('First daylight Depth')
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
-        ax3.imshow(dpth_3)
+        ax3.imshow(dpth_3, vmin = median_height - 8, vmax = median_height + 8)
         ax4.imshow(total_change, vmin = -2, vmax = 2) # +- 2 cms
         ax5.imshow(daily_change, vmin = -1.5, vmax = 1.5)
         ax6.imshow(hourly_change, vmin = -1, vmax = 1) # +- 1 cms
@@ -115,6 +121,11 @@ class DriveUpdater:
         ax8.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
         ax9.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
         
+        ax10.imshow(dpth_4, vmin = median_height - 8, vmax = median_height + 8)
+        ax11.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
+        ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
+
+
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
         #return self.graph_summary_fname
