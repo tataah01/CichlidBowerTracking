@@ -114,10 +114,10 @@ class DriveUpdater:
         daily_bower = daily_change.copy()
         daily_bower[(daily_change < 0.5) & (daily_change > -0.5)] = 0
         hourly_bower = hourly_change.copy()
-        hourly_bower[(hourly_change < 0.3) & (hourly_change > -0.3)] = 0
+        hourly_bower[(hourly_change < 0.5) & (hourly_change > -0.5)] = 0
         
         ax7.imshow(total_bower, vmin = -2, vmax = 2) # +- 2 cms
-        ax8.imshow(daily_bower, vmin = -1, vmax = 1)
+        ax8.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
         ax9.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
         
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
