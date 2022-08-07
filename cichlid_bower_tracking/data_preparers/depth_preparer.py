@@ -61,12 +61,14 @@ class DepthPreparer:
 	def createSmoothedArray(self, goodDataCutoff = 0.8, minimumGoodData = 0.95, tunits = 71, order = 4, max_depth = 4, max_height = 8):
 		
 
-		# Delete this block once it is fixed
-		self.fileManager.downloadData(self.fileManager.localPrepDir)
-		subprocess.run(['mv', self.fileManager.localPrepDir + 'DepthRGB.jpg', self.fileManager.localPrepDir + 'FirstDepthRGB.jpg'])
-		lastFramePic = [x.pic_file for x in self.fileManager.lp.frames if x.lof is True][-1]
-		subprocess.run(['cp', self.fileManager.localProjectDir + lastFramePic, self.fileManager.localPrepDir + 'LastDepthRGB.jpg'])
-		self.fileManager.uploadData(self.fileManager.localPrepDir)
+		#To be deleted
+		day_ad_count = 0
+		for ad in self.lp.alldata:
+			if [x for x in self.lp.frames if x.time == ad.time][0].lof:
+				day_ad_count += 1
+
+		ad_stds = np.zeros(shape = (day_ad_count, self.lp.height, self.lp.width))
+		ad_counts = np.zeros(shape = (day_ad_count, self.lp.height, self.lp.width))
 
 		# Create arrays to store raw depth data and data in the daytime
 		rawDepthData = np.empty(shape = (len(self.lp.frames), self.lp.height, self.lp.width))
@@ -75,10 +77,13 @@ class DepthPreparer:
 		# Read in each frame and store it. Also keep track of the indeces that are in the daytime
 		day_idx = 0
 		day_start_stop = OrderedDict() # Dictionary to hold first and last frame indeces for good and bad data for each day
+		
+		ad_idx = 0
 		for i, frame in enumerate(self.lp.frames):
 			try:
-				data = np.load(self.fileManager.localProjectDir + frame.npy_file)*100
+				data = np.load(self.fileManager.localProjectDir + frame.npy_file)
 				day = frame.time.day
+
 			except FileNotFoundError:
 				print('Bad frame: ' + str(i) + ', ' + frame.npy_file)
 				rawDepthData[i] = rawDepthData[i-1]
@@ -86,6 +91,12 @@ class DepthPreparer:
 				rawDepthData[i] = data
 
 			if frame.lof:
+				alldata_files = [x for x in self.lp.alldata if x.time == frame.time]
+				if len(alldata_files) == 1:
+					alldata = np.load(self.fileManager.localProjectDir + alldata_files[0].npy_file)
+					ad_stds[ad_idx] = np.nanstd(alldata, axis = 0)
+					ad_counts[ad_idx] = np.count_nonzero(~np.isnan(alldata), axis = 0)
+					ad_idx+=1
 				# Daytime frame
 				daytimeData[day_idx] = rawDepthData[i]
 				day_idx += 1
@@ -149,6 +160,9 @@ class DepthPreparer:
 		average_depth = np.nanmean(daytimeData, axis = 0)
 		median_height = np.nanmedian(average_depth)
 		smoothDepthData[:,(average_depth > median_height + max_depth) | (average_depth < median_height - max_height)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+
+		pdb.set_trace()
+
 
 		# Nighttime data is bad. Set it to average of data before and after.
 		boundaries = np.array(list(day_start_stop.values())).flatten()

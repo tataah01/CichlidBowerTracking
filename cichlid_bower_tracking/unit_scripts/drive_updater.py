@@ -52,12 +52,15 @@ class DriveUpdater:
         
         fig = plt.figure(figsize=(10,7))
         fig.suptitle(self.lastFrameTime)
-        ax1 = fig.add_subplot(2, 3, 1) #Pic from Kinect
-        ax2 = fig.add_subplot(2, 3, 2) #Pic from Camera
-        ax3 = fig.add_subplot(2, 3, 3) #Depth from Kinect
-        ax4 = fig.add_subplot(2, 3, 4) #Total Depth Change
-        ax5 = fig.add_subplot(2, 3, 5) #Day Depth Change
-        ax6 = fig.add_subplot(2, 3, 6) #Hour Depth Change
+        ax1 = fig.add_subplot(3, 3, 1) #Pic from Kinect
+        ax2 = fig.add_subplot(3, 3, 2) #Pic from Camera
+        ax3 = fig.add_subplot(3, 3, 3) #Depth from Kinect
+        ax4 = fig.add_subplot(3, 3, 4) #Total Depth Change
+        ax5 = fig.add_subplot(3, 3, 5) #Day Depth Change
+        ax6 = fig.add_subplot(3, 3, 6) #Hour Depth Change
+        ax7 = fig.add_subplot(3, 3, 7) #Total Depth Change 
+        ax8 = fig.add_subplot(3, 3, 8) #Day Depth Change
+        ax9 = fig.add_subplot(3, 3, 9) #Hour Depth Change
 
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
         try:
@@ -84,6 +87,11 @@ class DriveUpdater:
             dpth_6 = np.nanmax(np.dstack((dpth_6a, dpth_6b)), axis=2)
 
 
+        total_change = dpth_4 - dpth_3
+        daily_change = dpth_5 - dpth_3
+        hourly_change = dpth_6 - dpth_3
+
+
         ### TITLES ###
         ax1.set_title('Kinect RGB Picture')
         ax2.set_title('PiCamera RGB Picture')
@@ -91,13 +99,19 @@ class DriveUpdater:
         ax4.set_title('Total Change\n'+t_change)
         ax5.set_title('Last 24 hours change\n'+d_change)
         ax6.set_title('Last 1 hour change\n'+h_change)
+        ax7.set_title('Total Bower\n'+t_change)
+        ax8.set_title('Last 24 hours bower\n'+d_change)
+        ax9.set_title('Last 1 hour bower\n'+h_change)
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
         ax3.imshow(dpth_3)
-        ax4.imshow(dpth_4 - dpth_3, vmin = -2, vmax = 2) # +- 2 cms
-        ax5.imshow(dpth_5 - dpth_3, vmin = -2, vmax = 2)
-        ax6.imshow(dpth_6 - dpth_3, vmin = -2, vmax = 2) # +- 1 cms
+        ax4.imshow(total_change, vmin = -2, vmax = 2) # +- 2 cms
+        ax5.imshow(daily_change, vmin = -1.5, vmax = 1.5)
+        ax6.imshow(hourly_change, vmin = -1, vmax = 1) # +- 1 cms
+        ax7.imshow(total_change[(total_change > 1) | (total_change < -1)], vmin = -2, vmax = 2) # +- 2 cms
+        ax8.imshow(daily_change[(daily_change > .5) | (daily_change < -.5)], vmin = -1, vmax = 1)
+        ax9.imshow(hourly_change[(daily_change > .3) | (hourly_change < -.3)], vmin = -1, vmax = 1) # +- 1 cms
         
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')

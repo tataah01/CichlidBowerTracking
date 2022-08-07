@@ -78,7 +78,7 @@ class PrepPreparer:
 			average_depth = np.nanmean([lastFrame,firstFrame], axis = 0) # Calculate average height to help exclude things that are consistently out of frame
 
 		median_height = np.nanmedian(firstFrame) # Calculate average height of sand
-		difference[(average_depth > median_height + 0.04) | (average_depth < median_height - 0.08)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+		difference[(average_depth > median_height + 4) | (average_depth < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
 
 		# Create color map for depth data
 		cmap = copy.copy(matplotlib.cm.get_cmap("jet"))
@@ -86,9 +86,9 @@ class PrepPreparer:
 		cmap.set_bad(color = 'black')
 
 		# Create images for display
-		depth_change_cmap = cmap(plt.Normalize(-.05,.05)(difference)) # Normalize data that is +- 5 cm
-		first_depth_cmap = cmap(plt.Normalize(median_height - .1, median_height + .1)(firstFrame))
-		last_depth_cmap = cmap(plt.Normalize(median_height - .1, median_height + .1)(lastFrame))
+		depth_change_cmap = cmap(plt.Normalize(-5,5)(difference)) # Normalize data that is +- 5 cm
+		first_depth_cmap = cmap(plt.Normalize(median_height - 10, median_height + 10)(firstFrame))
+		last_depth_cmap = cmap(plt.Normalize(median_height - 10, median_height + 10)(lastFrame))
 		
 		# Loop until an acceptable box is created
 		while True:

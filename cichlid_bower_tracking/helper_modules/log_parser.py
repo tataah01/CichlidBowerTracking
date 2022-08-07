@@ -23,6 +23,7 @@ class LogParser:
     def parse_log(self):
         self.speeds = []
         self.frames = []
+        self.alldata = []
         self.backgrounds = []
         self.movies = []
         
@@ -80,6 +81,10 @@ class LogParser:
                         t_date = dt.strptime(t_list[0].split('/')[0], '%B-%d-%Y')
                         t_list[2] = t_list[2].replace(year = t_date.year, month = t_date.month, day = t_date.day)
                     self.frames.append(FrameObj(*t_list))
+
+                if info_type == 'AllDataCaptured':
+                    t_list = self._ret_data(line, ['NpyFile','PicFile','Time','NFrames'])
+                    self.alldata.append(AllDataObj(*t_list))
 
                 if info_type == 'BackgroundCaptured':
                     t_list = self._ret_data(line, ['NpyFile','PicFile','Time','AvgMed','AvgStd','GP','LOF'])
@@ -211,6 +216,14 @@ class FrameObj:
         self.rel_day = 0
         self.frameDir = npy_file.replace(npy_file.split('/')[-1],'')
 
+class AllDataObj:
+    def __init__(self, npy_file, pic_file, time, nframes):
+        self.npy_file = npy_file
+        self.pic_file = pic_file
+        self.time = time
+        self.nframes = nframes
+        self.frameDir = npy_file.replace(npy_file.split('/')[-1],'')
+ 
 
 class MovieObj:
     def __init__(self, time, movie_file, pic_file, framerate, resolution):

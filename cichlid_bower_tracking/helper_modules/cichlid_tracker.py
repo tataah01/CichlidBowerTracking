@@ -204,15 +204,6 @@ class CichlidTracker:
 
             self.googleController.addProjectID(self.projectID, self.googleErrorFile)
             
-            self.fileManager.downloadData(self.fileManager.localSummaryFile)
-            s_dt = pd.read_csv(self.fileManager.localSummaryFile)
-
-            if self.projectID not in s_dt.projectID.values:
-                s_dt.loc[len(s_dt.index)] = ['']*len(s_dt.columns)
-                s_dt.loc[len(s_dt.index) - 1,'projectID'] = self.projectID
-                s_dt.to_csv(self.fileManager.localSummaryFile, index = False)
-                self.fileManager.uploadData(self.fileManager.localSummaryFile)
-
             #self._createDropboxFolders()
             self.frameCounter = 1
             self.videoCounter = 1
@@ -452,7 +443,7 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy,,Units: cm')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 50, count_threshold = 10):
+    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 0.25, count_threshold = 3):
         # Captures time averaged frame of depth data
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
@@ -478,9 +469,8 @@ class CichlidTracker:
                 break
             time.sleep(10)
         
-        if (endtime.minute > 0 and endtime.minute <= 5):
-            self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i))
-            np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
+        self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1))
+        np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
 
         bad_all_pixels = np.count_nonzero(np.isnan(all_data))
         good_all_pixels = np.count_nonzero(~np.isnan(all_data))
@@ -494,12 +484,11 @@ class CichlidTracker:
         med[std > stdev_threshold] = np.nan
         std[std > stdev_threshold] = np.nan
 
-
         counts = np.count_nonzero(~np.isnan(all_data), axis = 0)
 
         bad_count_avg_pixels = (counts<count_threshold).sum()
-        med[counts < count_threshold] = np.nan
-        std[counts < count_threshold] = np.nan
+        med[counts < i + 1 - count_threshold] = np.nan
+        std[counts < i + 1 - count_threshold] = np.nan
 
         color = self._returnRegColor()                        
         
@@ -574,6 +563,17 @@ class CichlidTracker:
             self.fileManager.uploadData(self.loggerFile)
             self.fileManager.uploadData(self.googleErrorFile)
             self.googleController.modifyPiGS('Error','UploadSuccessful, ready for delete')
+            
+            self.fileManager.downloadData(self.fileManager.localSummaryFile)
+            s_dt = pd.read_csv(self.fileManager.localSummaryFile)
+
+            if self.projectID not in s_dt.projectID.values:
+                s_dt.loc[len(s_dt.index)] = ['']*len(s_dt.columns)
+                s_dt.loc[len(s_dt.index) - 1,'projectID'] = self.projectID
+                s_dt.to_csv(self.fileManager.localSummaryFile, index = False)
+                self.fileManager.uploadData(self.fileManager.localSummaryFile)
+
+
 
         except Exception as e:
             print('UploadError: ' + str(e))
