@@ -154,14 +154,12 @@ class DepthPreparer:
 
 		# Filter out data with bad standard deviations
 		stds = np.nanstd(daytimeData, axis = 0)
-		smoothDepthData[:,stds > 1.5] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+		smoothDepthData[:,stds > 1.5] = np.nan # Filter out data with std > 1.5 cm
 
 		# Filter out data that is too close or too far from the sensor
 		average_depth = np.nanmean(daytimeData, axis = 0)
 		median_height = np.nanmedian(average_depth)
 		smoothDepthData[:,(average_depth > median_height + max_depth) | (average_depth < median_height - max_height)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-
-		pdb.set_trace()
 
 
 		# Nighttime data is bad. Set it to average of data before and after.

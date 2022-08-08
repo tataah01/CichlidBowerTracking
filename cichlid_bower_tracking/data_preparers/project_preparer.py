@@ -58,6 +58,18 @@ class ProjectPreparer():
 			cp_obj.validateInputData()
 			cp_obj.runClusterAnalysis()
 
+	def runTrackFishAnalysis(self, videoIndex):
+		from cichlid_bower_tracking.data_preparers.fish_tracking_preparer import FishTrackingPreparer as FTP
+		if videoIndex is None:
+			videos = list(range(len(self.fileManager.lp.movies)))
+		else:
+			videos = [videoIndex]
+		for videoIndex in videos:
+			ftp_obj = FTP(self.fileManager, videoIndex)
+			ftp_obj.validateInputData()
+			ftp_obj.runObjectDetectionAnalysis()
+			#ftp_obj.runSortAnalysis()
+
 	def run3DClassification(self):
 		from cichlid_bower_tracking.data_preparers.threeD_classifier_preparer import ThreeDClassifierPreparer as TDCP
 
@@ -72,13 +84,7 @@ class ProjectPreparer():
 		mlv_obj.validateInputData()
 		mlv_obj.labelVideos()
 
-	def manuallyLabelFrames(self, initials, number):
-		from cichlid_bower_tracking.data_preparers.manual_label_frames_preparer import ManualLabelFramesPreparer as MLFP
 
-		mlf_obj = MLFP(self.fileManager, initials, number)
-		mlf_obj.validateInputData()
-		mlf_obj.labelFrames()
-	
 	def createModel(self, MLtype, projectIDs, gpu):
 		from cichlid_bower_tracking.data_preparers.threeD_model_preparer import ThreeDModelPreparer as TDMP
 

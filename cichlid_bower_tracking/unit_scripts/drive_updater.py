@@ -79,10 +79,10 @@ class DriveUpdater:
             dpth_6 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
 
         median_height = np.nanmedian(dpth_3)
-        dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_5[(dpth_5 > median_height + 8) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_6[(dpth_6 > median_height + 8) | (dpth_6 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        #dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        #dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        #dpth_5[(dpth_5 > median_height + 8) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        #dpth_6[(dpth_6 > median_height + 8) | (dpth_6 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
 
 
         total_change = dpth_4 - dpth_3

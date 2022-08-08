@@ -189,15 +189,19 @@ class FileManager():
 		self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
 		self.localLabeledFramesProjectDir = self.localBoxedFishDir + projectID + '/'
 
-
 		# Files created by summary preparer
 
 		# miscellaneous files
 
 
 
-	def createMLData(self, modelID):
+	def createMLData(self, modelID = None):
 		self.vModelID = modelID
+
+		if modelID is None:
+			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + self.analysisID + '/best.pt'
+		else:
+			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + modelID + '/best.pt'
 
 		self.local3DModelDir = self.localMLDir + 'VideoModels/' + self.vModelID + '/'
 		self.local3DModelTempDir = self.localMLDir + 'VideoModels/' + self.vModelID + 'Temp/'
@@ -252,7 +256,6 @@ class FileManager():
 			self.createDirectory(self.localAllClipsDir)
 			self.createDirectory(self.localManualLabelClipsDir)
 			self.createDirectory(self.localManualLabelFramesDir)
-			self.createDirectory(self.localLogfileDir)
 			#self.createDirectory(self.localPaceDir)
 
 			self.downloadData(self.localLogfile)
@@ -276,6 +279,22 @@ class FileManager():
 			if self.modelID is not None:
 				self.downloadData(self.local3DModelDir)
 			#self.createDirectory(self.localPaceDir)
+
+		elif dtype == 'TrackFish':
+			self.createDirectory(self.localLogfileDir)
+			self.createDirectory(self.localMasterDir)
+			self.createDirectory(self.localAnalysisDir)
+			self.createDirectory(self.localTroubleshootingDir)
+			self.createDirectory(self.localTempDir)
+
+			self.downloadData(self.localLogfile)
+			if videoIndex is not None:
+				videoObj = self.returnVideoObject(videoIndex)
+				print('Downloading video ' + str(videoIndex))
+				self.downloadData(videoObj.localVideoFile)
+			else:
+				print('Downloading video ' + self.localVideoDir)
+				self.downloadData(self.localVideoDir)
 
 		elif dtype == 'Train3DResnet':
 			self.createDirectory(self.local3DModelDir)

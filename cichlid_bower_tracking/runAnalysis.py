@@ -8,7 +8,7 @@ if PROJECT_ROOT not in sys.path:
 
 parser = argparse.ArgumentParser(
     description='This script is used to manually prepared projects for downstream analysis')
-parser.add_argument('AnalysisType', type=str, choices=['Prep', 'Depth', 'Cluster', 'ClusterClassification', 'Summary'],
+parser.add_argument('AnalysisType', type=str, choices=['Prep', 'Depth', 'Cluster', 'ClusterClassification', 'TrackFish', 'Summary'],
                     help='Type of analysis to run')
 parser.add_argument('AnalysisID', type = str, help = 'ID of analysis state name')
 parser.add_argument('--ProjectIDs', type=str, nargs='+', help='Name of projectIDs to restrict analysis to')
@@ -84,6 +84,9 @@ while len(projectIDs) != 0:
     elif args.AnalysisType == 'ClusterClassification':
         p1 = subprocess.Popen(
             ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.classify_clusters', projectID, args.ModelID])
+    elif args.AnalysisType == 'TrackFish':
+        p1 = subprocess.Popen(
+            ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.track_fish', projectID, args.AnalysisID])
     elif args.AnalysisType == 'Summary':
         if args.SummaryFile is None:
             p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.summarize', projectID])
