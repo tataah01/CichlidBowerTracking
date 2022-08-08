@@ -36,10 +36,11 @@ class FishTrackingPreparer():
 		command.extend(['--project', self.localTempDir + self.videoObj.localVideoFile.split('/')[-1].remove('.mp4')])
 		command.extend(['--save-txt', '--nosave', '--save-conf'])
 
+		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
 #		subprocess.run(['git', 'pull'])
-		subprocess.run(command)
+		subprocess.run('bash -c \"' + command + '\"', shell = True)
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 
 		pdb.set_trace()
