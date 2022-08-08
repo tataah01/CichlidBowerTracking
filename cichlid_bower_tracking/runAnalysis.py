@@ -27,6 +27,7 @@ def get_projects(fm_obj, analysis_type, fil_projectIDs):
     elif args.AnalysisType == 'Depth':
         sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
 
+    pdb.set_trace()
     projectIDs = list(sub_dt[sub_dt[analysis_type].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
 
     # Filter out projects if optional argment given
