@@ -18,7 +18,7 @@ args = parser.parse_args()
 
 def get_projects(fm_obj, analysis_type, fil_projectIDs):
     fm_obj.downloadData(fm_obj.localSummaryFile)
-    dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
+    dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'TrackFish':str, 'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
 
     # Identify projects to run on:
     sub_dt = dt[dt.RunAnalysis.str.upper() == 'TRUE'] # Only analyze projects that are indicated
@@ -27,7 +27,6 @@ def get_projects(fm_obj, analysis_type, fil_projectIDs):
     elif args.AnalysisType == 'Depth':
         sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
 
-    pdb.set_trace()
     projectIDs = list(sub_dt[sub_dt[analysis_type].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
 
     # Filter out projects if optional argment given
