@@ -34,7 +34,7 @@ class FishTrackingPreparer():
 		command.extend(['--weights', self.fileManager.localYolov5WeightsFile])
 		command.extend(['--source', self.videoObj.localVideoFile])
 		command.extend(['--device', self.gpu])
-		command.extend(['--project', self.localTempDir + self.videoObj.localVideoFile.split('/')[-1].remove('.mp4')])
+		command.extend(['--project', self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].remove('.mp4')])
 		command.extend(['--save-txt', '--nosave', '--save-conf'])
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
