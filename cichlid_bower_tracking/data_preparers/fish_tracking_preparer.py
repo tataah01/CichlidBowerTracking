@@ -41,7 +41,7 @@ class FishTrackingPreparer():
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
 #		subprocess.run(['git', 'pull'])
-		subprocess.run('bash -c \"' + command + '\"', shell = True)
+		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 
 		pdb.set_trace()
