@@ -9,5 +9,5 @@ parser.add_argument('--VideoIndex', type = int, help = 'Index of video that shou
 args = parser.parse_args()
 
 pp_obj = PP(projectID = args.ProjectID, analysisID = args.AnalysisID)
-pp_obj.runTrackFishAnalysis()
+pp_obj.runTrackFishAnalysis(args.VideoIndex)
 
