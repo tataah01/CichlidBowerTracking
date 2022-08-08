@@ -8,5 +8,5 @@ parser.add_argument('AnalysisID', type = str, help = 'Manually identify the proj
 args = parser.parse_args()
 
 pp_obj = PP(projectID = args.ProjectID, analysisID = args.AnalysisID)
-pp_obj.runTrackAnalysis()
+pp_obj.runTrackFishAnalysis()
 
