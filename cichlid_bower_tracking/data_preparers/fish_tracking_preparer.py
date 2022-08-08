@@ -27,7 +27,7 @@ class FishTrackingPreparer():
 		assert os.path.exists(self.fileManager.localLogfileDir)
 		assert os.path.exists(self.fileManager.localYolov5WeightsFile)
 
-	def runClusterAnalysis(self):
+	def runObjectDetectionAnalysis(self):
 
 		command = ['python3', 'detect.py']
 		command.extend(['--weights', self.fileManager.localYolov5WeightsFile])
@@ -42,5 +42,6 @@ class FishTrackingPreparer():
 		subprocess.run(command)
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 
+		pdb.set_trace()
 
 
