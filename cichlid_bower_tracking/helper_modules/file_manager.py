@@ -44,10 +44,8 @@ class FileManager():
 
 		self.modelID = modelID
 		self.localMLDir = self.localMasterDir + '__MachineLearningModels/'
-		if modelID is not None:
-
-			print(modelID)
-			self.createMLData(modelID)
+		
+		self.createMLData(modelID)
 
 		# Create file names and parameters
 		self.createPiData()
@@ -199,6 +197,7 @@ class FileManager():
 		self.vModelID = modelID
 
 		if modelID is None:
+			self.vModelID = self.analysisID
 			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + self.analysisID + '/best.pt'
 		else:
 			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + modelID + '/best.pt'
