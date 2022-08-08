@@ -16,6 +16,7 @@ class FishTrackingPreparer():
 		self.videoObj = self.fileManager.returnVideoObject(videoIndex)
 		self.videoIndex = videoIndex
 		self.gpu = str(gpu)
+		self.fileManager.downloadData(self.fileManager.localYolov5WeightsFile)
 
 	def validateInputData(self):
 		
