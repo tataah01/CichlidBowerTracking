@@ -38,6 +38,7 @@ def get_projects(fm_obj, analysis_type, fil_projectIDs):
 
 # Identify projects to run analysis on
 fm_obj = FM(analysisID = args.AnalysisID)
+fm_obj.downloadData(fm_obj.localSummaryFile)
 if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
     print('Cant find ' + fm_obj.localSummaryFile)
     sys.exit()
