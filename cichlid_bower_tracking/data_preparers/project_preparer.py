@@ -67,7 +67,7 @@ class ProjectPreparer():
 		for videoIndex in videos:
 			ftp_obj = FTP(self.fileManager, videoIndex)
 			ftp_obj.validateInputData()
-			#ftp_obj.runObjectDetectionAnalysis()
+			ftp_obj.runObjectDetectionAnalysis()
 			ftp_obj.runSORT()
 
 	def run3DClassification(self):

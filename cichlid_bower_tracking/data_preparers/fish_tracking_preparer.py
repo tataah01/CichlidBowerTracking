@@ -31,6 +31,7 @@ class FishTrackingPreparer():
 
 	def runObjectDetectionAnalysis(self):
 
+		print('Running Object detection on ' + self.videoObj.baseName)
 		self.annotations_dir = self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','')
 
 		command = ['python3', 'detect.py']
@@ -48,6 +49,7 @@ class FishTrackingPreparer():
 
 
 	def runSORT(self):
+		print('Running Sort detection on ' + self.videoObj.baseName)
 
 		detections = os.listdir(self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/')
 		detections = [self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/' + x for x in detections]
