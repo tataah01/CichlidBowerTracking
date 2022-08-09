@@ -96,6 +96,8 @@ class DriveUpdater:
                 std_6 = np.nanstd(alldata, axis = 0)
  
         # Plot before filtering
+        median_height = np.nanmedian(dpth_3)
+
         ax10.imshow(dpth_4, vmin = median_height - 8, vmax = median_height + 8)
         ax11.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
         ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
@@ -107,7 +109,6 @@ class DriveUpdater:
         dpth_5[bad_data_count > 1] = np.nan
         dpth_6[bad_data_count > 1] = np.nan
 
-        median_height = np.nanmedian(dpth_3)
         #dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         #dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         #dpth_5[(dpth_5 > median_height + 8) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
