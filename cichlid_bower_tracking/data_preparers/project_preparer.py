@@ -71,11 +71,17 @@ class ProjectPreparer():
 			ftp_objs.append(FTP(self.fileManager, videoIndex))
 			ftp_objs[-1].validateInputData()
 
-		blocks = math.ceil(len(videos)/8)
-		for i in range(blocks):
-			processes = []
-			for idx in range(i*8, min(i*8 + 8,len(videos))):
-				processes.append(ftp_objs[idx].runObjectDetectionAnalysis(idx%8))
+		available_cards = GPUtil.getAvailable(order = 'first', maxMemory = 0.2, limit = 8)
+
+		current_idx = 0
+		while current_idx < len(videos):
+			for i in range(4):
+				for gpu in available_cards:
+					if current_idx < len(videos):
+						processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
+						current_idx += 1
+
+
 			for p1 in processes:
 				p1.communicate()
 
