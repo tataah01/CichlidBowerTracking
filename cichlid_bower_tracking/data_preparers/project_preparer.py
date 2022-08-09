@@ -80,7 +80,7 @@ class ProjectPreparer():
 				p1.communicate()
 
 		for idx in range(len(videos)):
-			ftp_obj.runSORT()
+			ftp_objs[idx].runSORT()
 
 		# Combine predictions
 		if videoIndexIn is None:
