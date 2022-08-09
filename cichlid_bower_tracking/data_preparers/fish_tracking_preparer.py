@@ -47,6 +47,7 @@ class FishTrackingPreparer():
 		return output
 
 	def runSORT(self):
+
 		print('Running Object detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 
 		print('Running Sort detection on ' + self.videoObj.baseName)

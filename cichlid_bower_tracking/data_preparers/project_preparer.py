@@ -74,6 +74,7 @@ class ProjectPreparer():
 		blocks = math.ceil(len(videos)/8)
 		for i in range(blocks):
 			processes = []
+			pdb.set_trace()
 			for idx in range(i*8, min(i*8,len(videos))):
 				processes.append(ftp_objs[idx].runObjectDetectionAnalysis())
 			for p1 in processes:
