@@ -375,7 +375,7 @@ class SortFish:
                    print(f'frame {curr_frame} processed')
                 curr_frame += 1
 
-        self.detection_file.close()
+        self.detections_file.close()
         self.tracks_file.close()
 
         df = pd.read_csv(open(temp_dir + '/FishTracks.csv'), index_col=0)
