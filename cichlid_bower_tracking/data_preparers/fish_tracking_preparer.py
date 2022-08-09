@@ -1,4 +1,4 @@
-import subprocess, os, pdb
+import subprocess, os, pdb, datetime
 
 class FishTrackingPreparer():
 	# This class takes in directory information and a logfile containing depth information and performs the following:
@@ -28,7 +28,8 @@ class FishTrackingPreparer():
 
 	def runObjectDetectionAnalysis(self):
 
-		print('Running Object detection on ' + self.videoObj.baseName)
+
+		print('Running Object detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 		self.annotations_dir = self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','')
 
 		command = ['python3', 'detect.py']
@@ -46,6 +47,8 @@ class FishTrackingPreparer():
 
 
 	def runSORT(self):
+		print('Running Object detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
+
 		print('Running Sort detection on ' + self.videoObj.baseName)
 
 		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile]
