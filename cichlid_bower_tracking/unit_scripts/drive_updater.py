@@ -92,9 +92,11 @@ class DriveUpdater:
                 alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
                 std_6 = np.nanstd(alldata, axis = 0)
  
-        pdb.set_trace()
-        bad_data_count = (std_3 > stdcutoff) + (std_4 > stdcutoff) + (std_5 > stdcutoff) + (std_6 > stdcutoff)
-        print(bad_data_count)
+        bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
+        dpth_3[bad_data_count > 2] = np.nan
+        dpth_4[bad_data_count > 2] = np.nan
+        dpth_5[bad_data_count > 2] = np.nan
+        dpth_6[bad_data_count > 2] = np.nan
 
         median_height = np.nanmedian(dpth_3)
         #dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
