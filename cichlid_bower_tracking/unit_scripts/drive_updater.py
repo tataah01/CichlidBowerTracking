@@ -92,6 +92,7 @@ class DriveUpdater:
                 alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
                 std_6 = np.nanstd(alldata, axis = 0)
  
+        pdb.set_trace()
         bad_data_count = (std_3 > stdcutoff) + (std_4 > stdcutoff) + (std_5 > stdcutoff) + (std_6 > stdcutoff)
         print(bad_data_count)
 
