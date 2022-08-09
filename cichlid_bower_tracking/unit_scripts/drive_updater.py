@@ -38,7 +38,7 @@ class DriveUpdater:
 
         f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
 
-    def _createImage(self, stdcutoff = 0.3):
+    def _createImage(self, stdcutoff = 0.2):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
@@ -93,10 +93,10 @@ class DriveUpdater:
                 std_6 = np.nanstd(alldata, axis = 0)
  
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
-        dpth_3[bad_data_count > 2] = np.nan
-        dpth_4[bad_data_count > 2] = np.nan
-        dpth_5[bad_data_count > 2] = np.nan
-        dpth_6[bad_data_count > 2] = np.nan
+        dpth_3[bad_data_count > 1] = np.nan
+        dpth_4[bad_data_count > 1] = np.nan
+        dpth_5[bad_data_count > 1] = np.nan
+        dpth_6[bad_data_count > 1] = np.nan
 
         median_height = np.nanmedian(dpth_3)
         #dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
