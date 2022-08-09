@@ -297,7 +297,7 @@ class Sort(object):
 
 """new code begins here"""
 class SortFish:
-    def __init__(infile_list, temp_dir):
+    def __init__(self, infile_list, temp_dir):
         self.infile_list = infile_list
         self.temp_dir = temp_dir
         self.tracks_file = open(temp_dir + '/FishTracks.csv', 'w')
@@ -305,7 +305,7 @@ class SortFish:
         self.detections_file = open(temp_dir + '/FishDetections.csv', 'w')
         print('frame,x1,x2,y1,y2,p-value,class,tracked', file = self.detections_file)
 
-    def yolodet_to_sortdet(det):
+    def yolodet_to_sortdet(self, det):
         """converts a detection of the form [class, x_center, y_center, width, height, score] to the form
       [x1, x2, y1, y2, score, class] """
         det = [float(d) for d in det]
@@ -317,7 +317,7 @@ class SortFish:
                          scaled_det[5], scaled_det[0]])
 
 
-    def update_outfile(trackers, frame):
+    def update_outfile(self, trackers, frame):
         """
       adds new rows to the output file
       :param trackers: nx5 array, where n is equal to the number of active tracks. This object is returned by Sort.update
@@ -341,7 +341,7 @@ class SortFish:
             print(f'{track_id}, {frame}, {xc}, {yc}, {w}, {h}, {class_id}, {u_dot}, {v_dot}, {s_dot}, {p_value}', file=self.tracks_file)
 
 
-    def run_sort(min_track_len=30, max_age=5, min_hits=3):
+    def run_sort(self, min_track_len=30, max_age=5, min_hits=3):
      
      
         tracker = Sort(max_age=max_age, min_hits=min_hits)
