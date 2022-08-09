@@ -5,7 +5,6 @@ from cichlid_bower_tracking.helper_modules.googleController import GoogleControl
 import pandas as pd
 from picamera import PiCamera
 import numpy as np
-from sendgrid.helpers.mail import Mail, Email, To, Content
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -57,8 +56,8 @@ class CichlidTracker:
             pdb.set_trace()
 
         self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
-        self.from_email = Email('themcgrathlab@gmail.com')  # Change to your verified sender
-        self.to_email = To('patrick.mcgrath@biology.gatech.edu')  # Change to your recipient
+        self.from_email = sendgrid.Email('themcgrathlab@gmail.com')  # Change to your verified sender
+        self.to_email = sendgrid.To('patrick.mcgrath@biology.gatech.edu')  # Change to your recipient
 
 
         # 9: Await instructions
@@ -72,8 +71,8 @@ class CichlidTracker:
         self.googleController.modifyPiGS('Error','UnknownError', ping = False)
 
         subject = 'Tank stopped running'
-        content = Content('text/plain', 'Check controller sheet')
-        mail = Mail(self.from_email, self.to_email, subject, content)
+        content = sendgrid.Content('text/plain', 'Check controller sheet')
+        mail = sendgrid.Mail(self.from_email, self.to_email, subject, content)
         # Get a JSON-ready representation of the Mail object
         mail_json = mail.get()
         # Send an HTTP POST request to /mail/send
@@ -89,7 +88,7 @@ class CichlidTracker:
             try:
                 self.pipeline.stop()
             except:
-                continue
+                pass
 
         self._closeFiles()
 
