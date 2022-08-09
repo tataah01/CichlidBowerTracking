@@ -57,7 +57,7 @@ class FileManager():
 		self.localCredentialDir = self.localMasterDir + '__CredentialFiles/'
 		self.localCredentialSpreadsheet = self.localCredentialDir + 'SAcredentials_1.json'
 		self.localCredentialDrive = self.localCredentialDir +  'DriveCredentials.txt'
-		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/send_grid.key.secret'
+		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/sendgrid_key.secret'
 
 	def getAllProjectIDs(self):
 		output = subprocess.run(['rclone', 'lsf', '--dirs-only', self.cloudMasterDir], capture_output = True, encoding = 'utf-8')
@@ -197,7 +197,7 @@ class FileManager():
 	def createMLData(self, modelID = None):
 		if modelID is None and self.analysisID is None:
 			return
-			
+
 		self.vModelID = modelID
 
 		if modelID is None:
