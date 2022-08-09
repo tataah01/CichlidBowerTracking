@@ -82,7 +82,7 @@ class DriveUpdater:
                 std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
                 std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
                 std_6 = np.load(self.projectDirectory + lastHourFrames[0].std_file)
-            except FileNotFindError:
+            except FileNotFoundError:
                 alldata = np.load(self.projectDirectory + self.lp.frames[-1].alldata_file)
                 std_3 = np.nanstd(alldata, axis = 0)
                 alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
