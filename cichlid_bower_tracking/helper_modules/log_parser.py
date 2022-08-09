@@ -208,6 +208,8 @@ class FrameObj:
     def __init__(self, npy_file, pic_file, time, med, std, gp, lof):
         self.npy_file = npy_file
         self.pic_file = pic_file
+        self.std_file = npy_file.replace('Frame_', 'Frame_std_')
+        self.alldata_file = npy_file.replace('Frame_', 'AllData')
         self.time = time
         self.med = med
         self.std = std

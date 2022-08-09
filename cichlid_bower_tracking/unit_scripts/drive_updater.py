@@ -38,7 +38,7 @@ class DriveUpdater:
 
         f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
 
-    def _createImage(self):
+    def _createImage(self, stdcutoff = 0.3):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
@@ -77,6 +77,23 @@ class DriveUpdater:
             dpth_4 = np.load(self.projectDirectory + daylightFrames[0].npy_file)
             dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
             dpth_6 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+            try:
+                std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
+                std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
+                std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
+                std_6 = np.load(self.projectDirectory + lastHourFrames[0].std_file)
+            except FileNotFindError:
+                alldata = np.load(self.projectDirectory + self.lp.frames[-1].alldata_file)
+                std_3 = np.nanstd(alldata, axis = 0)
+                alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
+                std_4 = np.nanstd(alldata, axis = 0)
+                alldata = np.load(self.projectDirectory + lastDayFrames[0].alldata_file)
+                std_5 = np.nanstd(alldata, axis = 0)
+                alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
+                std_6 = np.nanstd(alldata, axis = 0)
+ 
+        bad_data_count = (std_3 > stdcutoff) + (std_4 > stdcutoff) + (std_5 > stdcutoff) + (std_6 > stdcutoff)
+        print(bad_data_count)
 
         median_height = np.nanmedian(dpth_3)
         #dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
