@@ -341,7 +341,7 @@ class SortFish:
             print(f'{track_id}, {frame}, {xc}, {yc}, {w}, {h}, {class_id}, {u_dot}, {v_dot}, {s_dot}, {p_value}', file=self.tracks_file)
 
 
-    def run_sort(self, min_track_len=30, max_age=5, min_hits=3):
+    def run_sort(self, min_track_len=0, max_age=5, min_hits=3):
      
      
         tracker = Sort(max_age=max_age, min_hits=min_hits)
