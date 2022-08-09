@@ -76,6 +76,7 @@ class ProjectPreparer():
 
 		current_idx = 0
 		while current_idx < len(videos):
+			processes = []
 			for i in range(4):
 				for gpu in available_cards:
 					if current_idx < len(videos):
@@ -85,6 +86,7 @@ class ProjectPreparer():
 
 			for p1 in processes:
 				p1.communicate()
+				print(p1.returncode)
 
 		for idx in range(len(videos)):
 			ftp_objs[idx].runSORT()
