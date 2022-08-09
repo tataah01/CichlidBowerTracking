@@ -69,7 +69,7 @@ class ProjectPreparer():
 		ftp_objs = []
 		for videoIndex in videos:
 			ftp_objs.append(FTP(self.fileManager, videoIndex))
-			ftp_obj.validateInputData()
+			ftp_objs[-1].validateInputData()
 
 		blocks = math.ceil(len(videos)/8)
 		for i in range(blocks):
