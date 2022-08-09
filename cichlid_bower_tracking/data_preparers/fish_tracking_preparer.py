@@ -51,3 +51,4 @@ class FishTrackingPreparer():
 		detections = [self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/' + x for x in detections]
 		sort_obj = SF(detections, self.fileManager.localTempDir)
 		tracks_dt, detections_dt = sort_obj.run_sort()
+		pdb.set_trace()
