@@ -1,10 +1,11 @@
-import platform, sys, os, shutil, datetime, subprocess, pdb, time
+import platform, sys, os, shutil, datetime, subprocess, pdb, time, sendgrid
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 from cichlid_bower_tracking.helper_modules.googleController import GoogleController as GC
 import pandas as pd
 from picamera import PiCamera
 import numpy as np
+from sendgrid.helpers.mail import Mail, Email, To, Content
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -50,6 +51,16 @@ class CichlidTracker:
         except AttributeError:
             self.r = (0,0,640,480)
 
+        # 8: Create email server
+        with open(self.fileManager.localEmailCredentialFile) as f:
+            my_api_key = [x.strip() for x in f.readlines()][0]
+            pdb.set_trace()
+
+        self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
+        self.from_email = Email('themcgrathlab@gmail.com')  # Change to your verified sender
+        self.to_email = To('patrick.mcgrath@biology.gatech.edu')  # Change to your recipient
+
+
         # 9: Await instructions
         print('Monitoring commands')
         self.monitorCommands()
@@ -60,13 +71,25 @@ class CichlidTracker:
         self.googleController.modifyPiGS('Status','Stopped', ping = False)
         self.googleController.modifyPiGS('Error','UnknownError', ping = False)
 
+        subject = 'Tank stopped running'
+        content = Content('text/plain', 'Check controller sheet')
+        mail = Mail(self.from_email, self.to_email, subject, content)
+        # Get a JSON-ready representation of the Mail object
+        mail_json = mail.get()
+        # Send an HTTP POST request to /mail/send
+        response = sg.client.mail.send.post(request_body=mail_json)
+
         if self.piCamera:
             if self.camera.recording:
                 self.camera.stop_recording()
                 self._print('PiCameraStopped: Time=' + str(datetime.datetime.now()) + ', File=Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
 
+
         if self.device == 'realsense':
-            self.pipeline.stop()
+            try:
+                self.pipeline.stop()
+            except:
+                continue
 
         self._closeFiles()
 
@@ -168,6 +191,7 @@ class CichlidTracker:
             return
 
         if command == 'DeleteEntireProject':
+            self.googleController.modifyPiGS('Status', 'DeletingData', ping = False)
             if os.path.exists(self.projectDirectory):
                 shutil.rmtree(self.projectDirectory)
             self.fileManager.deleteCloudData(self.projectDirectory)
@@ -443,7 +467,7 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy,,Units: cm')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 0.75, count_threshold = 3):
+    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 1, count_threshold = 3):
         # Captures time averaged frame of depth data
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))

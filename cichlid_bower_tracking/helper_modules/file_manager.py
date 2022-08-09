@@ -57,6 +57,7 @@ class FileManager():
 		self.localCredentialDir = self.localMasterDir + '__CredentialFiles/'
 		self.localCredentialSpreadsheet = self.localCredentialDir + 'SAcredentials_1.json'
 		self.localCredentialDrive = self.localCredentialDir +  'DriveCredentials.txt'
+		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/send_grid.key.secret'
 
 	def getAllProjectIDs(self):
 		output = subprocess.run(['rclone', 'lsf', '--dirs-only', self.cloudMasterDir], capture_output = True, encoding = 'utf-8')
