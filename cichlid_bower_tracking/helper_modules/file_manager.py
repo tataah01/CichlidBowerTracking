@@ -195,11 +195,15 @@ class FileManager():
 
 
 	def createMLData(self, modelID = None):
+		if modelID is None and self.analysisID is None:
+			return
+			
 		self.vModelID = modelID
 
 		if modelID is None:
 			self.vModelID = self.analysisID
 			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + self.analysisID + '/best.pt'
+
 		else:
 			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + modelID + '/best.pt'
 
