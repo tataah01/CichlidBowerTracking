@@ -75,7 +75,7 @@ class CichlidTracker:
         # Get a JSON-ready representation of the Mail object
         mail_json = mail.get()
         # Send an HTTP POST request to /mail/send
-        response = sendgrid.client.mail.send.post(request_body=mail_json)
+        response = self.sg.client.mail.send.post(request_body=mail_json)
 
         if self.piCamera:
             if self.camera.recording:
