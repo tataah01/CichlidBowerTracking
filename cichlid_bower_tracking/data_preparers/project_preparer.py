@@ -60,6 +60,7 @@ class ProjectPreparer():
 
 	def runTrackFishAnalysis(self, videoIndexIn):
 		
+		import GPUtil
 		from cichlid_bower_tracking.data_preparers.fish_tracking_preparer import FishTrackingPreparer as FTP
 		if videoIndexIn is None:
 			videos = list(range(len(self.fileManager.lp.movies)))
