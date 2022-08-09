@@ -7,13 +7,12 @@ class FishTrackingPreparer():
 	# 3. Automatically identifies bower location
 	# 4. Analyze building, shape, and other pertinent info of the bower
 
-	def __init__(self, fileManager, videoIndex, gpu = 0):
+	def __init__(self, fileManager, videoIndex):
 
 		self.__version__ = '1.0.0'
 		self.fileManager = fileManager
 		self.videoObj = self.fileManager.returnVideoObject(videoIndex)
 		self.videoIndex = videoIndex
-		self.gpu = str(gpu)
 		self.fileManager.downloadData(self.fileManager.localYolov5WeightsFile)
 
 	def validateInputData(self):
@@ -26,7 +25,7 @@ class FishTrackingPreparer():
 		assert os.path.exists(self.fileManager.localLogfileDir)
 		assert os.path.exists(self.fileManager.localYolov5WeightsFile)
 
-	def runObjectDetectionAnalysis(self):
+	def runObjectDetectionAnalysis(self, gpu = 0):
 
 
 		print('Running Object detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
@@ -35,7 +34,7 @@ class FishTrackingPreparer():
 		command = ['python3', 'detect.py']
 		command.extend(['--weights', self.fileManager.localYolov5WeightsFile])
 		command.extend(['--source', self.videoObj.localVideoFile])
-		command.extend(['--device', self.gpu])
+		command.extend(['--device', gpu])
 		command.extend(['--project', self.annotations_dir])
 		command.extend(['--save-txt', '--nosave', '--save-conf','--agnostic-nms'])
 

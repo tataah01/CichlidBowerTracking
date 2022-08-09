@@ -75,7 +75,7 @@ class ProjectPreparer():
 		for i in range(blocks):
 			processes = []
 			for idx in range(i*8, min(i*8 + 8,len(videos))):
-				processes.append(ftp_objs[idx].runObjectDetectionAnalysis())
+				processes.append(ftp_objs[idx].runObjectDetectionAnalysis(idx%8))
 			for p1 in processes:
 				p1.communicate()
 
