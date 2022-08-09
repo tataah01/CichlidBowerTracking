@@ -50,20 +50,23 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(10,13))
+        fig = plt.figure(figsize=(10,16))
         fig.suptitle(self.lastFrameTime)
-        ax1 = fig.add_subplot(4, 3, 1) #Pic from Kinect
-        ax2 = fig.add_subplot(4, 3, 2) #Pic from Camera
-        ax3 = fig.add_subplot(4, 3, 3) #Depth from Kinect
-        ax4 = fig.add_subplot(4, 3, 4) #Total Depth Change
-        ax5 = fig.add_subplot(4, 3, 5) #Day Depth Change
-        ax6 = fig.add_subplot(4, 3, 6) #Hour Depth Change
-        ax7 = fig.add_subplot(4, 3, 7) #Total Depth Change 
-        ax8 = fig.add_subplot(4, 3, 8) #Day Depth Change
-        ax9 = fig.add_subplot(4, 3, 9) #Hour Depth Change
-        ax10 = fig.add_subplot(4, 3, 10) #Total Depth Change 
-        ax11 = fig.add_subplot(4, 3, 11) #Day Depth Change
-        ax12 = fig.add_subplot(4, 3, 12) #Hour Depth Change
+        ax1 = fig.add_subplot(5, 3, 1) #Pic from Kinect
+        ax2 = fig.add_subplot(5, 3, 2) #Pic from Camera
+        ax3 = fig.add_subplot(5, 3, 3) #Depth from Kinect
+        ax4 = fig.add_subplot(5, 3, 4) #Total Depth Change
+        ax5 = fig.add_subplot(5, 3, 5) #Day Depth Change
+        ax6 = fig.add_subplot(5, 3, 6) #Hour Depth Change
+        ax7 = fig.add_subplot(5, 3, 7) #Total Depth Change 
+        ax8 = fig.add_subplot(5, 3, 8) #Day Depth Change
+        ax9 = fig.add_subplot(5, 3, 9) #Hour Depth Change
+        ax10 = fig.add_subplot(5, 3, 10) #Total Depth Change 
+        ax11 = fig.add_subplot(5, 3, 11) #Day Depth Change
+        ax12 = fig.add_subplot(5, 3, 12) #Hour Depth Change
+        ax13 = fig.add_subplot(5, 3, 13) #Total Depth Change 
+        ax14 = fig.add_subplot(5, 3, 14) #Day Depth Change
+        ax15 = fig.add_subplot(5, 3, 15) #Hour Depth Change
 
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
         try:
@@ -92,6 +95,12 @@ class DriveUpdater:
                 alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
                 std_6 = np.nanstd(alldata, axis = 0)
  
+        # Plot before filtering
+        ax10.imshow(dpth_4, vmin = median_height - 8, vmax = median_height + 8)
+        ax11.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
+        ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
+
+
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
         dpth_3[bad_data_count > 1] = np.nan
         dpth_4[bad_data_count > 1] = np.nan
@@ -120,9 +129,12 @@ class DriveUpdater:
         ax7.set_title('Total Bower\n'+t_change)
         ax8.set_title('Last 24 hours bower\n'+d_change)
         ax9.set_title('Last 1 hour bower\n'+h_change)
-        ax10.set_title('Hour ago Depth')
-        ax11.set_title('24 hour ago Depth')
-        ax12.set_title('First daylight Depth')
+        ax10.set_title('Original Hour ago Depth')
+        ax11.set_title('Original 24 hour ago Depth')
+        ax12.set_title('Original First daylight Depth')
+        ax13.set_title('Filtered Hour ago Depth')
+        ax14.set_title('Filtered 24 hour ago Depth')
+        ax15.set_title('Filtered First daylight Depth')
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
@@ -141,9 +153,9 @@ class DriveUpdater:
         ax8.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
         ax9.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
         
-        ax10.imshow(dpth_4, vmin = median_height - 8, vmax = median_height + 8)
-        ax11.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
-        ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
+        ax13.imshow(dpth_4, vmin = median_height - 8, vmax = median_height + 8)
+        ax14.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
+        ax15.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
 
 
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
