@@ -34,7 +34,7 @@ class FishTrackingPreparer():
 		command = ['python3', 'detect.py']
 		command.extend(['--weights', self.fileManager.localYolov5WeightsFile])
 		command.extend(['--source', self.videoObj.localVideoFile])
-		command.extend(['--device', gpu])
+		command.extend(['--device', str(gpu)])
 		command.extend(['--project', self.annotations_dir])
 		command.extend(['--save-txt', '--nosave', '--save-conf','--agnostic-nms'])
 
