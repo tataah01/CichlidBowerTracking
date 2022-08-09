@@ -1,5 +1,4 @@
 import subprocess, os, pdb
-from cichlid_bower_tracking.helper_modules.sort_detections import SortFish as SF
 
 
 class FishTrackingPreparer():
