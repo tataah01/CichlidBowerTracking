@@ -446,6 +446,10 @@ class FileManager():
 		videoObj.localRawCoordsFile = self.localTroubleshootingDir + videoObj.baseName + '_rawCoords.npy'
 		videoObj.localLabeledCoordsFile = self.localTroubleshootingDir + videoObj.baseName + '_labeledCoords.npy'
 		videoObj.localLabeledClustersFile = self.localTroubleshootingDir + videoObj.baseName + '_labeledClusters.csv'
+		videoObj.localFishDetectionsFile = self.localTroubleshootingDir + videoObj.baseName + '_fishDetections.csv'
+		videoObj.localFishTracksFile = self.localTroubleshootingDir + videoObj.baseName + '_fishTracks.csv'
+
+
 		videoObj.localAllClipsDir = self.localAllClipsDir + videoObj.baseName + '/'
 		videoObj.localManualLabelClipsDir = self.localManualLabelClipsDir + videoObj.baseName + '/'
 		videoObj.localManualLabelFramesDir = self.localManualLabelFramesDir + videoObj.baseName + '/'
