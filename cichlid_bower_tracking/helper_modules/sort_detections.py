@@ -356,6 +356,7 @@ class SortFish:
                     self.update_outfile(trackers, curr_frame)
                     curr_frame += 1
 
+                pdb.set_trace()
                 yolodets = [[float(val) for val in l.decode('utf-8').strip().split(' ')] for l in f.readlines()]
                 sortdets = np.array([self.yolodet_to_sortdet(yd) for yd in yolodets])
                 trackers = tracker.update(sortdets)
