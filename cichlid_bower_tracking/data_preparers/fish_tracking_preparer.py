@@ -56,5 +56,5 @@ class FishTrackingPreparer():
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
 
-		subprocess.run(['rm', '-f', self.annotations_dir + '/exp/labels/'])
+		subprocess.run(['rm', '-rf', self.annotations_dir + '/exp/labels/'])
 
