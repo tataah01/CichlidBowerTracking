@@ -405,3 +405,4 @@ parser.add_argument('TracksFile', type = str, help = 'Csv file of tracks')
 args = parser.parse_args()
 
 sort_obj = SortFish(args.InfileDir, args.DetectionsFile, args.TracksFile)
+sort_obj.run_sort()

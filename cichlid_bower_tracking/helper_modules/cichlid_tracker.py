@@ -71,16 +71,16 @@ class CichlidTracker:
         self.googleController.modifyPiGS('Status','Stopped', ping = False)
         self.googleController.modifyPiGS('Error','UnknownError', ping = False)
 
-        subject = 'Tank stopped running'
-        content = sendgrid.Content('text/plain', 'Check controller sheet')
-        mail = sendgrid.Mail(self.from_email, self.to_email, subject, content)
-        # Get a JSON-ready representation of the Mail object
-        mail_json = mail.get()
-        # Send an HTTP POST request to /mail/send
-        response = self.sg.client.mail.send.post(request_body=mail_json)
-        print(response.status_code)
-        print(response.headers)
-
+        if self.running:
+            subject = 'Tank stopped running'
+            content = sendgrid.Content('text/plain', 'Check controller sheet')
+            mail = sendgrid.Mail(self.from_email, self.to_email, subject, content)
+            # Get a JSON-ready representation of the Mail object
+            mail_json = mail.get()
+            # Send an HTTP POST request to /mail/send
+            response = self.sg.client.mail.send.post(request_body=mail_json)
+            print(response.status_code)
+            print(response.headers)
 
         if self.piCamera:
             if self.camera.recording:

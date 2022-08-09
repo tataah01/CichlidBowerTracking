@@ -31,24 +31,27 @@ class FishTrackingPreparer():
 
 	def runObjectDetectionAnalysis(self):
 
+		self.annotations_dir = self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','')
+
 		command = ['python3', 'detect.py']
 		command.extend(['--weights', self.fileManager.localYolov5WeightsFile])
 		command.extend(['--source', self.videoObj.localVideoFile])
 		command.extend(['--device', self.gpu])
-		command.extend(['--project', self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','')])
-		command.extend(['--save-txt', '--nosave', '--save-conf',' --agnostic-nms'])
+		command.extend(['--project', self.annotations_dir])
+		command.extend(['--save-txt', '--nosave', '--save-conf','--agnostic-nms'])
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
-#		subprocess.run(['git', 'pull'])
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 
 
 	def runSORT(self):
+
 		detections = os.listdir(self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/')
 		detections = [self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/' + x for x in detections]
-		sort_obj = SF(detections, self.fileManager.localTempDir)
-		tracks_dt, detections_dt = sort_obj.run_sort()
-		pdb.set_trace()
+		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile]
+
+		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
+		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
