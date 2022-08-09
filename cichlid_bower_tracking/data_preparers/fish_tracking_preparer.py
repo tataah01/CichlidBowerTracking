@@ -51,9 +51,9 @@ class FishTrackingPreparer():
 	def runSORT(self):
 		print('Running Sort detection on ' + self.videoObj.baseName)
 
-		detections = os.listdir(self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/')
-		detections = [self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/' + x for x in detections]
 		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile]
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
+
+		subprocess.run(['rm', '-f', self.annotations_dir + '/exp/labels/'])
