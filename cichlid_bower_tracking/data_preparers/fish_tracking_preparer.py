@@ -12,7 +12,7 @@ class FishTrackingPreparer():
 	def __init__(self, fileManager, videoIndex, gpu = 0):
 
 		self.__version__ = '1.0.0'
-
+		print('Here')
 		self.fileManager = fileManager
 		self.videoObj = self.fileManager.returnVideoObject(videoIndex)
 		self.videoIndex = videoIndex
