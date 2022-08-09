@@ -58,17 +58,33 @@ class ProjectPreparer():
 			cp_obj.validateInputData()
 			cp_obj.runClusterAnalysis()
 
-	def runTrackFishAnalysis(self, videoIndex):
+	def runTrackFishAnalysis(self, videoIndexIn):
+		
 		from cichlid_bower_tracking.data_preparers.fish_tracking_preparer import FishTrackingPreparer as FTP
-		if videoIndex is None:
+		if videoIndexIn is None:
 			videos = list(range(len(self.fileManager.lp.movies)))
 		else:
-			videos = [videoIndex]
+			videos = [videoIndexIn]
+		
 		for videoIndex in videos:
 			ftp_obj = FTP(self.fileManager, videoIndex)
 			ftp_obj.validateInputData()
 			ftp_obj.runObjectDetectionAnalysis()
 			ftp_obj.runSORT()
+
+		# Combine predictions
+		if videoIndexIn is None:
+			for videoIndex in videos:
+				videoObj = self.fileManager.returnVideoObject(videoIndex)
+				new_dt = pd.read_csv(videoObj.localFishTracksFile)
+				try:
+					c_dt = c_dt.append(new_dt)
+				except NameError:
+					c_dt = new_dt
+
+			c_dt.to_csv(self.fileManager.localAllFishTracksFile)
+
+		pdb.set_trace()
 
 	def run3DClassification(self):
 		from cichlid_bower_tracking.data_preparers.threeD_classifier_preparer import ThreeDClassifierPreparer as TDCP

@@ -179,11 +179,16 @@ class FileManager():
 		self.localTempClassifierDir = self.localProjectDir + 'TempClassifier/'
 		self.localAllLabeledClustersFile = self.localAnalysisDir + 'AllLabeledClusters.csv'
 
+		# Files created by fish_tracking preparer
+		self.localAllFishTracksFile = self.localAnalysisDir + 'AllTrackedFish.csv'
+
 		# Files created by manual labelerer  preparers
 		self.localNewLabeledFramesFile = self.localTempDir + 'NewLabeledFrames.csv'
 		self.localNewLabeledFramesDir = self.localTempDir + 'NewLabeledFrames/'
 		self.localNewLabeledVideosFile = self.localTempDir + 'NewLabeledVideos.csv'
 		self.localNewLabeledClipsDir = self.localTempDir + 'NewLabeledClips/'
+
+
 
 		self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
 		self.localLabeledFramesProjectDir = self.localBoxedFishDir + projectID + '/'
@@ -448,7 +453,6 @@ class FileManager():
 		videoObj.localLabeledClustersFile = self.localTroubleshootingDir + videoObj.baseName + '_labeledClusters.csv'
 		videoObj.localFishDetectionsFile = self.localTroubleshootingDir + videoObj.baseName + '_fishDetections.csv'
 		videoObj.localFishTracksFile = self.localTroubleshootingDir + videoObj.baseName + '_fishTracks.csv'
-
 
 		videoObj.localAllClipsDir = self.localAllClipsDir + videoObj.baseName + '/'
 		videoObj.localManualLabelClipsDir = self.localManualLabelClipsDir + videoObj.baseName + '/'

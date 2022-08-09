@@ -1,6 +1,5 @@
 import subprocess, os, pdb
 
-
 class FishTrackingPreparer():
 	# This class takes in directory information and a logfile containing depth information and performs the following:
 	# 1. Identifies tray using manual input
@@ -11,7 +10,6 @@ class FishTrackingPreparer():
 	def __init__(self, fileManager, videoIndex, gpu = 0):
 
 		self.__version__ = '1.0.0'
-		print('Here')
 		self.fileManager = fileManager
 		self.videoObj = self.fileManager.returnVideoObject(videoIndex)
 		self.videoIndex = videoIndex
@@ -56,3 +54,4 @@ class FishTrackingPreparer():
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
 
 		subprocess.run(['rm', '-f', self.annotations_dir + '/exp/labels/'])
+
