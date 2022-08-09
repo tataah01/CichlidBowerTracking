@@ -33,7 +33,7 @@ class CichlidTracker:
         self.camera.resolution = (1296, 972)
         self.camera.framerate = 30
         self.piCamera = 'True'
-        
+
         # 5: Download credential files
         self.fileManager.downloadData(self.fileManager.localCredentialDir)
         self.googleController = GC(self.fileManager.localCredentialSpreadsheet)
@@ -61,6 +61,8 @@ class CichlidTracker:
 
         # 9: Await instructions
         print('Monitoring commands')
+        self.running = False
+
         self.monitorCommands()
         
     def __del__(self):
@@ -76,6 +78,9 @@ class CichlidTracker:
         mail_json = mail.get()
         # Send an HTTP POST request to /mail/send
         response = self.sg.client.mail.send.post(request_body=mail_json)
+        print(response.status_code)
+        print(response.headers)
+
 
         if self.piCamera:
             if self.camera.recording:
@@ -153,6 +158,7 @@ class CichlidTracker:
             
         if command == 'Stop':
             
+            self.running = False
             if self.piCamera:
                 if self.camera.recording:
                     self.camera.stop_recording()
@@ -275,6 +281,7 @@ class CichlidTracker:
             self._diagnose_speed()
 
         # Capture data
+        self.running = True
         self.captureFrames()
     
     def captureFrames(self, frame_delta = 5, background_delta = 5):
