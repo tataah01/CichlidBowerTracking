@@ -209,7 +209,7 @@ class FrameObj:
         self.npy_file = npy_file
         self.pic_file = pic_file
         self.std_file = npy_file.replace('Frame_', 'Frame_std_')
-        self.alldata_file = npy_file.replace('Frame_', 'AllData')
+        self.alldata_file = npy_file.replace('Frame_', 'AllData_')
         self.time = time
         self.med = med
         self.std = std
