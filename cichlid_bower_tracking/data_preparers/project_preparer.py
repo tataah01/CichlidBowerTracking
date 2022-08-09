@@ -68,7 +68,7 @@ class ProjectPreparer():
 			ftp_obj = FTP(self.fileManager, videoIndex)
 			ftp_obj.validateInputData()
 			#ftp_obj.runObjectDetectionAnalysis()
-			ftp_obj.runSortAnalysis()
+			ftp_obj.runSORT()
 
 	def run3DClassification(self):
 		from cichlid_bower_tracking.data_preparers.threeD_classifier_preparer import ThreeDClassifierPreparer as TDCP
