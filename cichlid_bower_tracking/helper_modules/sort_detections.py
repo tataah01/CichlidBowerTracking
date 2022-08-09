@@ -353,7 +353,7 @@ class SortFish:
 
                 while frame > curr_frame:
                     trackers = tracker.update()
-                    self.update_outfile(trackers, curr_frame, outfile)
+                    self.update_outfile(trackers, curr_frame)
                     curr_frame += 1
 
                 yolodets = [[float(val) for val in l.decode('utf-8').strip().split(' ')] for l in f.readlines()]
