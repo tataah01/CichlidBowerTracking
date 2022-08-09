@@ -1,4 +1,5 @@
 import subprocess, os, pdb
+from cichlid_bower_tracking.helper_modules.sort_detections import SortFish as SF
 
 
 class FishTrackingPreparer():
@@ -44,6 +45,9 @@ class FishTrackingPreparer():
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 
+
+	def runSORT(self):
+		detections = os.listdir(self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/')
+		sort_obj = SF(detections, self.fileManager.localTempDir)
+		tracks_dt, detections_dt = sort_obj.run_sort()
 		pdb.set_trace()
-
-
