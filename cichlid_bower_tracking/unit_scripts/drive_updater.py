@@ -38,7 +38,7 @@ class DriveUpdater:
 
         f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
 
-    def _createImage(self, stdcutoff = 0.2):
+    def _createImage(self, stdcutoff = 0.3):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
@@ -104,15 +104,15 @@ class DriveUpdater:
 
 
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
-        dpth_3[bad_data_count > 1] = np.nan
-        dpth_4[bad_data_count > 1] = np.nan
-        dpth_5[bad_data_count > 1] = np.nan
-        dpth_6[bad_data_count > 1] = np.nan
+        dpth_3[bad_data_count > 2] = np.nan
+        dpth_4[bad_data_count > 2] = np.nan
+        dpth_5[bad_data_count > 2] = np.nan
+        dpth_6[bad_data_count > 2] = np.nan
 
-        #dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        #dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        #dpth_5[(dpth_5 > median_height + 8) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        #dpth_6[(dpth_6 > median_height + 8) | (dpth_6 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_5[(dpth_5 > median_height + 8) | (dpth_5 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_6[(dpth_6 > median_height + 8) | (dpth_6 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
 
 
         total_change = dpth_4 - dpth_3
@@ -130,12 +130,12 @@ class DriveUpdater:
         ax7.set_title('Total Bower\n'+t_change)
         ax8.set_title('Last 24 hours bower\n'+d_change)
         ax9.set_title('Last 1 hour bower\n'+h_change)
-        ax10.set_title('Original Hour ago Depth')
+        ax10.set_title('Original First Daylight Depth')
         ax11.set_title('Original 24 hour ago Depth')
-        ax12.set_title('Original First daylight Depth')
-        ax13.set_title('Filtered Hour ago Depth')
+        ax12.set_title('Original Hour Ago Depth')
+        ax13.set_title('Filtered First Daylight Depth')
         ax14.set_title('Filtered 24 hour ago Depth')
-        ax15.set_title('Filtered First daylight Depth')
+        ax15.set_title('Filtered Hour Ago Depth')
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
@@ -183,7 +183,6 @@ class DriveUpdater:
                 flag = True
             else:
                 count += 1
-        pdb.set_trace()
         if flag == True:
             # Replace the file if name exists
             f = drive.CreateFile({'id': fileID})
