@@ -53,7 +53,6 @@ class CichlidTracker:
         # 8: Create email server
         with open(self.fileManager.localEmailCredentialFile) as f:
             my_api_key = [x.strip() for x in f.readlines()][0]
-            pdb.set_trace()
 
         self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
         self.from_email = sendgrid.Email('themcgrathlab@gmail.com')  # Change to your verified sender
