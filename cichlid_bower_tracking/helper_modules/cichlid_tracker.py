@@ -527,7 +527,8 @@ class CichlidTracker:
         outstring += 'FilteredStdPixels: ' + str(bad_std_avg_pixels) + ',,FilteredCountPixels: ' + str(bad_count_avg_pixels) + ',,LOF: ' + str(self._video_recording(time = endtime))
         
         self._print(outstring)
-        np.save(self.projectDirectory +'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
+        np.save(self.projectDirectory + 'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
+        np.save(self.projectDirectory + 'Frames/Frame_std_' + str(self.frameCounter).zfill(6) + '.npy', std)
         matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
         
         self.frameCounter += 1

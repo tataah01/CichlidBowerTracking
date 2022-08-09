@@ -1,4 +1,4 @@
-import datetime, os, subprocess, pdb
+import datetime, os, subprocess, pdb, math
 
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
@@ -66,23 +66,38 @@ class ProjectPreparer():
 		else:
 			videos = [videoIndexIn]
 		
+		ftp_objs = []
 		for videoIndex in videos:
-			ftp_obj = FTP(self.fileManager, videoIndex)
+			ftp_objs.append(FTP(self.fileManager, videoIndex))
 			ftp_obj.validateInputData()
-			ftp_obj.runObjectDetectionAnalysis()
+
+		blocks = math.ceil(len(videos)/8)
+		for i in range(blocks):
+			processes = []
+			for idx in range(i*8, min(i*8,len(videos))):
+				processes.append(ftp_objs[idx].runObjectDetectionAnalysis())
+			for p1 in processes:
+				p1.communicate()
+
+		for idx in range(len(videos)):
 			ftp_obj.runSORT()
 
 		# Combine predictions
 		if videoIndexIn is None:
 			for videoIndex in videos:
 				videoObj = self.fileManager.returnVideoObject(videoIndex)
-				new_dt = pd.read_csv(videoObj.localFishTracksFile)
+				new_dt_t = pd.read_csv(videoObj.localFishTracksFile)
+				new_dt_d = pd.read_csv(videoObj.localFishDetectionsFile)
 				try:
-					c_dt = c_dt.append(new_dt)
-				except NameError:
-					c_dt = new_dt
+					c_dt_t = c_dt_t.append(new_dt_t)
+					c_dt_d = c_dt_d.append(new_dt_d)
 
-			c_dt.to_csv(self.fileManager.localAllFishTracksFile)
+				except NameError:
+					c_dt_t = new_dt_t
+					c_dt_d = new_dt_d
+
+			c_dt_t.to_csv(self.fileManager.localAllFishTracksFile)
+			c_dt_d.to_csv(self.fileManager.localAllFishDetectionsFile)
 
 		pdb.set_trace()
 

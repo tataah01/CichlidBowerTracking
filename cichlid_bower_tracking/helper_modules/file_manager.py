@@ -181,13 +181,13 @@ class FileManager():
 
 		# Files created by fish_tracking preparer
 		self.localAllFishTracksFile = self.localAnalysisDir + 'AllTrackedFish.csv'
+		self.localAllFishDetectionsFile = self.localAnalysisDir + 'AllTrackedFish.csv'
 
 		# Files created by manual labelerer  preparers
 		self.localNewLabeledFramesFile = self.localTempDir + 'NewLabeledFrames.csv'
 		self.localNewLabeledFramesDir = self.localTempDir + 'NewLabeledFrames/'
 		self.localNewLabeledVideosFile = self.localTempDir + 'NewLabeledVideos.csv'
 		self.localNewLabeledClipsDir = self.localTempDir + 'NewLabeledClips/'
-
 
 
 		self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
