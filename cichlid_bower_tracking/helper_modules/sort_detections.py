@@ -348,7 +348,7 @@ class SortFish:
         curr_frame = 0
 
         for detection in self.infile_list:
-            frame = int(detection.name.split('_')[-1].split('.')[0])
+            frame = int(detection.split('_')[-1].split('.')[0])
             with open(detection) as f:
 
                 while frame > curr_frame:
