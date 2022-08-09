@@ -472,7 +472,7 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy,,Units: cm')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 1.2, count_threshold = 10):
+    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 3, count_threshold = 50):
         # Captures time averaged frame of depth data
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
@@ -515,7 +515,7 @@ class CichlidTracker:
 
         counts = np.count_nonzero(~np.isnan(all_data), axis = 0)
 
-        bad_count_avg_pixels = (counts<count_threshold).sum()
+        bad_count_avg_pixels = (counts< i + 1 - count_threshold).sum()
         med[counts < i + 1 - count_threshold] = np.nan
         std[counts < i + 1 - count_threshold] = np.nan
 
