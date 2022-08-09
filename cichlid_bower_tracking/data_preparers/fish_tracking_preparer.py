@@ -36,7 +36,7 @@ class FishTrackingPreparer():
 		command.extend(['--source', self.videoObj.localVideoFile])
 		command.extend(['--device', self.gpu])
 		command.extend(['--project', self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','')])
-		command.extend(['--save-txt', '--nosave', '--save-conf'])
+		command.extend(['--save-txt', '--nosave', '--save-conf',' --agnostic-nms'])
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 
@@ -51,4 +51,3 @@ class FishTrackingPreparer():
 		detections = [self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','') + '/exp/labels/' + x for x in detections]
 		sort_obj = SF(detections, self.fileManager.localTempDir)
 		tracks_dt, detections_dt = sort_obj.run_sort()
-		pdb.set_trace()
