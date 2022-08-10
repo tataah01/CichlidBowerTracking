@@ -42,11 +42,11 @@ class FishTrackingPreparer():
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
 		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr=subprocess.DEVNULL, stdout=subprocess.DEVNULL)
-		#os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
+		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		return output
 
 	def runSORT(self):
-
+		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		print('Running Sort detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 
 		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile, self.videoObj.baseName]

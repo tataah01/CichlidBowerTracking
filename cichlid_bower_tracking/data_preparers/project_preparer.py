@@ -81,7 +81,7 @@ class ProjectPreparer():
 			for i in range(4):
 				for gpu in available_cards:
 					if current_idx < len(videos):
-						processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
+						#processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
 						current_idx += 1
 
 
