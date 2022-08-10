@@ -38,7 +38,7 @@ class DriveUpdater:
 
         f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
 
-    def _createImage(self, stdcutoff = 0.3):
+    def _createImage(self, stdcutoff = 0.5):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
@@ -88,12 +88,17 @@ class DriveUpdater:
             except FileNotFoundError:
                 alldata = np.load(self.projectDirectory + self.lp.frames[-1].alldata_file)
                 std_3 = np.nanstd(alldata, axis = 0)
+                dpth_3 = np.nanmedian(alldata, axis = 0)
                 alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
                 std_4 = np.nanstd(alldata, axis = 0)
+                dpth_4 = np.nanmedian(alldata, axis = 0)
                 alldata = np.load(self.projectDirectory + lastDayFrames[0].alldata_file)
                 std_5 = np.nanstd(alldata, axis = 0)
+                dpth_5 = np.nanmedian(alldata, axis = 0)
                 alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
                 std_6 = np.nanstd(alldata, axis = 0)
+                dpth_6 = np.nanmedian(alldata, axis = 0)
+
  
         # Plot before filtering
         median_height = np.nanmedian(dpth_3)
