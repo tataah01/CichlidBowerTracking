@@ -396,7 +396,7 @@ class SortFish:
         df.index.rename('track_id', inplace=True)
         df = df.sort_values(by=['track_id', 'frame'])
 
-        df.write_csv(self.tracks_file)
+        df.to_csv(self.tracks_file)
 
 
 parser = argparse.ArgumentParser(usage = 'This script will create fish tracks from YOLOV5 Detections')
