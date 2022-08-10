@@ -15,7 +15,6 @@ import oauth2client
 
 parser = argparse.ArgumentParser()
 parser.add_argument('Logfile', type = str, help = 'Name of logfile')
-
 args = parser.parse_args()
 
 
@@ -201,8 +200,9 @@ class DriveUpdater:
             f.SetContentFile(image_file)
             f.Upload()                   
             # print("Uploaded", name, "as new file")
-        
-        info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
+        info = '=HYPERLINK("' + f['webContentLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
+
+        #info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
         self.googleController.modifyPiGS('Image', info, ping = False)
         return f
     
