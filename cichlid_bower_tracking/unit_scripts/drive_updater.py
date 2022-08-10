@@ -95,10 +95,16 @@ class DriveUpdater:
                 mins = np.nanmin(alldata, axis = 0)
                 mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
                 alldata[alldata == mins] = np.nan
+                mins = np.nanmin(alldata, axis = 0)
+                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+                alldata[alldata == mins] = np.nan
                 std_3 = np.nanstd(alldata, axis = 0)
                 dpth_3 = np.nanmedian(alldata, axis = 0)
 
                 alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
+                mins = np.nanmin(alldata, axis = 0)
+                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+                alldata[alldata == mins] = np.nan
                 mins = np.nanmin(alldata, axis = 0)
                 mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
                 alldata[alldata == mins] = np.nan
@@ -115,10 +121,16 @@ class DriveUpdater:
                 mins = np.nanmin(alldata, axis = 0)
                 mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
                 alldata[alldata == mins] = np.nan
+                mins = np.nanmin(alldata, axis = 0)
+                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+                alldata[alldata == mins] = np.nan
                 std_5 = np.nanstd(alldata, axis = 0)
                 dpth_5 = np.nanmedian(alldata, axis = 0)
 
                 alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
+                mins = np.nanmin(alldata, axis = 0)
+                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+                alldata[alldata == mins] = np.nan
                 mins = np.nanmin(alldata, axis = 0)
                 mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
                 alldata[alldata == mins] = np.nan
