@@ -37,7 +37,7 @@ from __future__ import print_function
 import numpy as np
 import pandas as pd
 from filterpy.kalman import KalmanFilter
-import tarfile, pdb, argparse
+import tarfile, pdb, argparse, os
 
 np.random.seed(0)
 
