@@ -81,17 +81,16 @@ class ProjectPreparer():
 			for i in range(4):
 				for gpu in available_cards:
 					if current_idx < len(videos):
-						#processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
+						processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
 						current_idx += 1
 
 
 			for p1 in processes:
-				#p1.communicate()
+				p1.communicate()
 				print(p1.returncode)
 
 		for idx in range(len(videos)):
-			pass
-			#ftp_objs[idx].runSORT()
+			ftp_objs[idx].runSORT()
 
 		# Combine predictions
 		if videoIndexIn is None:

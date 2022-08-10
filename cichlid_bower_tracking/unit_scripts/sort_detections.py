@@ -297,7 +297,7 @@ class Sort(object):
 
 """new code begins here"""
 class SortFish:
-    def __init__(self, infile_dir, detections_file, tracks_file):
+    def __init__(self, infile_dir, detections_file, tracks_file, base_name):
         self.infile_list = [infile_dir + x for x in os.listdir(infile_dir)]
 
         self.detections_file = detections_file
@@ -305,8 +305,10 @@ class SortFish:
         self.detections_fp = open(detections_file, 'w')
         self.tracks_fp = open(tracks_file, 'w')
 
-        self.tracks_fp.write('track_id,frame,xc,yc,w,h,class_id,u_dot,v_dot,s_dot,p_value\n')
-        self.detections_fp.write('frame,x1,x2,y1,y2,p-value,class,tracked\n')
+        self.base_name = base_name
+
+        self.tracks_fp.write('base_name,track_id,frame,xc,yc,w,h,class_id,u_dot,v_dot,s_dot,p_value\n')
+        self.detections_fp.write('base_name,frame,x1,x2,y1,y2,p-value,class,tracked\n')
 
     def yolodet_to_sortdet(self, det):
         """converts a detection of the form [class, x_center, y_center, width, height, score] to the form
@@ -396,14 +398,15 @@ class SortFish:
         dt = pd.read_csv(self.detections_file)
 
         df.write_csv(self.tracks_file)
-        pdb.set_trace()
 
 
 parser = argparse.ArgumentParser(usage = 'This script will create fish tracks from YOLOV5 Detections')
 parser.add_argument('InfileDir', type = str, help = 'Directory containing YOLOV5 detections')
 parser.add_argument('DetectionsFile', type = str, help = 'Csv file of processed detections')
 parser.add_argument('TracksFile', type = str, help = 'Csv file of tracks')
+parser.add_argument('BaseName', type = str, help = 'Csv file of tracks')
+
 args = parser.parse_args()
 
-sort_obj = SortFish(args.InfileDir, args.DetectionsFile, args.TracksFile)
+sort_obj = SortFish(args.InfileDir, args.DetectionsFile, args.TracksFile, args.BaseName)
 sort_obj.run_sort()

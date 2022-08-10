@@ -49,11 +49,11 @@ class FishTrackingPreparer():
 
 		print('Running Sort detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 
-
-		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile]
+		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile, self.videoObj.baseName]
+		print(command)
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
-
-		subprocess.run(['rm', '-rf', self.annotations_dir + '/exp/labels/'])
+		print(output)
+		#subprocess.run(['rm', '-rf', self.annotations_dir + '/exp/labels/'])
 
