@@ -47,9 +47,8 @@ class FishTrackingPreparer():
 
 	def runSORT(self):
 
-		print('Running Object detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
+		print('Running Sort detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 
-		print('Running Sort detection on ' + self.videoObj.baseName)
 
 		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile]
 
