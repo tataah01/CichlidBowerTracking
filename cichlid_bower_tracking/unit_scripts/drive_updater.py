@@ -49,7 +49,7 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(14,19))
+        fig = plt.figure(figsize=(14,21))
         fig.suptitle(self.lastFrameTime)
         ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
@@ -148,16 +148,18 @@ class DriveUpdater:
         ax11.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
         ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
 
+        # Filter out data thaat has a bad stdev
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
         dpth_3[bad_data_count > 2] = np.nan
         dpth_4[bad_data_count > 2] = np.nan
         dpth_5[bad_data_count > 2] = np.nan
         dpth_6[bad_data_count > 2] = np.nan
 
+        # Filter out data that has bad initial height
         dpth_3[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_4[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         dpth_5[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         dpth_6[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_4[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
 
 
         total_change = dpth_4 - dpth_3
