@@ -46,6 +46,8 @@ class FishTrackingPreparer():
 		return output
 
 	def runSORT(self):
+		self.annotations_dir = self.fileManager.localTempDir + self.videoObj.localVideoFile.split('/')[-1].replace('.mp4','')
+
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		print('Running Sort detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 
