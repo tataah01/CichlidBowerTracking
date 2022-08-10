@@ -384,7 +384,7 @@ class SortFish:
         self.detections_fp.close()
         self.tracks_fp.close()
 
-        df = pd.read_csv(open(self.tracks_file), index_col=0)
+        df = pd.read_csv(open(self.tracks_file), index_col=1)
         track_lengths = df.groupby('track_id').count()['frame']
         t = track_lengths.groupby(track_lengths.values).count()
 
@@ -395,7 +395,6 @@ class SortFish:
         df.index = idx
         df.index.rename('track_id', inplace=True)
         df = df.sort_values(by=['track_id', 'frame'])
-        dt = pd.read_csv(self.detections_file)
 
         df.write_csv(self.tracks_file)
 
