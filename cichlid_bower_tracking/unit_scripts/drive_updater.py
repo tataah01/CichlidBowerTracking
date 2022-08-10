@@ -106,7 +106,7 @@ class DriveUpdater:
         ax11.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
         ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
 
-
+        print(np.nanmedian(std_3))
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
         dpth_3[bad_data_count > 2] = np.nan
         dpth_4[bad_data_count > 2] = np.nan
@@ -200,6 +200,7 @@ class DriveUpdater:
             f.SetContentFile(image_file)
             f.Upload()                   
             # print("Uploaded", name, "as new file")
+        print(f['webContentLink'])
         info = '=HYPERLINK("' + f['webContentLink'].replace('&export=download', '') + '", IMAGE("' + f['webContentLink'] + '"))'
 
         #info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
