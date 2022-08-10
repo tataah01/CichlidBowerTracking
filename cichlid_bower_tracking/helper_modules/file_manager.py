@@ -181,7 +181,7 @@ class FileManager():
 
 		# Files created by fish_tracking preparer
 		self.localAllFishTracksFile = self.localAnalysisDir + 'AllTrackedFish.csv'
-		self.localAllFishDetectionsFile = self.localAnalysisDir + 'AllTrackedFish.csv'
+		self.localAllFishDetectionsFile = self.localAnalysisDir + 'AllDetectionsFish.csv'
 
 		# Files created by manual labelerer  preparers
 		self.localNewLabeledFramesFile = self.localTempDir + 'NewLabeledFrames.csv'
@@ -410,11 +410,20 @@ class FileManager():
 				except AttributeError:
 					pass
 
+		elif dtype == 'TrackFish':
+			if not no_upload:
+				self.uploadData(self.localAllFishTracksFile)
+				self.uploadData(self.localAllFishDetectionsFile)
+
+			if delete:
+				shutil.rmtree(self.localProjectDir)
+				os.remove(self.localYolov5WeightsFile)
+
 		elif dtype == 'Train3DResnet':
 			if not no_upload:
 				self.uploadData(self.local3DModelDir)
 			if delete:
-				shutil.rmtree(self.local3DModelDir)
+				shutil.rmtree(self.localTempDir)
 				shutil.rmtree(self.local3DModelTempDir)
 				shutil.rmtree(self.localAnnotationDir)
 
