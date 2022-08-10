@@ -49,7 +49,7 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(10,16))
+        fig = plt.figure(figsize=(10,19))
         fig.suptitle(self.lastFrameTime)
         ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
