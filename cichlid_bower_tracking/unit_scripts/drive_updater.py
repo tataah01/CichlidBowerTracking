@@ -154,10 +154,10 @@ class DriveUpdater:
         dpth_5[bad_data_count > 2] = np.nan
         dpth_6[bad_data_count > 2] = np.nan
 
-        dpth_3[(dpth_4 > median_height + 2.5) | (dpth_4 < median_height - 2.5)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_4[(dpth_4 > median_height + 2.5) | (dpth_4 < median_height - 2.5)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_5[(dpth_4 > median_height + 2.5) | (dpth_4 < median_height - 2.5)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_6[(dpth_4 > median_height + 2.5) | (dpth_4 < median_height - 2.5)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_3[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_4[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_5[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_6[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
 
 
         total_change = dpth_4 - dpth_3
