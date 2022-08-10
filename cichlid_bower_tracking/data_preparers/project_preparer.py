@@ -1,4 +1,5 @@
 import datetime, os, subprocess, pdb, math
+import pandas as pd
 
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
@@ -80,16 +81,17 @@ class ProjectPreparer():
 			for i in range(4):
 				for gpu in available_cards:
 					if current_idx < len(videos):
-						processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
+						#processes.append(ftp_objs[current_idx].runObjectDetectionAnalysis(gpu))
 						current_idx += 1
 
 
 			for p1 in processes:
-				p1.communicate()
+				#p1.communicate()
 				print(p1.returncode)
 
 		for idx in range(len(videos)):
-			ftp_objs[idx].runSORT()
+			pass
+			#ftp_objs[idx].runSORT()
 
 		# Combine predictions
 		if videoIndexIn is None:
