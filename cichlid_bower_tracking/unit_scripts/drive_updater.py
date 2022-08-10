@@ -49,7 +49,7 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(10,19))
+        fig = plt.figure(figsize=(14,19))
         fig.suptitle(self.lastFrameTime)
         ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
@@ -206,9 +206,9 @@ class DriveUpdater:
         ax14.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
         ax15.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
 
-        ax16.imshow(std_4, vmin = 0, vmax = 1)
-        ax17.imshow(std_5, vmin = 0, vmax = 1)
-        ax18.imshow(std_6, vmin = 0, vmax = 1)
+        ax16.imshow(std_4, vmin = 0, vmax = .25)
+        ax17.imshow(std_5, vmin = 0, vmax = .25)
+        ax18.imshow(std_6, vmin = 0, vmax = .25)
 
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
@@ -247,7 +247,6 @@ class DriveUpdater:
             f.SetContentFile(image_file)
             f.Upload()                   
             # print("Uploaded", name, "as new file")
-        print(f['webContentLink'])
         info = '=HYPERLINK("' + f['webContentLink'].replace('&export=download', '') + '", IMAGE("' + f['webContentLink'] + '"))'
 
         #info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
