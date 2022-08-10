@@ -51,21 +51,24 @@ class DriveUpdater:
         
         fig = plt.figure(figsize=(10,16))
         fig.suptitle(self.lastFrameTime)
-        ax1 = fig.add_subplot(5, 3, 1) #Pic from Kinect
-        ax2 = fig.add_subplot(5, 3, 2) #Pic from Camera
-        ax3 = fig.add_subplot(5, 3, 3) #Depth from Kinect
-        ax4 = fig.add_subplot(5, 3, 4) #Total Depth Change
-        ax5 = fig.add_subplot(5, 3, 5) #Day Depth Change
-        ax6 = fig.add_subplot(5, 3, 6) #Hour Depth Change
-        ax7 = fig.add_subplot(5, 3, 7) #Total Depth Change 
-        ax8 = fig.add_subplot(5, 3, 8) #Day Depth Change
-        ax9 = fig.add_subplot(5, 3, 9) #Hour Depth Change
-        ax10 = fig.add_subplot(5, 3, 10) #Total Depth Change 
-        ax11 = fig.add_subplot(5, 3, 11) #Day Depth Change
-        ax12 = fig.add_subplot(5, 3, 12) #Hour Depth Change
-        ax13 = fig.add_subplot(5, 3, 13) #Total Depth Change 
-        ax14 = fig.add_subplot(5, 3, 14) #Day Depth Change
-        ax15 = fig.add_subplot(5, 3, 15) #Hour Depth Change
+        ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
+        ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
+        ax3 = fig.add_subplot(6, 3, 3) #Depth from Kinect
+        ax4 = fig.add_subplot(6, 3, 4) #Total Depth Change
+        ax5 = fig.add_subplot(6, 3, 5) #Day Depth Change
+        ax6 = fig.add_subplot(6, 3, 6) #Hour Depth Change
+        ax7 = fig.add_subplot(6, 3, 7) #Total Depth Change 
+        ax8 = fig.add_subplot(6, 3, 8) #Day Depth Change
+        ax9 = fig.add_subplot(6, 3, 9) #Hour Depth Change
+        ax10 = fig.add_subplot(6, 3, 10) #Total Depth Change 
+        ax11 = fig.add_subplot(6, 3, 11) #Day Depth Change
+        ax12 = fig.add_subplot(6, 3, 12) #Hour Depth Change
+        ax13 = fig.add_subplot(6, 3, 13) #Total Depth Change 
+        ax14 = fig.add_subplot(6, 3, 14) #Day Depth Change
+        ax15 = fig.add_subplot(6, 3, 15) #Hour Depth Change
+        ax16 = fig.add_subplot(6, 3, 16) #Hour Depth Change
+        ax17 = fig.add_subplot(6, 3, 17) #Hour Depth Change
+        ax18 = fig.add_subplot(6, 3, 18) #Hour Depth Change
 
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
         try:
@@ -107,10 +110,10 @@ class DriveUpdater:
         ax12.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
 
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int)
-        #dpth_3[bad_data_count > 2] = np.nan
-        #dpth_4[bad_data_count > 2] = np.nan
-        #dpth_5[bad_data_count > 2] = np.nan
-        #dpth_6[bad_data_count > 2] = np.nan
+        dpth_3[bad_data_count > 2] = np.nan
+        dpth_4[bad_data_count > 2] = np.nan
+        dpth_5[bad_data_count > 2] = np.nan
+        dpth_6[bad_data_count > 2] = np.nan
 
         dpth_3[(dpth_3 > median_height + 8) | (dpth_3 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         dpth_4[(dpth_4 > median_height + 8) | (dpth_4 < median_height - 8)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
@@ -139,6 +142,9 @@ class DriveUpdater:
         ax13.set_title('Filtered First Daylight Depth')
         ax14.set_title('Filtered 24 hour ago Depth')
         ax15.set_title('Filtered Hour Ago Depth')
+        ax16.set_title('First Std')
+        ax17.set_title('24 hours ago Std')
+        ax18.set_title('Hour ago Std')
 
         ax1.imshow(img_1)
         ax2.imshow(img_2)
@@ -161,6 +167,9 @@ class DriveUpdater:
         ax14.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
         ax15.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
 
+        ax16.imshow(std_4, vmin = 0, vmax = 1)
+        ax17.imshow(std_5, vmin = 0, vmax = 1)
+        ax18.imshow(std_6, vmin = 0, vmax = 1)
 
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
