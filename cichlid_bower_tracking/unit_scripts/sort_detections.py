@@ -343,7 +343,7 @@ class SortFish:
             u_dot, v_dot, s_dot = t[5], t[6], t[7]
             p_value = t[8]
             track_id = t[9]
-            print(f'{track_id}, {frame}, {xc}, {yc}, {w}, {h}, {class_id}, {u_dot}, {v_dot}, {s_dot}, {p_value}', file=self.tracks_fp)
+            print(f'{self.base_name}, {track_id}, {frame}, {xc}, {yc}, {w}, {h}, {class_id}, {u_dot}, {v_dot}, {s_dot}, {p_value}', file=self.tracks_fp)
 
 
     def run_sort(self, min_track_len=0, max_age=5, min_hits=3):
@@ -367,9 +367,9 @@ class SortFish:
 
                 for i,sdet in enumerate(sortdets):
                     if i in tracker.matched:
-                        print(','.join([str(frame)] + [str(x) for x in sdet] + ['1']), file = self.detections_fp)
+                        print(','.join([self.base_name] + [str(frame)] + [str(x) for x in sdet] + ['1']), file = self.detections_fp)
                     elif i in tracker.unmatched:
-                        print(','.join([str(frame)] + [str(x) for x in sdet] + ['0']), file = self.detections_fp)
+                        print(','.join([self.base_name] + [str(frame)] + [str(x) for x in sdet] + ['0']), file = self.detections_fp)
                     else:
                         pdb.set_trace()
                 if trackers.any():
@@ -395,6 +395,8 @@ class SortFish:
         df.index = idx
         df.index.rename('track_id', inplace=True)
         df = df.sort_values(by=['track_id', 'frame'])
+
+        pdb.set_trace()
 
         df.to_csv(self.tracks_file)
 
