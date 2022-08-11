@@ -57,6 +57,5 @@ class FishTrackingPreparer():
 		#subprocess.run('bash -c \"' + command + '\"', shell = True)
 
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
-		print(output)
 		subprocess.run(['rm', '-rf', self.annotations_dir + '/exp/'])
 
