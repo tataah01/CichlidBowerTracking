@@ -54,9 +54,9 @@ class FishTrackingPreparer():
 		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp3/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile, self.videoObj.baseName]
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
-		subprocess.run('bash -c \"' + command + '\"', shell = True)
+		#subprocess.run('bash -c \"' + command + '\"', shell = True)
 
-		#output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
+		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
 		print(output)
 		#subprocess.run(['rm', '-rf', self.annotations_dir + '/exp/'])
 

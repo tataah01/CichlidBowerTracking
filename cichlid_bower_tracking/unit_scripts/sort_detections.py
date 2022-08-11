@@ -377,7 +377,8 @@ class SortFish:
                     #print(trackers)
                 self.update_outfile(trackers, curr_frame)
                 if not curr_frame % 100:
-                    print(f'frame {curr_frame} processed')
+                    pass
+                    #print(f'frame {curr_frame} processed')
                 curr_frame += 1
 
         self.detections_fp.close()
@@ -394,8 +395,7 @@ class SortFish:
         df.index = idx
         df.index.rename('track_id', inplace=True)
         df = df.sort_values(by=['track_id', 'frame'])
-
-        pdb.set_trace()
+        dt = pd.read_csv(self.detections_file)
 
         df.to_csv(self.tracks_file)
 
