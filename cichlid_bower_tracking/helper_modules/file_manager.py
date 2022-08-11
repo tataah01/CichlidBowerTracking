@@ -297,7 +297,7 @@ class FileManager():
 			self.createDirectory(self.localTempDir)
 
 			self.downloadData(self.localLogfile)
-			self.fileManager.downloadData(self.fileManager.localYolov5WeightsFile)
+			self.downloadData(self.localYolov5WeightsFile)
 
 			if videoIndex is not None:
 				videoObj = self.returnVideoObject(videoIndex)
