@@ -298,6 +298,7 @@ class Sort(object):
 """new code begins here"""
 class SortFish:
     def __init__(self, infile_dir, detections_file, tracks_file, base_name):
+        pdb.set_trace()
         self.infile_list = [infile_dir + x for x in os.listdir(infile_dir)]
 
         self.detections_file = detections_file
@@ -411,5 +412,6 @@ parser.add_argument('BaseName', type = str, help = 'Csv file of tracks')
 
 args = parser.parse_args()
 
+print('made it here')
 sort_obj = SortFish(args.InfileDir, args.DetectionsFile, args.TracksFile, args.BaseName)
 sort_obj.run_sort()
