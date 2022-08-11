@@ -88,6 +88,7 @@ class ProjectPreparer():
 			for p1 in processes:
 				p1.communicate()
 				if p1.returncode != 0:
+					pdb.set_trace()
 					print(p1)
 
 		for idx in range(len(videos)):
