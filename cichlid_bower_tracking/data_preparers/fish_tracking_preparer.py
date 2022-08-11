@@ -41,7 +41,7 @@ class FishTrackingPreparer():
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
-		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stdout=subprocess.DEVNULL)
+		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = subprocess.DEVNULL, stdout=subprocess.DEVNULL)
 		#os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		return output
 
@@ -53,7 +53,7 @@ class FishTrackingPreparer():
 
 		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp3/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile, self.videoObj.baseName]
 
-		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
+		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate CichlidSort; " + ' '.join(command)
 		#subprocess.run('bash -c \"' + command + '\"', shell = True)
 
 		output = subprocess.run('bash -c \"' + command + '\"', shell = True, capture_output = True)
