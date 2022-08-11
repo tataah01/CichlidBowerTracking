@@ -87,7 +87,8 @@ class ProjectPreparer():
 
 			for p1 in processes:
 				p1.communicate()
-				print(p1.returncode)
+				if p1.returncode != 0:
+					print(p1)
 
 		for idx in range(len(videos)):
 			ftp_objs[idx].runSORT()
