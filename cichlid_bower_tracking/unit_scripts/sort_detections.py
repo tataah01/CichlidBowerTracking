@@ -376,9 +376,8 @@ class SortFish:
                     pass
                     #print(trackers)
                 self.update_outfile(trackers, curr_frame)
-                if not curr_frame % 1000:
-                    pass
-                    #print(f'frame {curr_frame} processed')
+                if not curr_frame % 10000:
+                    print(f'frame {curr_frame} processed')
                 curr_frame += 1
 
         self.detections_fp.close()
