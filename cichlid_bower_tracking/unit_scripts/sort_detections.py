@@ -361,7 +361,6 @@ class SortFish:
                     self.update_outfile(trackers, curr_frame)
                     curr_frame += 1
 
-                pdb.set_trace()
                 yolodets = [[float(val) for val in l.strip().split(' ')] for l in f.readlines()]
                 sortdets = np.array([self.yolodet_to_sortdet(yd) for yd in yolodets])
                 trackers = tracker.update(sortdets)
@@ -409,6 +408,5 @@ parser.add_argument('BaseName', type = str, help = 'Csv file of tracks')
 
 args = parser.parse_args()
 
-print('made it here')
 sort_obj = SortFish(args.InfileDir, args.DetectionsFile, args.TracksFile, args.BaseName)
 sort_obj.run_sort()
