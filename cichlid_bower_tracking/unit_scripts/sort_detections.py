@@ -352,6 +352,8 @@ class SortFish:
         tracker = Sort(max_age=max_age, min_hits=min_hits)
         curr_frame = 0
 
+        pdb.set_trace()
+
         for detection in self.infile_list:
             frame = int(detection.split('_')[-1].split('.')[0])
             with open(detection) as f:
