@@ -51,7 +51,7 @@ class FishTrackingPreparer():
 		os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		print('Running Sort detection on ' + self.videoObj.baseName + ' ' + str(datetime.datetime.now()), flush = True)
 
-		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp3/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile, self.videoObj.baseName]
+		command = ['python3', 'unit_scripts/sort_detections.py', self.annotations_dir + '/exp/labels/', self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile, self.videoObj.baseName]
 
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate CichlidSort; " + ' '.join(command)
 		#subprocess.run('bash -c \"' + command + '\"', shell = True)
