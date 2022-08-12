@@ -111,7 +111,6 @@ class ProjectPreparer():
 			c_dt_t.to_csv(self.fileManager.localAllFishTracksFile)
 			c_dt_d.to_csv(self.fileManager.localAllFishDetectionsFile)
 
-		pdb.set_trace()
 
 	def run3DClassification(self):
 		from cichlid_bower_tracking.data_preparers.threeD_classifier_preparer import ThreeDClassifierPreparer as TDCP
