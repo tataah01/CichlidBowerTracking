@@ -57,5 +57,7 @@ class FishTrackingPreparer():
 		#subprocess.run('bash -c \"' + command + '\"', shell = True)
 
 		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + self.videoObj.baseName + '_trackingerrors.txt', 'w'), stdout=subprocess.DEVNULL)
-		subprocess.run(['rm', '-rf', self.annotations_dir + '/exp/'])
 		return output
+
+
+
