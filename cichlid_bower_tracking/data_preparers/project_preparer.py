@@ -88,11 +88,15 @@ class ProjectPreparer():
 			for p1 in processes:
 				p1.communicate()
 				if p1.returncode != 0:
-					pdb.set_trace()
-					print(p1)
-
+					print('YOLO Error')
+		processes = []
 		for idx in range(len(videos)):
-			ftp_objs[idx].runSORT()
+			processes.append(ftp_objs[idx].runSORT())
+
+		for p1 in processes:
+			p1.communicate()
+				if p1.returncode != 0:
+					print('SORT Error')
 
 		# Combine predictions
 		if videoIndexIn is None:
