@@ -95,8 +95,8 @@ class ProjectPreparer():
 
 		for p1 in processes:
 			p1.communicate()
-				if p1.returncode != 0:
-					print('SORT Error')
+			if p1.returncode != 0:
+				print('SORT Error')
 
 		# Combine predictions
 		if videoIndexIn is None:
