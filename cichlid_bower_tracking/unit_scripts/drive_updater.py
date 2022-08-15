@@ -82,82 +82,71 @@ class DriveUpdater:
 
         with warnings.catch_warnings():
             warnings.filterwarnings("ignore", message="All-NaN slice encountered")
-            dpth_3 = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-            dpth_4 = np.load(self.projectDirectory + daylightFrames[0].npy_file)
-            dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
-            dpth_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
-            dpth_7 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
-            try:
-                std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
-                std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
-                std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
-                std_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].std_file)
-                std_7 = np.load(self.projectDirectory + lastHourFrames[0].std_file)
-            except FileNotFoundError:
-                alldata = np.load(self.projectDirectory + self.lp.frames[-1].alldata_file)
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                std_3 = np.nanstd(alldata, axis = 0)
-                dpth_3 = np.nanmedian(alldata, axis = 0)
+         
+            alldata = np.load(self.projectDirectory + self.lp.frames[-1].alldata_file)
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            std_3 = np.nanstd(alldata, axis = 0)
+            dpth_3 = np.nanmedian(alldata, axis = 0)
 
-                alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                std_4 = np.nanstd(alldata, axis = 0)
-                dpth_4 = np.nanmedian(alldata, axis = 0)
+            alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            std_4 = np.nanstd(alldata, axis = 0)
+            dpth_4 = np.nanmedian(alldata, axis = 0)
 
-                alldata = np.load(self.projectDirectory + lastDayFrames[0].alldata_file)
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                std_5 = np.nanstd(alldata, axis = 0)
-                dpth_5 = np.nanmedian(alldata, axis = 0)
+            alldata = np.load(self.projectDirectory + lastDayFrames[0].alldata_file)
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            std_5 = np.nanstd(alldata, axis = 0)
+            dpth_5 = np.nanmedian(alldata, axis = 0)
 
-                alldata = np.load(self.projectDirectory + lastTwoHourFrames[0].alldata_file)
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                std_6 = np.nanstd(alldata, axis = 0)
-                dpth_6 = np.nanmedian(alldata, axis = 0)
+            alldata = np.load(self.projectDirectory + lastTwoHourFrames[0].alldata_file)
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            std_6 = np.nanstd(alldata, axis = 0)
+            dpth_6 = np.nanmedian(alldata, axis = 0)
 
-                alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                mins = np.nanmin(alldata, axis = 0)
-                mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-                alldata[alldata == mins] = np.nan
-                std_7 = np.nanstd(alldata, axis = 0)
-                dpth_7 = np.nanmedian(alldata, axis = 0)
+            alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            mins = np.nanmin(alldata, axis = 0)
+            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
+            alldata[alldata == mins] = np.nan
+            std_7 = np.nanstd(alldata, axis = 0)
+            dpth_7 = np.nanmedian(alldata, axis = 0)
 
  
         # Plot before filtering
@@ -251,7 +240,7 @@ class DriveUpdater:
         fig.tight_layout()
         ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
         ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
-        ax1.imshow(two_hourly_change, vmin = -.75, vmax = .75)
+        ax1.imshow(two_hourly_change, vmin = -.75, vmax = )
         ax1.axes.get_xaxis().set_visible(False)
         ax1.axes.get_yaxis().set_visible(False)
 
