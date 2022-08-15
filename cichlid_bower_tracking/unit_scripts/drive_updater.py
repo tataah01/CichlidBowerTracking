@@ -238,7 +238,9 @@ class DriveUpdater:
         ax2.axes.get_xaxis().set_visible(False)
         ax2.axes.get_yaxis().set_visible(False)
 
-        plt.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
+        fig.tight_layout()
+
+        fig.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
 
 
     def _uploadImage(self, image_file1, image_file2, name1, name2): #name should have format 't###_icon' or 't###_link'
