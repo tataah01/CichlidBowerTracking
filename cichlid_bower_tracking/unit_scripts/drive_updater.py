@@ -228,13 +228,15 @@ class DriveUpdater:
 
         fig = plt.figure(figsize=(6,3))
         fig.tight_layout()
-        fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
         ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
         ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
         ax1.imshow(daily_change, vmin = -1, vmax = 1)
         ax1.axes.get_xaxis().set_visible(False)
+        ax1.axes.get_yaxis().set_visible(False)
+
         ax2.imshow(hourly_change, vmin = -.75, vmax = .75) # +- 1 cms
         ax2.axes.get_xaxis().set_visible(False)
+        ax2.axes.get_yaxis().set_visible(False)
 
         plt.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
 
