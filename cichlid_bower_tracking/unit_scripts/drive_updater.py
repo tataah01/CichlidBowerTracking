@@ -37,7 +37,7 @@ class DriveUpdater:
 
         self.credentialDrive = self.fileManager.localCredentialDrive
 
-        f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
+        self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
 
     def _createImage(self, stdcutoff = 0.1):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
@@ -230,8 +230,9 @@ class DriveUpdater:
         fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
         ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
         ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
-        ax1.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
-        ax2.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
+        ax1.imshow(daily_change, vmin = -1, vmax = 1)
+        ax2.imshow(hourly_change, vmin = -.75, vmax = .75) # +- 1 cms
+        plt.axis('off')
         plt.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
 
 
@@ -297,7 +298,6 @@ class DriveUpdater:
 
         #info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
         self.googleController.modifyPiGS('Image', info, ping = False)
-        return f
     
     def _authenticateGoogleDrive(self):
         self.gauth = GoogleAuth()
