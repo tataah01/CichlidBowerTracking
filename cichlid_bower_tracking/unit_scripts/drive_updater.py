@@ -196,17 +196,17 @@ class DriveUpdater:
         ax5.imshow(daily_change, vmin = -1.5, vmax = 1.5)
         ax6.imshow(hourly_change, vmin = -1, vmax = 1) # +- 1 cms
         total_bower = total_change.copy()
-        thresholded_change = np.where(total_change >= 0.6) | (total_change <= -0.6, True, False)
+        thresholded_change = np.where((total_change >= 0.6) | (total_change <= -0.6), True, False)
         morphology.remove_small_objects(thresholded_change,1000).astype(int)
         total_bower[thresholded_change == 0] = 0
 
         daily_bower = daily_change.copy()
-        thresholded_change = np.where(daily_change >= 0.4) | (total_change <= -0.4, True, False)
+        thresholded_change = np.where((daily_change >= 0.4) | (total_change <= -0.4), True, False)
         morphology.remove_small_objects(thresholded_change,1000).astype(int)
         daily_bower[thresholded_change == 0] = 0
 
         hourly_bower = hourly_change.copy()
-        thresholded_change = np.where(daily_change >= 0.3) | (total_change <= -0.3, True, False)
+        thresholded_change = np.where((daily_change >= 0.3) | (total_change <= -0.3), True, False)
         morphology.remove_small_objects(thresholded_change,1000).astype(int)
         hourly_bower[thresholded_change == 0] = 0
 
