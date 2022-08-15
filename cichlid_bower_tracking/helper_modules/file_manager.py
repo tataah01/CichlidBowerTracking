@@ -67,7 +67,7 @@ class FileManager():
 	def getProjectStates(self):
 
 		# Dictionary to hold row of data
-		row_data = {'projectID':self.projectID, 'tankID':'', 'StartingFiles':False, 'Prep':False, 'Depth':False, 'Cluster':False, 'ClusterClassification':False, 'TrackFish': False 'Summary': False}
+		row_data = {'projectID':self.projectID, 'tankID':'', 'StartingFiles':False, 'Prep':False, 'Depth':False, 'Cluster':False, 'ClusterClassification':False, 'TrackFish': False, 'Summary': False}
 
 		# List the files needed for each analysis
 		necessaryFiles = {}
