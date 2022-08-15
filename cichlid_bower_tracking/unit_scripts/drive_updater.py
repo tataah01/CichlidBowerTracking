@@ -12,6 +12,8 @@ from pydrive.auth import GoogleAuth
 from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 import oauth2client
+from skimage import morphology
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument('Logfile', type = str, help = 'Name of logfile')
@@ -35,7 +37,7 @@ class DriveUpdater:
 
         self.credentialDrive = self.fileManager.localCredentialDrive
 
-        f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.lp.tankID)
+        f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.tankID + '_2.jpg')
 
     def _createImage(self, stdcutoff = 0.1):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
@@ -50,7 +52,7 @@ class DriveUpdater:
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
         fig = plt.figure(figsize=(14,21))
-        fig.suptitle(self.lastFrameTime)
+        fig.suptitle(self.lp.projectID + ' ' + self.lastFrameTime)
         ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
         ax3 = fig.add_subplot(6, 3, 3) #Depth from Kinect
@@ -194,12 +196,20 @@ class DriveUpdater:
         ax5.imshow(daily_change, vmin = -1.5, vmax = 1.5)
         ax6.imshow(hourly_change, vmin = -1, vmax = 1) # +- 1 cms
         total_bower = total_change.copy()
-        total_bower[(total_change < 0.75) & (total_change > -0.75)] = 0
+        thresholded_change = np.where(total_change >= 0.6) | (total_change <= -0.6, True, False)
+        morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        total_bower[thresholded_change == 0] = 0
+
         daily_bower = daily_change.copy()
-        daily_bower[(daily_change < 0.5) & (daily_change > -0.5)] = 0
+        thresholded_change = np.where(daily_change >= 0.4) | (total_change <= -0.4, True, False)
+        morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        daily_bower[thresholded_change == 0] = 0
+
         hourly_bower = hourly_change.copy()
-        hourly_bower[(hourly_change < 0.5) & (hourly_change > -0.5)] = 0
-        
+        thresholded_change = np.where(daily_change >= 0.3) | (total_change <= -0.3, True, False)
+        morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        hourly_bower[thresholded_change == 0] = 0
+
         ax7.imshow(total_bower, vmin = -2, vmax = 2) # +- 2 cms
         ax8.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
         ax9.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
@@ -216,7 +226,16 @@ class DriveUpdater:
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
         #return self.graph_summary_fname
 
-    def _uploadImage(self, image_file, name): #name should have format 't###_icon' or 't###_link'
+        fig = plt.figure(figsize=(6,3))
+        fig.suptitle(self.lp.projectID + ' ' + self.lastFrameTime)
+        ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
+        ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
+        ax1.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
+        ax2.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
+        plt.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
+
+
+    def _uploadImage(self, image_file1, image_file2, name1, name2): #name should have format 't###_icon' or 't###_link'
         self._authenticateGoogleDrive()
         drive = GoogleDrive(self.gauth)
         folder_id = "'151cke-0p-Kx-QjJbU45huK31YfiUs6po'"  #'Public Images' folder ID
@@ -228,28 +247,53 @@ class DriveUpdater:
             file_list = drive.ListFile({'q':"{} in parents and trashed=false".format(folder_id)}).GetList()
         #print(file_list)
         # check if file name already exists so we can replace it
-        flag = False
+        flag1 = False
+        flag2 = False
         count = 0
-        while flag == False and count < len(file_list):
-            if file_list[count]['title'] == name:
-                fileID = file_list[count]['id']
-                flag = True
+        while flag1 == False and count < len(file_list):
+            if file_list[count]['title'] == name1:
+                fileID1 = file_list[count]['id']
+                flag1 = True
             else:
                 count += 1
-        if flag == True:
+        count = 0
+        while flag2 == False and count < len(file_list):
+            if file_list[count]['title'] == name2:
+                fileID2 = file_list[count]['id']
+                flag2 = True
+            else:
+                count += 1
+
+        if flag1 == True:
             # Replace the file if name exists
-            f = drive.CreateFile({'id': fileID})
-            f.SetContentFile(image_file)
-            f.Upload()
+            f1 = drive.CreateFile({'id': fileID1})
+            f1.SetContentFile(image_file1)
+            f1.Upload()
             # print("Replaced", name, "with newest version")
         else:
             # Upload the image normally if name does not exist
-            f = drive.CreateFile({'title': name, 'mimeType':'image/jpeg',
+            f1 = drive.CreateFile({'title': name1, 'mimeType':'image/jpeg',
                                  "parents": [{"kind": "drive#fileLink", "id": folder_id[1:-1]}]})
-            f.SetContentFile(image_file)
-            f.Upload()                   
+            f1.SetContentFile(image_file1)
+            f1.Upload()                   
             # print("Uploaded", name, "as new file")
-        info = '=HYPERLINK("' + f['webContentLink'].replace('&export=download', '') + '", IMAGE("' + f['webContentLink'] + '"))'
+
+        if flag2 == True:
+            # Replace the file if name exists
+            f2 = drive.CreateFile({'id': fileID2})
+            f2.SetContentFile(image_file2)
+            f2.Upload()
+            # print("Replaced", name, "with newest version")
+        else:
+            # Upload the image normally if name does not exist
+            f2 = drive.CreateFile({'title': name2, 'mimeType':'image/jpeg',
+                                 "parents": [{"kind": "drive#fileLink", "id": folder_id[1:-1]}]})
+            f2.SetContentFile(image_file2)
+            f2.Upload()                   
+            # print("Uploaded", name, "as new file")
+
+
+        info = '=HYPERLINK("' + f1['webContentLink'].replace('&export=download', '') + '", IMAGE("' + f2['webContentLink'] + '"))'
 
         #info = '=HYPERLINK("' + f['alternateLink'] + '", IMAGE("' + f['webContentLink'] + '"))'
         self.googleController.modifyPiGS('Image', info, ping = False)
