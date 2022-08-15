@@ -52,7 +52,7 @@ class DriveUpdater:
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
         fig = plt.figure(figsize=(14,21))
-        fig.suptitle(self.lp.projectID + ' ' + self.lastFrameTime)
+        fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
         ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
         ax3 = fig.add_subplot(6, 3, 3) #Depth from Kinect
@@ -227,7 +227,7 @@ class DriveUpdater:
         #return self.graph_summary_fname
 
         fig = plt.figure(figsize=(6,3))
-        fig.suptitle(self.lp.projectID + ' ' + self.lastFrameTime)
+        fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
         ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
         ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
         ax1.imshow(daily_bower, vmin = -1.5, vmax = 1.5)
