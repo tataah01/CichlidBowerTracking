@@ -240,7 +240,7 @@ class DriveUpdater:
         fig.tight_layout()
         ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
         ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
-        ax1.imshow(two_hourly_change, vmin = -.75, vmax = )
+        ax1.imshow(two_hourly_change, vmin = -.75, vmax = .75)
         ax1.axes.get_xaxis().set_visible(False)
         ax1.axes.get_yaxis().set_visible(False)
 
