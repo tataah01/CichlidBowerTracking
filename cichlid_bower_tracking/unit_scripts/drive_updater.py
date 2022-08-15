@@ -37,7 +37,7 @@ class DriveUpdater:
 
         self.credentialDrive = self.fileManager.localCredentialDrive
 
-        f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.tankID + '_2.jpg')
+        f = self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
 
     def _createImage(self, stdcutoff = 0.1):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
