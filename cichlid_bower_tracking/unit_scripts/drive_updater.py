@@ -201,9 +201,9 @@ class DriveUpdater:
         ax1.imshow(img_1)
         ax2.imshow(img_2)
         ax3.imshow(total_change, vmin = -2, vmax = 2)
-        ax4.imshow(daily_change, vmin = -1.5, vmax = 1.5) # +- 2 cms
-        ax5.imshow(two_hourly_change, vmin = -1, vmax = 1)
-        ax6.imshow(hourly_change, vmin = -1, vmax = 1) # +- 1 cms
+        ax4.imshow(daily_change, vmin = -1, vmax = 1) # +- 2 cms
+        ax5.imshow(two_hourly_change, vmin = -.5, vmax = .5)
+        ax6.imshow(hourly_change, vmin = -.5, vmax = .5) # +- 1 cms
        
         daily_bower = daily_change.copy()
         thresholded_change = np.where((daily_change >= 0.4) | (total_change <= -0.4), True, False)
@@ -220,9 +220,9 @@ class DriveUpdater:
         morphology.remove_small_objects(thresholded_change,1000).astype(int)
         hourly_bower[thresholded_change == 0] = 0
 
-        ax7.imshow(daily_bower, vmin = -1.5, vmax = 1.5) # +- 2 cms
-        ax8.imshow(two_hourly_bower, vmin = -1, vmax = 1)
-        ax9.imshow(hourly_bower, vmin = -1, vmax = 1) # +- 1 cms
+        ax7.imshow(daily_bower, vmin = -1, vmax = 1) # +- 2 cms
+        ax8.imshow(two_hourly_bower, vmin = -.5, vmax = .5)
+        ax9.imshow(hourly_bower, vmin = -.5, vmax = .5) # +- 1 cms
         
         ax13.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
         ax14.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
