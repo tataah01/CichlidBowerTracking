@@ -53,7 +53,7 @@ class DriveUpdater:
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
         
-        fig = plt.figure(figsize=(14,21))
+        fig = plt.figure(figsize=(14,23))
         fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
         ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
         ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
@@ -207,18 +207,18 @@ class DriveUpdater:
        
         daily_bower = daily_change.copy()
         thresholded_change = np.where((daily_change >= 0.4) | (total_change <= -0.4), True, False)
-        morphology.remove_small_objects(thresholded_change,1000).astype(int)
-        daily_bower[thresholded_change == 0] = 0
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
 
         two_hourly_bower = two_hourly_change.copy()
         thresholded_change = np.where((two_hourly_change >= 0.3) | (total_change <= -0.3), True, False)
-        morphology.remove_small_objects(thresholded_change,1000).astype(int)
-        two_hourly_bower[thresholded_change == 0] = 0
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        two_hourly_bower[(thresholded_change == 0) & (~np.isnan(two_hourly_change))] = 0
 
         hourly_bower = hourly_change.copy()
         thresholded_change = np.where((daily_change >= 0.3) | (total_change <= -0.3), True, False)
-        morphology.remove_small_objects(thresholded_change,1000).astype(int)
-        hourly_bower[thresholded_change == 0] = 0
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        hourly_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
 
         ax7.imshow(daily_bower, vmin = -1, vmax = 1) # +- 2 cms
         ax8.imshow(two_hourly_bower, vmin = -.5, vmax = .5)
