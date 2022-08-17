@@ -84,7 +84,7 @@ class LogParser:
 
                 if info_type == 'AllDataCaptured':
                     t_list = self._ret_data(line, ['NpyFile','PicFile','Time','NFrames'])
-                    assert self.frames.time == t_list[2]
+                    assert self.frames[-1].time == t_list[2]
                     self.frames[-1].alldata_flag = True
 
                 if info_type == 'BackgroundCaptured':
