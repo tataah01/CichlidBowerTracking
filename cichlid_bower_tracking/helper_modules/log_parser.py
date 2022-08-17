@@ -84,7 +84,8 @@ class LogParser:
 
                 if info_type == 'AllDataCaptured':
                     t_list = self._ret_data(line, ['NpyFile','PicFile','Time','NFrames'])
-                    self.alldata.append(AllDataObj(*t_list))
+                    assert self.frames.time == t_list[2]
+                    self.frames[-1].alldata_flag = True
 
                 if info_type == 'BackgroundCaptured':
                     t_list = self._ret_data(line, ['NpyFile','PicFile','Time','AvgMed','AvgStd','GP','LOF'])
@@ -129,7 +130,11 @@ class LogParser:
         else:
             self.days[rel_day][1] = index + 1
             self.numDays = len(self.days)
-            
+        
+        for video in self.movies:
+            if video.endTime == '':
+                video.endTime = self.frames[-1].time
+
         self.backgrounds.sort(key = lambda x: x.time)
         self.lastBackgroundCounter = len(self.backgrounds)
         self.lastFrameCounter=len(self.frames)
@@ -217,16 +222,8 @@ class FrameObj:
         self.lof = lof
         self.rel_day = 0
         self.frameDir = npy_file.replace(npy_file.split('/')[-1],'')
-
-class AllDataObj:
-    def __init__(self, npy_file, pic_file, time, nframes):
-        self.npy_file = npy_file
-        self.pic_file = pic_file
-        self.time = time
-        self.nframes = nframes
-        self.frameDir = npy_file.replace(npy_file.split('/')[-1],'')
+        self.alldata_flag = True
  
-
 class MovieObj:
     def __init__(self, time, movie_file, pic_file, framerate, resolution):
         self.startTime = time

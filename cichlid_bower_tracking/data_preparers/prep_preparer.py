@@ -190,6 +190,7 @@ class PrepPreparer:
 
 
 	def _summarizePrep(self):
+
 		firstFrame = np.load(self.fileManager.localFirstFrame)
 		lastFrame = np.load(self.fileManager.localLastFrame)
 		depthRGB = cv2.imread(self.fileManager.localFirstDepthRGB)

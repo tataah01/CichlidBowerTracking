@@ -35,12 +35,6 @@ class FileManager():
 
 		if projectID is not None:
 			self.createProjectData(projectID)
-			try:
-				self.downloadData(self.localLogfile)
-				self.lp = LP(self.localLogfile)
-			except FileNotFoundError:
-				#print('No logfile created yet for ' + projectID)
-				pass 
 
 		self.modelID = modelID
 		self.localMLDir = self.localMasterDir + '__MachineLearningModels/'
@@ -126,6 +120,9 @@ class FileManager():
 
 
 	def createProjectData(self, projectID):
+
+
+
 		self.createAnnotationData()
 		self.projectID = projectID
 		if self.analysisID is None:
@@ -149,8 +146,9 @@ class FileManager():
 		self.localFirstFrame = self.localPrepDir + 'FirstDepth.npy'
 		self.localLastFrame = self.localPrepDir + 'LastDepth.npy'
 		self.localPiRGB = self.localPrepDir + 'PiCameraRGB.jpg'
-		self.localFirstDepthRGB = self.localPrepDir + 'FirstDepthRGB.jpg'
+		self.localFirstDepthRGB = self.localPrepDir + 'FirstDepthRGB.jpg' 
 		self.localLastDepthRGB = self.localPrepDir + 'LastDepthRGB.jpg'
+
 
 		# Directories created by analysis
 		self.localAnalysisDir = self.localProjectDir + 'MasterAnalysisFiles/'
@@ -166,7 +164,9 @@ class FileManager():
 		self.localDepthCropFile = self.localAnalysisDir + 'DepthCrop.txt'
 		self.localTransMFile = self.localAnalysisDir + 'TransMFile.npy'
 		self.localVideoCropFile = self.localAnalysisDir + 'VideoCrop.txt'
+		
 		self.localPrepSummaryFigure = self.localSummaryDir + 'PrepSummary.pdf'
+		self.localOldVideoCropFile = self.localAnalysisDir + 'VideoPoints.npy'
 
 		# Files created by depth preparer
 		self.localSmoothDepthFile = self.localAnalysisDir + 'smoothedDepthData.npy'
@@ -199,7 +199,12 @@ class FileManager():
 
 		# miscellaneous files
 
-
+		try:
+			self.downloadData(self.localLogfile)
+			self.lp = LP(self.localLogfile)
+		except FileNotFoundError:
+			#print('No logfile created yet for ' + projectID)
+			pass 
 
 	def createMLData(self, modelID = None):
 		if modelID is None and self.analysisID is None:

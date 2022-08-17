@@ -472,7 +472,7 @@ class CichlidTracker:
 
         self._print('FirstFrameCaptured: FirstFrame: Frames/FirstFrame.npy,,GoodDataCount: Frames/FirstDataCount.npy,,StdevCount: Frames/StdevCount.npy,,Units: cm')
     
-    def _captureFrame(self, endtime, max_frames = 40, stdev_threshold = 10, count_threshold = 50):
+    def _captureFrame(self, endtime, max_frames = 40):
         # Captures time averaged frame of depth data
         sums = np.zeros(shape = (self.r[3], self.r[2]))
         n = np.zeros(shape = (self.r[3], self.r[2]))
@@ -496,35 +496,37 @@ class CichlidTracker:
 
             if current_time >= endtime:
                 break
-            time.sleep(10)
+            time.sleep(10) # Wait 10 seconds
         
-        self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1))
-        np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
+        if self.frameCounter % 24 == 0:
+            self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1))
+            np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
+
+        # Filter out top 3 data points
+        mins = np.nanmin(all_data, axis = 0)
+        mins[np.nansum((all_data == mins).astype(int), axis = 0) > 3] = np.nan
+        all_data[all_data == mins] = np.nan
+        mins = np.nanmin(all_data, axis = 0)
+        mins[np.nansum((all_data == mins).astype(int), axis = 0) > 3] = np.nan
+        all_data[all_data == mins] = np.nan
+        mins = np.nanmin(all_data, axis = 0)
+        mins[np.nansum((all_data == mins).astype(int), axis = 0) > 3] = np.nan
+        all_data[all_data == mins] = np.nan
+        std = np.nanstd(all_data, axis = 0)
+        med = np.nanmedian(all_data, axis = 0)
 
         bad_all_pixels = np.count_nonzero(np.isnan(all_data))
         good_all_pixels = np.count_nonzero(~np.isnan(all_data))
 
-        med = np.nanmedian(all_data, axis = 0)
-        std = np.nanstd(all_data, axis = 0)
-        
-        med[np.isnan(std)] = np.nan
-
-        bad_std_avg_pixels = (std > stdev_threshold).sum()
-        med[std > stdev_threshold] = np.nan
-        std[std > stdev_threshold] = np.nan
 
         counts = np.count_nonzero(~np.isnan(all_data), axis = 0)
-
-        bad_count_avg_pixels = (counts< i + 1 - count_threshold).sum()
-        med[counts < i + 1 - count_threshold] = np.nan
-        std[counts < i + 1 - count_threshold] = np.nan
 
         color = self._returnRegColor()                        
         
         outstring = 'FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,'
-        outstring += 'Time: ' + str(endtime)  + ',,NFrames: ' + str(i) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,'
+        outstring += 'Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,'
         outstring += 'GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,AllPixelsBad: ' + str(bad_all_pixels) + ',,AllPixelsGood: ' + str(good_all_pixels) + ',,'
-        outstring += 'FilteredStdPixels: ' + str(bad_std_avg_pixels) + ',,FilteredCountPixels: ' + str(bad_count_avg_pixels) + ',,LOF: ' + str(self._video_recording(time = endtime))
+        outstring += 'LOF: ' + str(self._video_recording(time = endtime))
         
         self._print(outstring)
         np.save(self.projectDirectory + 'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)

@@ -80,75 +80,17 @@ class DriveUpdater:
         except:
             img_2 = img_1
 
-        with warnings.catch_warnings():
-            warnings.filterwarnings("ignore", message="All-NaN slice encountered")
-         
-            alldata = np.load(self.projectDirectory + self.lp.frames[-1].alldata_file)
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            std_3 = np.nanstd(alldata, axis = 0)
-            dpth_3 = np.nanmedian(alldata, axis = 0)
+        dpth_3 = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
+        std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
+        dpth_4 = np.load(self.projectDirectory + daylightFrames[0].npy_file)
+        std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
+        dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
+        std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
+        dpth_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
+        std_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].std_file)
+        dpth_7 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+        std_7 = np.load(self.projectDirectory + lastHourFrames[0].std_file)
 
-            alldata = np.load(self.projectDirectory + daylightFrames[0].alldata_file)
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            std_4 = np.nanstd(alldata, axis = 0)
-            dpth_4 = np.nanmedian(alldata, axis = 0)
-
-            alldata = np.load(self.projectDirectory + lastDayFrames[0].alldata_file)
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            std_5 = np.nanstd(alldata, axis = 0)
-            dpth_5 = np.nanmedian(alldata, axis = 0)
-
-            alldata = np.load(self.projectDirectory + lastTwoHourFrames[0].alldata_file)
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            std_6 = np.nanstd(alldata, axis = 0)
-            dpth_6 = np.nanmedian(alldata, axis = 0)
-
-            alldata = np.load(self.projectDirectory + lastHourFrames[0].alldata_file)
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            mins = np.nanmin(alldata, axis = 0)
-            mins[np.nansum((alldata == mins).astype(int), axis = 0) > 3] = np.nan
-            alldata[alldata == mins] = np.nan
-            std_7 = np.nanstd(alldata, axis = 0)
-            dpth_7 = np.nanmedian(alldata, axis = 0)
-
- 
         # Plot before filtering
         median_height = np.nanmedian(dpth_3)
 
@@ -206,17 +148,17 @@ class DriveUpdater:
         ax6.imshow(hourly_change, vmin = -.5, vmax = .5) # +- 1 cms
        
         daily_bower = daily_change.copy()
-        thresholded_change = np.where((daily_change >= 0.4) | (total_change <= -0.4), True, False)
+        thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
 
         two_hourly_bower = two_hourly_change.copy()
-        thresholded_change = np.where((two_hourly_change >= 0.3) | (total_change <= -0.3), True, False)
+        thresholded_change = np.where((two_hourly_change >= 0.3) | (two_hourly_change <= -0.3), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         two_hourly_bower[(thresholded_change == 0) & (~np.isnan(two_hourly_change))] = 0
 
         hourly_bower = hourly_change.copy()
-        thresholded_change = np.where((daily_change >= 0.3) | (total_change <= -0.3), True, False)
+        thresholded_change = np.where((hourly_change >= 0.3) | (hourly_change <= -0.3), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         hourly_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
 
