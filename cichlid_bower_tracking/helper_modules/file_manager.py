@@ -70,7 +70,7 @@ class FileManager():
 		necessaryFiles['Depth'] = [self.localSmoothDepthFile]
 		necessaryFiles['Cluster'] = [self.localAllClipsDir, self.localManualLabelClipsDir, self.localManualLabelFramesDir]
 		necessaryFiles['ClusterClassification'] = [self.localAllLabeledClustersFile]
-		necessaryFiles['TrackFish'] = [self.videoObj.localFishDetectionsFile, self.videoObj.localFishTracksFile]
+		necessaryFiles['TrackFish'] = [self.localFishDetectionsFile, self.localFishTracksFile]
 
 		necessaryFiles['Summary'] = [self.localSummaryDir]
 
