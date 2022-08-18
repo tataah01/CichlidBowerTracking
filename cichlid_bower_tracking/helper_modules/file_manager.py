@@ -424,7 +424,7 @@ class FileManager():
 
 			if delete:
 				shutil.rmtree(self.localProjectDir)
-				os.remove(self.localYolov5WeightsFile)
+				#os.remove(self.localYolov5WeightsFile)
 
 		elif dtype == 'Train3DResnet':
 			if not no_upload:
