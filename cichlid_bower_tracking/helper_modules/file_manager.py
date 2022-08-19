@@ -103,6 +103,9 @@ class FileManager():
 
 		directories = {}
 
+		print(subprocess.run(['rclone','size',necessaryFiles['TrackFish'][0].replace(self.localMasterDir, self.cloudMasterDir)], capture_output = True, encoding = 'utf-8').stdout)
+		print(subprocess.run(['rclone','size',necessaryFiles['TrackFish'][1].replace(self.localMasterDir, self.cloudMasterDir)], capture_output = True, encoding = 'utf-8').stdout)
+
 		for analysis_type, analysis_files in necessaryFiles.items():
 			for analysis_file in analysis_files:
 				directories[os.path.dirname(os.path.realpath(analysis_file))] = []
@@ -184,6 +187,7 @@ class FileManager():
 		# Files created by fish_tracking preparer
 		self.localAllFishTracksFile = self.localAnalysisDir + 'AllTrackedFish.csv'
 		self.localAllFishDetectionsFile = self.localAnalysisDir + 'AllDetectionsFish.csv'
+		self.localAllTracksSummaryFile = self.localAnalysisDir + 'AllSummarizedTracks.csv'
 
 		# Files created by manual labelerer  preparers
 		self.localNewLabeledFramesFile = self.localTempDir + 'NewLabeledFrames.csv'

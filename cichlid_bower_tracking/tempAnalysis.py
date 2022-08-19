@@ -30,8 +30,6 @@ args = parser.parse_args()
 fm_obj = FM(analysisID = args.AnalysisID)
 fm_obj.downloadData(fm_obj.localSummaryFile)
 
-
-
 dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'TrackFish':str, 'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
 
 # Identify projects to run on:
@@ -56,8 +54,6 @@ for projectID in projectIDs:
     t_output = [poly.contains(Point(x*1296, y*972)) for x,y in zip(t_dt.xc, t_dt.yc)]
     t_dt['InBounds'] = t_output
 
-
-
     if t_dt.shape[0] == 0:
         print(projectID)
         continue
@@ -78,11 +74,15 @@ for projectID in projectIDs:
 
     track_lengths_by_project = track_lengths_by_project.append(b_tl.rename(projectID))
     try:
-        temp = t_dt[t_dt.p_value > .7].groupby(['track_id', 'track_length']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'SexCall'}).reset_index()
+        temp = t_dt[t_dt.p_value > .7].groupby(['track_id', 'track_length', 'base_name']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'SexCall'}).reset_index().sort_values(['class_name','track_id'])
         temp['projectID'] = projectID
+        temp.to_csv(fm_obj.localAllTracksSummaryFile, index_col = False)
+        fm_obj.uploadData(fm_obj.localAllTracksSummaryFile)
         sex_calls = sex_calls.append(temp)
     except:
         pdb.set_trace()
+
+    pdb.set_trace()
 import seaborn as sns
 import matplotlib.pyplot as plt
 
