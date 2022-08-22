@@ -606,6 +606,7 @@ class CichlidTracker:
                 s_dt.to_csv(self.fileManager.localSummaryFile, index = False)
                 self.fileManager.uploadData(self.fileManager.localSummaryFile)
 
+            self.googleController.modifyPiGS('Error','UploadSuccessful, ready for delete')
 
 
         except Exception as e:

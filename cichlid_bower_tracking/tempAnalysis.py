@@ -74,18 +74,21 @@ for projectID in projectIDs:
 
     track_lengths_by_project = track_lengths_by_project.append(b_tl.rename(projectID))
     try:
-        temp = t_dt[t_dt.p_value > .7].groupby(['track_id', 'track_length', 'base_name']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'SexCall'}).reset_index().sort_values(['class_name','track_id'])
+        temp = t_dt[t_dt.p_value > .7].groupby(['track_id', 'track_length', 'base_name']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'SexCall'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
         temp['projectID'] = projectID
-        temp.to_csv(fm_obj.localAllTracksSummaryFile, index_col = False)
+        temp.to_csv(fm_obj.localAllTracksSummaryFile, index = False)
         fm_obj.uploadData(fm_obj.localAllTracksSummaryFile)
         sex_calls = sex_calls.append(temp)
     except:
         pdb.set_trace()
 
-    pdb.set_trace()
 import seaborn as sns
 import matplotlib.pyplot as plt
 
+track_lengths_by_project.to_csv(fm_obj.localAnalysisStatesDir + 'TrackLengthDistribution.csv')
+fm_obj.uploadData(fm_obj.localAnalysisStatesDir + 'TrackLengthDistribution.csv')
+sex_calls.groupby(['projectID','BinnedSex']).count()['base_name'].reset_index().pivot_table(columns = 'projectID', index = 'BinnedSex', values = 'base_name').to_csv(fm_obj.localAnalysisStatesDir + 'SexCallDistribution.csv')
+fm_obj.uploadData(fm_obj.localAnalysisStatesDir + 'SexCallDistribution.csv')
 pdb.set_trace()
 
 #rerun 'MC_singlenuc63_1_Tk9_060220'
