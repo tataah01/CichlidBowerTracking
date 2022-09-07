@@ -120,13 +120,6 @@ class CichlidTracker:
                 self.fileManager = FM(analysisID = analysisID, projectID = projectID)
                 self.projectID = projectID
                 
-                try:
-                    if self.analysisID == analysisID:
-                        self.runCommand(command)
-
-                except AttributeError:
-                    pass
-
                 # Make sure Analysis File exists and is good
 
                 if not self.fileManager.checkFileExists(self.fileManager.localSummaryFile):
