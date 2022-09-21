@@ -129,7 +129,7 @@ class PrepPreparer:
 			ax4.imshow(last_depth_cmap)
 			ax4.add_patch(matplotlib.patches.Polygon(depth_polys, color="orange", fill = False, lw = 3.0))
 			ax4.set_title("Depth at late time point")
-			fig.canvas.set_window_title('Close window and type q in terminal if this is acceptable')
+			fig.canvas.manager.set_window_title('Close window and type q in terminal if this is acceptable')
 			plt.show()
 
 			userInput = input('Type q if this is acceptable: ')
@@ -175,7 +175,7 @@ class PrepPreparer:
 			ax2.set_title("Registered Pi RGB image")
 
 			#fig.savefig(self.localMasterDirectory + self.transFig)
-			fig.canvas.set_window_title('Close window and type q in terminal if this is acceptable')
+			fig.canvas.manager.set_window_title('Close window and type q in terminal if this is acceptable')
 			plt.show()
 
 			userInput = input('Type q if this is acceptable: ')

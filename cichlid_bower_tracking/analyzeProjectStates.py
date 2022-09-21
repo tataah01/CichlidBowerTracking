@@ -37,6 +37,10 @@ for projectID in projectIDs:
 		else:
 			dt.loc[dt.projectID == projectID, k] = str(v).upper()
 
+
+	if type(dt.loc[dt.projectID == projectID, 'RunAnalysis'].values[0]) is float: # Is NaN
+		dt.loc[dt.projectID == projectID, 'RunAnalysis'] = 'TRUE'
+
 	subprocess.run(['rm', '-rf', fm_obj.localProjectDir])
 
 dt.to_csv(summary_file, index = False)
