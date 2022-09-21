@@ -178,7 +178,7 @@ class FileManager():
 		self.localInterpDepthFile = self.localTroubleshootingDir + 'interpDepthData.npy'
 		self.localDepthSummaryFile = self.localSummaryDir + 'DataSummary.xlsx'
 		self.localDailyDepthSummaryFigure = self.localSummaryDir + 'DailyDepthSummary.pdf'
-		self.localHourlyDepthSummaryFigure = self.localSummaryDir + 'DailyDepthSummary.pdf'
+		self.localHourlyDepthSummaryFigure = self.localSummaryDir + 'HourlyDepthSummary.pdf'
 
 		# Files created by cluster classifier preparer
 		self.localTempClassifierDir = self.localProjectDir + 'TempClassifier/'

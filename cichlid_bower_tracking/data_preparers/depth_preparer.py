@@ -182,7 +182,7 @@ class DepthPreparer:
 		smoothDepthData = scipy.signal.savgol_filter(smoothDepthData, tunits, order, axis = 0, mode = 'mirror')
 		np.save(self.fileManager.localSmoothDepthFile, smoothDepthData)
 
-	def createDepthFigures(self, hourlyDelta=1):
+	def createDepthFigures(self, hourlyDelta=2):
 
 		print('Creating Depth Figure')
 		# Create all figures based on depth data. Adjust hourlyDelta to influence the resolution of the
