@@ -388,6 +388,9 @@ class FileManager():
 				self.uploadData(self.localRawDepthFile)
 				self.uploadData(self.localInterpDepthFile)
 				self.uploadData(self.localDepthLogfile)
+				self.uploadData(self.localDailyDepthSummaryFigure)
+				self.uploadData(self.localHourlyDepthSummaryFigure)
+
 				#self.uploadData(self.localPaceDir)
 			if delete:
 				shutil.rmtree(self.localProjectDir)
