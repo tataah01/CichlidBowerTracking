@@ -1,4 +1,4 @@
-import argparse, pdb
+import argparse, pdb, sys
 from cichlid_bower_tracking.data_preparers.project_preparer import ProjectPreparer as PP
 
 parser = argparse.ArgumentParser(usage = 'This script will analyze HD videos to determine sand manipulation events')
