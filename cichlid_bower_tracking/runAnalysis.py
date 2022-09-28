@@ -79,9 +79,7 @@ while len(projectIDs) != 0:
     elif args.AnalysisType == 'Depth':
         p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.analyze_depth', projectID, args.AnalysisID])
     elif args.AnalysisType == 'Cluster':
-        p1 = subprocess.Popen(
-            ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.analyze_clusters', projectID, '--Workers',
-             str(workers)])
+        p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.analyze_clusters', projectID, args.AnalysisID, '--Workers', str(workers)])
     elif args.AnalysisType == 'ClusterClassification':
         p1 = subprocess.Popen(
             ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.classify_clusters', projectID, args.ModelID])
