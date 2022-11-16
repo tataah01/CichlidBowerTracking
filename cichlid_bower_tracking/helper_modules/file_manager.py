@@ -318,6 +318,16 @@ class FileManager():
 				print('Downloading video ' + self.localVideoDir)
 				self.downloadData(self.localVideoDir)
 
+		elif dtype == 'AssociateClustersWithTracks':
+			self.createDirectory(self.localLogfileDir)
+			self.createDirectory(self.localMasterDir)
+			self.createDirectory(self.localAnalysisDir)
+			self.downloadData(self.localLogfile)
+			self.downloadData(self.localAllFishDetectionsFile)
+			self.downloadData(self.localAllFishTracksFile)
+			self.downloadData(self.localOldVideoCropFile)
+			self.downloadData(self.localAllLabeledClustersFile)
+
 		elif dtype == 'Train3DResnet':
 			self.createDirectory(self.local3DModelDir)
 			self.createDirectory(self.local3DModelTempDir)
