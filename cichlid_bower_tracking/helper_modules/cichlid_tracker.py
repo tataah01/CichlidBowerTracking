@@ -18,7 +18,7 @@ class CichlidTracker:
     def __init__(self):
 
         # 1: Define valid commands and ignore warnings
-        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete','DeleteEntireProject']
+        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete','DeleteEntireProject','TankResetStart','TankResetStop']
         np.seterr(invalid='ignore')
 
         # 2: Determine which depth sensor is attached (This script can handle DepthSense cameras)
@@ -55,9 +55,10 @@ class CichlidTracker:
             my_api_key = [x.strip() for x in f.readlines()][0]
 
         self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
-        self.from_email = sendgrid.Email('themcgrathlab@gmail.com')  # Change to your verified sender
-        self.to_email = sendgrid.To('patrick.mcgrath@biology.gatech.edu')  # Change to your recipient
-
+        self.personalization = Personalization()
+        self.personalization.add_to(sendgrid.To('pmcgrath7@gatech.edu'))
+        for email in ['bshi42@gatech.edu', 'bhegarty6@gatech.edu', 'zjohnson37@gatech.edu']:
+            self.personalization.add_bcc(sendgrid.Bcc(email))
 
         # 9: Await instructions
         print('Monitoring commands')
@@ -72,13 +73,16 @@ class CichlidTracker:
         self.googleController.modifyPiGS('Error','UnknownError', ping = False)
 
         if self.running:
-            subject = 'Tank stopped running'
-            content = sendgrid.Content('text/plain', 'Check controller sheet')
-            mail = sendgrid.Mail(self.from_email, self.to_email, subject, content)
+            new_email = sendgrid.Mail(
+                from_email='themcgrathlab@gmail.com', 
+                subject= self.tankID + ' has stopped running', 
+                html_content= 'Check the Controller sheet'
+            )
+            new_email.add_personalization(self.personalization)
+
             # Get a JSON-ready representation of the Mail object
-            mail_json = mail.get()
             # Send an HTTP POST request to /mail/send
-            response = self.sg.client.mail.send.post(request_body=mail_json)
+            response = self.sg.send(new_email)
             print(response.status_code)
             print(response.headers)
 
@@ -148,7 +152,14 @@ class CichlidTracker:
         if command not in self.commands:
             self._reinstructError(command + ' is not a valid command. Options are ' + str(self.commands))
 
-            
+        if command = 'TankResetStart':
+            self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
+            return
+
+        if command == 'TankResetStop':
+            self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
+            return
+
         if command == 'Stop':
             
             self.running = False
