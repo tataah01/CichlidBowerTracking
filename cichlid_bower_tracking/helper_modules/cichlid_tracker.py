@@ -152,7 +152,7 @@ class CichlidTracker:
         if command not in self.commands:
             self._reinstructError(command + ' is not a valid command. Options are ' + str(self.commands))
 
-        if command = 'TankResetStart':
+        if command == 'TankResetStart':
             self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
             return
 
