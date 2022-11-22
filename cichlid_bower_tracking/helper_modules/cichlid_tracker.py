@@ -55,7 +55,7 @@ class CichlidTracker:
             my_api_key = [x.strip() for x in f.readlines()][0]
 
         self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
-        self.personalization = Personalization()
+        self.personalization = sendgrid.Personalization()
         self.personalization.add_to(sendgrid.To('pmcgrath7@gatech.edu'))
         for email in ['bshi42@gatech.edu', 'bhegarty6@gatech.edu', 'zjohnson37@gatech.edu']:
             self.personalization.add_bcc(sendgrid.Bcc(email))
