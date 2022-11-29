@@ -154,10 +154,16 @@ class CichlidTracker:
 
         if command == 'TankResetStart':
             self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
+            self.googleController.modifyPiGS('Command', 'None', ping = False)
+            self.googleController.modifyPiGS('Status', 'AwaitingCommand', ping = False)
+
             return
 
         if command == 'TankResetStop':
             self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
+            self.googleController.modifyPiGS('Command', 'None', ping = False)
+            self.googleController.modifyPiGS('Status', 'AwaitingCommand', ping = False)
+
             return
 
         if command == 'Stop':
@@ -533,7 +539,7 @@ class CichlidTracker:
         np.save(self.projectDirectory + 'Frames/Frame_std_' + str(self.frameCounter).zfill(6) + '.npy', std)
         matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
         
-        if self.frameCounter % 24 == 0:
+        if self.frameCounter % 1000000 == 0:
             self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1))
             np.save(self.projectDirectory +'Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy', all_data)
 
