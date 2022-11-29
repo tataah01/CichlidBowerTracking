@@ -44,6 +44,8 @@ class DriveUpdater:
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
+        lastTwoDaysFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 2)]
+        lastThreeDaysFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 3)]
         if len(daylightFrames) != 0:
             t_change = str(self.lastFrameTime - daylightFrames[0].time)
         else:
@@ -52,6 +54,10 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
+        td_change=str(self.lastFrameTime - lastTwoDaysFrames[0].time)
+        thd_change=str(self.lastFrameTime - lastThreeDaysFrames[0].time)
+        
+        #these comments next to the axs are no longer correct
         
         fig = plt.figure(figsize=(14,23))
         fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
@@ -81,40 +87,52 @@ class DriveUpdater:
             img_2 = img_1
 
         dpth_3 = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-        std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
         dpth_4 = np.load(self.projectDirectory + daylightFrames[0].npy_file)
-        std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
         dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
-        std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
         dpth_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
-        std_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].std_file)
         dpth_7 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+        dpth_8 = np.load(self.projectDirectory + lastTwoDaysFrames[0].npy_file)
+        dpth_9 = np.load(self.projectDirectory + lastThreeDaysFrames[0].npy_file)
+        
+        #not showing standard deviation anymore
+        std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
+        std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
+        std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
+        std_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].std_file)
         std_7 = np.load(self.projectDirectory + lastHourFrames[0].std_file)
-
         # Plot before filtering
         median_height = np.nanmedian(dpth_3)
-
-        ax10.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
-        ax11.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
-        ax12.imshow(dpth_7, vmin = median_height - 8, vmax = median_height + 8)
+        #removed non-filtered plots
+        #ax10.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
+        #ax11.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
+        #ax12.imshow(dpth_7, vmin = median_height - 8, vmax = median_height + 8)
 
         # Filter out data thaat has a bad stdev
+        #this part may need to be adjusted for 48-72 change
         bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_5 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int) + (std_7 > stdcutoff).astype(int)
         dpth_3[bad_data_count > 3] = np.nan
         dpth_4[bad_data_count > 3] = np.nan
         dpth_5[bad_data_count > 3] = np.nan
         dpth_6[bad_data_count > 3] = np.nan
         dpth_7[bad_data_count > 3] = np.nan
+        dpth_8[bad_data_count > 3] = np.nan
+        dpth_9[bad_data_count > 3] = np.nan
+        
 
         # Filter out data that has bad initial height
         dpth_3[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         dpth_5[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         dpth_6[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
         dpth_7[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        dpth_8[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan 
+        dpth_9[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan 
         dpth_4[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
+        
 
 
         total_change = dpth_4 - dpth_3
+        three_daily_change=dpth_9-dpth_3
+        two_daily_change=dpth_8-dpth_3
         daily_change = dpth_5 - dpth_3
         two_hourly_change = dpth_6 - dpth_3
         hourly_change = dpth_7 - dpth_3
@@ -124,29 +142,47 @@ class DriveUpdater:
         ax1.set_title('Kinect RGB Picture')
         ax2.set_title('PiCamera RGB Picture')
         ax3.set_title('Total Depth Change' + t_change)
-        ax4.set_title('Last 24 hours change\n'+d_change)
-        ax5.set_title('Last 2 hour change\n'+th_change)
-        ax6.set_title('Last 1 hour change\n'+h_change)
-        ax7.set_title('Last 24 hours bower\n')
-        ax8.set_title('Last 2 hour bower\n')
-        ax9.set_title('Last 1 hour bower\n')
-        ax10.set_title('Original 24 Hour ago Depth')
-        ax11.set_title('Original Two Hour Ago Depth')
-        ax12.set_title('Original Hour Ago Depth')
-        ax13.set_title('Filtered 24 Hour ago Depth')
-        ax14.set_title('Filtered Two Hour Ago Depth')
-        ax15.set_title('Filtered Hour Ago Depth')
-        ax16.set_title('24 hours ago Std')
-        ax17.set_title('Hour ago Std')
-        ax18.set_title('Hour ago Std')
-
+        #above stays same
+        ax4.set_title('Filtered Hour ago Depth')
+        ax5.set_title('Last hour change\n'+h_change)
+        ax6.set_title('Last hour bower\n')
+        
+        ax7.set_title('Filtered 2 Hour ago Depth')
+        ax8.set_title('Last 2 hours change\n'+th_change)
+        ax9.set_title('Last 2 hours bower\n')
+        
+        ax10.set_title('Filtered 24 Hour ago Depth')
+        ax11.set_title('Last 24 hour change\n'+d_change)
+        ax12.set_title('Last 24 hours bower\n')
+        #this is all new
+        ax13.set_title('Filtered 24-48 Hour ago Depth')
+        ax14.set_title('Last 24-48 hour change\n'+td_change)
+        ax15.set_title('Last 24-48 hours bower\n')
+        
+        ax16.set_title('Filtered 48-72 Hour ago Depth')
+        ax17.set_title('Last 48-72 hour change\n'+thd_change)
+        ax18.set_title('Last 48-72 hours bower\n')
+        #stay same
         ax1.imshow(img_1)
         ax2.imshow(img_2)
         ax3.imshow(total_change, vmin = -2, vmax = 2)
-        ax4.imshow(daily_change, vmin = -1, vmax = 1) # +- 2 cms
-        ax5.imshow(two_hourly_change, vmin = -.5, vmax = .5)
-        ax6.imshow(hourly_change, vmin = -.5, vmax = .5) # +- 1 cms
+        ax11.imshow(daily_change, vmin = -1, vmax = 1) # +- 2 cms
+        ax8.imshow(two_hourly_change, vmin = -.5, vmax = .5)
+        ax5.imshow(hourly_change, vmin = -.5, vmax = .5)
+        ax14.imshow(two_daily_change, vmin = -1, vmax = 1)#might need to change 1
+        ax17.imshow(three_daily_change, vmin = -1, vmax = 1)#might need to change 1
        
+        #may want to change 0.4 for 48-72
+        three_daily_bower = three_daily_change.copy()
+        thresholded_change = np.where((three_daily_change >= 0.4) | (three_daily_change <= -0.4), True, False)
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        three_daily_bower[(thresholded_change == 0) & (~np.isnan(three_daily_change))] = 0
+        
+        two_daily_bower = two_daily_change.copy()
+        thresholded_change = np.where((two_daily_change >= 0.4) | (two_daily_change <= -0.4), True, False)
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        two_daily_bower[(thresholded_change == 0) & (~np.isnan(two_daily_change))] = 0
+        
         daily_bower = daily_change.copy()
         thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
@@ -161,18 +197,24 @@ class DriveUpdater:
         thresholded_change = np.where((hourly_change >= 0.3) | (hourly_change <= -0.3), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         hourly_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
-
-        ax7.imshow(daily_bower, vmin = -1, vmax = 1) # +- 2 cms
-        ax8.imshow(two_hourly_bower, vmin = -.5, vmax = .5)
-        ax9.imshow(hourly_bower, vmin = -.5, vmax = .5) # +- 1 cms
         
-        ax13.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
-        ax14.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
-        ax15.imshow(dpth_7, vmin = median_height - 8, vmax = median_height + 8)
+        #may need to change 1 for 48-72
 
-        ax16.imshow(std_5, vmin = 0, vmax = .25)
-        ax17.imshow(std_6, vmin = 0, vmax = .25)
-        ax18.imshow(std_7, vmin = 0, vmax = .25)
+        ax18.imshow(three_daily_bower, vmin = -1, vmax = 1)
+        ax15.imshow(two_daily_bower, vmin = -1, vmax = 1)
+        ax12.imshow(daily_bower, vmin = -1, vmax = 1) # +- 2 cms
+        ax9.imshow(two_hourly_bower, vmin = -.5, vmax = .5)
+        ax6.imshow(hourly_bower, vmin = -.5, vmax = .5) # +- 1 cms
+        
+        ax16.imshow(dpth_9, vmin = median_height - 8, vmax = median_height + 8)
+        ax13.imshow(dpth_8, vmin = median_height - 8, vmax = median_height + 8)
+        ax10.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
+        ax7.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
+        ax4.imshow(dpth_7, vmin = median_height - 8, vmax = median_height + 8)
+
+        #ax16.imshow(std_5, vmin = 0, vmax = .25)
+        #ax17.imshow(std_6, vmin = 0, vmax = .25)
+        #ax18.imshow(std_7, vmin = 0, vmax = .25)
 
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
