@@ -46,6 +46,8 @@ class DriveUpdater:
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
         lastTwoDaysFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 2)]
         lastThreeDaysFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 3)]
+        DayTwoFrames=[x for x in lastTwoDaysFrames if x not in lastDayFrames]
+        DayThreeFrames=[x for x in lastThreeDaysFrames if x not in lastTwoDaysFrames]
         if len(daylightFrames) != 0:
             t_change = str(self.lastFrameTime - daylightFrames[0].time)
         else:
@@ -91,8 +93,8 @@ class DriveUpdater:
         dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
         dpth_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
         dpth_7 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
-        dpth_8 = np.load(self.projectDirectory + lastTwoDaysFrames[0].npy_file)
-        dpth_9 = np.load(self.projectDirectory + lastThreeDaysFrames[0].npy_file)
+        dpth_8 = np.load(self.projectDirectory + DayTwoFrames[0].npy_file)
+        dpth_9 = np.load(self.projectDirectory + DayThreeFrames[0].npy_file)
         
         #not showing standard deviation anymore
         std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
@@ -162,10 +164,12 @@ class DriveUpdater:
         ax16.set_title('Filtered 48-72 Hour ago Depth')
         ax17.set_title('Last 48-72 hour change\n'+thd_change)
         ax18.set_title('Last 48-72 hours bower\n')
-        #stay same
+#stay same
         ax1.imshow(img_1)
         ax2.imshow(img_2)
         ax3.imshow(total_change, vmin = -2, vmax = 2)
+
+#
         ax11.imshow(daily_change, vmin = -1, vmax = 1) # +- 2 cms
         ax8.imshow(two_hourly_change, vmin = -.5, vmax = .5)
         ax5.imshow(hourly_change, vmin = -.5, vmax = .5)
@@ -198,7 +202,7 @@ class DriveUpdater:
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         hourly_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
         
-        #may need to change 1 for 48-72
+#may need to change 1 for 48-72
 
         ax18.imshow(three_daily_bower, vmin = -1, vmax = 1)
         ax15.imshow(two_daily_bower, vmin = -1, vmax = 1)
