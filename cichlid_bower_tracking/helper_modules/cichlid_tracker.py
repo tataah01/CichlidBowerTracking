@@ -330,8 +330,12 @@ class CichlidTracker:
                 continue
             if command == 'TankResetStart':
                 self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
+                self.googleController.modifyPiGS('Command', 'None', ping = False)
+
             elif command == 'TankResetStop':
-                self._print('TankResetStop: Time: ' + str(datetime.datetime.now())) 
+                self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
+                self.googleController.modifyPiGS('Command', 'None', ping = False)
+
             elif command != 'None' and command is not None:
                 break
             else:
