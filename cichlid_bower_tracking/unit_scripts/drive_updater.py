@@ -39,7 +39,7 @@ class DriveUpdater:
 
         self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
 
-     def _createImage(self, stdcutoff = 0.1):
+    def _createImage(self, stdcutoff = 0.1):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
@@ -162,12 +162,10 @@ class DriveUpdater:
         ax16.set_title('Filtered 48-72 Hour ago Depth')
         ax17.set_title('Last 48-72 hour change\n'+thd_change)
         ax18.set_title('Last 48-72 hours bower\n')
-#stay same
+        #stay same
         ax1.imshow(img_1)
         ax2.imshow(img_2)
         ax3.imshow(total_change, vmin = -2, vmax = 2)
-
-#
         ax11.imshow(daily_change, vmin = -1, vmax = 1) # +- 2 cms
         ax8.imshow(two_hourly_change, vmin = -.5, vmax = .5)
         ax5.imshow(hourly_change, vmin = -.5, vmax = .5)
@@ -200,7 +198,7 @@ class DriveUpdater:
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         hourly_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
         
-#may need to change 1 for 48-72
+        #may need to change 1 for 48-72
 
         ax18.imshow(three_daily_bower, vmin = -1, vmax = 1)
         ax15.imshow(two_daily_bower, vmin = -1, vmax = 1)
