@@ -18,7 +18,7 @@ class CichlidTracker:
     def __init__(self):
 
         # 1: Define valid commands and ignore warnings
-        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete','DeleteEntireProject','TankResetStart','TankResetStop']
+        self.commands = ['New', 'Restart', 'Stop', 'Rewrite', 'UploadData', 'LocalDelete','DeleteEntireProject']
         np.seterr(invalid='ignore')
 
         # 2: Determine which depth sensor is attached (This script can handle DepthSense cameras)
@@ -151,20 +151,6 @@ class CichlidTracker:
 
         if command not in self.commands:
             self._reinstructError(command + ' is not a valid command. Options are ' + str(self.commands))
-
-        if command == 'TankResetStart':
-            self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
-            self.googleController.modifyPiGS('Command', 'None', ping = False)
-            self.googleController.modifyPiGS('Status', 'AwaitingCommand', ping = False)
-
-            return
-
-        if command == 'TankResetStop':
-            self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
-            self.googleController.modifyPiGS('Command', 'None', ping = False)
-            self.googleController.modifyPiGS('Status', 'AwaitingCommand', ping = False)
-
-            return
 
         if command == 'Stop':
             
@@ -341,8 +327,12 @@ class CichlidTracker:
             try:
                 command, projectID, analysisID = self._returnCommand()
             except KeyError:
-                continue                
-            if command != 'None' and command is not None:
+                continue
+            if command == 'TankResetStart'
+                self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
+            elif command == 'TankResetStop':
+                self._print('TankResetStop: Time: ' + str(datetime.datetime.now())) 
+            elif command != 'None' and command is not None:
                 break
             else:
                 self.googleController.modifyPiGS('Error', '')
