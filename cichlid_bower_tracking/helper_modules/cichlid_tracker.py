@@ -328,7 +328,7 @@ class CichlidTracker:
                 command, projectID, analysisID = self._returnCommand()
             except KeyError:
                 continue
-            if command == 'TankResetStart'
+            if command == 'TankResetStart':
                 self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
             elif command == 'TankResetStop':
                 self._print('TankResetStop: Time: ' + str(datetime.datetime.now())) 
