@@ -67,11 +67,11 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
-        if DayTwoFrames!=[]
+        if DayTwoFrames!=[]:
             td_change=str(lastDayFrames[0].time - DayTwoFrames[0].time)
         else:
             td_change='will update on day 2'
-        if DayThreeFrames!=[]
+        if DayThreeFrames!=[]:
             thd_change=str(DayTwoFrames[0].time - DayThreeFrames[0].time)
         else:
             td_change='will update on day 3'
