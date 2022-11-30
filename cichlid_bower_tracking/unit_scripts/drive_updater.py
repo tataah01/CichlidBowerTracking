@@ -47,14 +47,14 @@ class DriveUpdater:
         days={}
         
         dayslist=[days.update({x.time.day:1}) for x in self.lp.frames]
-        if len(list(days.keys))>=2:
+        if len(list(days.keys()))>=2:
             DayTwoFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-2]]
             DayTwoFrames= [x for x in DayTwoFramesr if x.time.hour >= 8 and x.time.hour <= 18]
         else:
             print(days.keys)
             print(days)
             DayTwoFrames=[]
-        if len(list(days.keys))>=3:
+        if len(list(days.keys()))>=3:
             DayThreeFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-3]]
             DayThreeFrames= [x for x in DayThreeFramesr if x.time.hour >= 8 and x.time.hour <= 18]
         else:
