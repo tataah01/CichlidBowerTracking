@@ -45,7 +45,7 @@ class DriveUpdater:
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
         days={}
-        days=[days.update({x.time.day:1}) for x in self.lp.frames]
+        dayslist=[days.update({x.time.day:1}) for x in self.lp.frames]
         DayTwoFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-2]]
         DayThreeFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-3]]
         DayTwoFrames= [x for x in DayTwoFramesr if x.time.hour >= 8 and x.time.hour <= 18]
