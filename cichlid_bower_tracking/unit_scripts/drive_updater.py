@@ -67,9 +67,14 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
-        td_change=str(lastDayFrames[0].time - DayTwoFrames[0].time)
-        thd_change=str(DayTwoFrames[0].time - DayThreeFrames[0].time)
-        
+        if DayTwoFrames!=[]
+            td_change=str(lastDayFrames[0].time - DayTwoFrames[0].time)
+        else:
+            td_change='will update on day 2'
+        if DayThreeFrames!=[]
+            thd_change=str(DayTwoFrames[0].time - DayThreeFrames[0].time)
+        else:
+            td_change='will update on day 3'
         #these comments next to the axs are no longer correct
         
         fig = plt.figure(figsize=(14,23))
