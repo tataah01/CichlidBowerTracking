@@ -40,69 +40,71 @@ class DriveUpdater:
         self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
 
     def _createImage(self, stdcutoff = 0.1):
-        lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)]  
-        lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)]  
-        lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
-        daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
-        days={}
-        
-        dayslist=[days.update({x.time.day:1}) for x in self.lp.frames]
-        if len(list(days.keys()))>=2:
-            DayTwoFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-2]]
-            DayTwoFrames= [x for x in DayTwoFramesr if x.time.hour >= 8 and x.time.hour <= 18]
-        else:
-            print(days.keys)
-            print(days)
-            DayTwoFrames=[]
-        if len(list(days.keys()))>=3:
-            DayThreeFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-3]]
-            DayThreeFrames= [x for x in DayThreeFramesr if x.time.hour >= 8 and x.time.hour <= 18]
-        else:
-            DayThreeFrames=[]
-        if len(daylightFrames) != 0:
-            t_change = str(self.lastFrameTime - daylightFrames[0].time)
-        else:
-            daylightFrames = lastDayFrames
-            t_change = str(self.lastFrameTime - lastDayFrames[0].time)
+        lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
+        lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
+        daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18] # frames during daylight
+
+        # Dictionary to hold all the unique days that have daylight frames
+        days={}        
+        [days.update({x.time.day:1}) for x in daylightFrames] # This way we only identify days that have frames during the daylight
+
+
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
-        if DayTwoFrames!=[]:
-            td_change=str(lastDayFrames[0].time - DayTwoFrames[0].time)
-        else:
-            td_change='will update on day 2'
-        if DayThreeFrames!=[]:
-            thd_change=str(DayTwoFrames[0].time - DayThreeFrames[0].time)
-        else:
-            td_change='will update on day 3'
+        td_change=str(lastDayFrames[0].time - DayTwoFrames[0].time)
+        thd_change=str(DayTwoFrames[0].time - DayThreeFrames[0].time)
+        
         #these comments next to the axs are no longer correct
         
-        fig = plt.figure(figsize=(14,23))
-        fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
-        ax1 = fig.add_subplot(6, 3, 1) #Pic from Kinect
-        ax2 = fig.add_subplot(6, 3, 2) #Pic from Camera
-        ax3 = fig.add_subplot(6, 3, 3) #Depth from Kinect
-        ax4 = fig.add_subplot(6, 3, 4) #Total Depth Change
-        ax5 = fig.add_subplot(6, 3, 5) #Day Depth Change
-        ax6 = fig.add_subplot(6, 3, 6) #Hour Depth Change
-        ax7 = fig.add_subplot(6, 3, 7) #Total Depth Change 
-        ax8 = fig.add_subplot(6, 3, 8) #Day Depth Change
-        ax9 = fig.add_subplot(6, 3, 9) #Hour Depth Change
-        ax10 = fig.add_subplot(6, 3, 10) #Total Depth Change 
-        ax11 = fig.add_subplot(6, 3, 11) #Day Depth Change
-        ax12 = fig.add_subplot(6, 3, 12) #Hour Depth Change
-        ax13 = fig.add_subplot(6, 3, 13) #Total Depth Change 
-        ax14 = fig.add_subplot(6, 3, 14) #Day Depth Change
-        ax15 = fig.add_subplot(6, 3, 15) #Hour Depth Change
-        ax16 = fig.add_subplot(6, 3, 16) #Hour Depth Change
-        ax17 = fig.add_subplot(6, 3, 17) #Hour Depth Change
-        ax18 = fig.add_subplot(6, 3, 18) #Hour Depth Change
+        # Determine the size of the figure and create it
+        num_rows = 3 + len(days) # First pic rows, 1 hour, 2 hour, then 1 row for each unique day
+        axes = [] # Hold axes in lis
 
+        fig = plt.figure(figsize=(14,4*num_rows + 1))
+        fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
+
+        # Create subplots
+        for i in range(num_rows):
+            axes[3*i + 0] = fig.add_subplot(num_rows, 3, 3*i + 0) # Filtered Absolute Depth
+            axes[3*i + 1] = fig.add_subplot(num_rows, 3, 3*i + 1) # Relative Depth Change
+            axes[3*i + 2] = fig.add_subplot(num_rows, 3, 3*i + 2) # Bower changes
+
+        # Identify bad pixels
+        std_template = np.load(self.projectDirectory + daylightFrames[0].std_file)
+        stds = np.zeros(shape = (min(len(days), 10), std_template.shape[0], std_template.shape[1]), dtype = std_template.dtype())
+        # Read in std deviation data to determine threshold
+        for i,day in enumerate(days.keys()):
+            daylightFrames_day = [x for x in daylightFrames if x.time.day == day] # frames during daylight
+            stds[i] = np.load(self.projectDirectory + daylightFrames_day[0].std_file)
+
+        stds = (stds > stdcutoff).astype(int)
+        stds = np.sum(stds, axis = 0)
+
+        # Read data for row 1,2,3 and plot it
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
         try:
             img_2 = img.imread(self.projectDirectory + self.lp.movies[-1].pic_file)
         except:
             img_2 = img_1
+        depth_last = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
+        depth_first = np.load(self.projectDirectory + daylightFrames[0].npy_file)
+        depth_hour = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
+        dpth_twohours = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
+
+        ### TITLES ###
+        axes[1].set_title('Kinect RGB Picture')
+        axes[2].set_title('PiCamera RGB Picture')
+        axes[3].set_title('Total Depth Change' + t_change)
+        axes[4].set_title('Filtered Hour ago Depth')
+        axes[5].set_title('Last hour change\n'+h_change)
+        axes[6].set_title('Last hour bower\n')
+        axes[7].set_title('Filtered 2 Hour ago Depth')
+        axes[8].set_title('Last 2 hours change\n'+th_change)
+        axes[9].set_title('Last 2 hours bower\n')
+
+
+        
 
         dpth_3 = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
         dpth_4 = np.load(self.projectDirectory + daylightFrames[0].npy_file)
