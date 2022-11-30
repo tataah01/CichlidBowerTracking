@@ -44,10 +44,12 @@ class DriveUpdater:
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)]  
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
-        lastTwoDaysFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 2)]
-        lastThreeDaysFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 3)]
-        DayTwoFrames=[x for x in lastTwoDaysFrames if x not in lastDayFrames]
-        DayThreeFrames=[x for x in lastThreeDaysFrames if x not in lastTwoDaysFrames]
+        days={}
+        days=[days.update({x.time.day:1}) for x in self.lp.frames]
+        DayTwoFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-2]]
+        DayThreeFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-3]]
+        DayTwoFrames= [x for x in DayTwoFramesr if x.time.hour >= 8 and x.time.hour <= 18]
+        DayThreeFrames= [x for x in DayThreeFramesr if x.time.hour >= 8 and x.time.hour <= 18]
         if len(daylightFrames) != 0:
             t_change = str(self.lastFrameTime - daylightFrames[0].time)
         else:
@@ -56,8 +58,8 @@ class DriveUpdater:
         d_change = str(self.lastFrameTime - lastDayFrames[0].time)
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
-        td_change=str(self.lastFrameTime - lastTwoDaysFrames[0].time)
-        thd_change=str(self.lastFrameTime - lastThreeDaysFrames[0].time)
+        td_change=str(lastDayFrames[0].time - DayTwoFrames[0].time)
+        thd_change=str(DayTwoFrames[0].time - DayThreeFrames[0].time)
         
         #these comments next to the axs are no longer correct
         
