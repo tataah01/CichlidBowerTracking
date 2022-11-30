@@ -13,7 +13,7 @@ from pydrive.drive import GoogleDrive
 from oauth2client.service_account import ServiceAccountCredentials
 import oauth2client
 from skimage import morphology
-
+import pdb
 
 parser = argparse.ArgumentParser()
 parser.add_argument('Logfile', type = str, help = 'Name of logfile')
@@ -45,7 +45,9 @@ class DriveUpdater:
         lastDayFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(days = 1)]
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18]
         days={}
+        
         dayslist=[days.update({x.time.day:1}) for x in self.lp.frames]
+        pdb.set_trace()
         DayTwoFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-2]]
         DayThreeFramesr=[x for x in self.lp.frames if x.time.day == list(days.keys())[-3]]
         DayTwoFrames= [x for x in DayTwoFramesr if x.time.hour >= 8 and x.time.hour <= 18]
