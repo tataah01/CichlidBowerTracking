@@ -39,18 +39,44 @@ class DriveUpdater:
 
         self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
 
+    def _filterPixels(self):
+        pass
+        """
+        try:
+            self.badPixels
+        except AttributeError:
+            # Identify bad pixels
+            std_template = np.load(self.projectDirectory + daylightFrames[0].std_file)
+            stds = np.zeros(shape = (min(len(days), 10), std_template.shape[0], std_template.shape[1]), dtype = std_template.dtype())
+            # Read in std deviation data to determine threshold
+            #moved
+            dpth_dif = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
+            median_height = np.nanmedian(dpth_3)
+        """
+
+    def _calculateBower(self, depthChange):
+        pass
+        """
+        daily_bower = daily_change.copy()
+        thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
+        """
+
+
+
     def _createImage(self, stdcutoff = 0.1):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 18] # frames during daylight
+
         th_change = str(self.lastFrameTime-lastTwoHourFrames[0].time)
         h_change = str(self.lastFrameTime - lastHourFrames[0].time)
-        #
+
         # Dictionary to hold all the unique days that have daylight frames
         days={}        
-        [days.update({x.time.day:1}) for x in daylightFrames] # This way we only identify days that have frames during the daylight
+        [days.update({x.time.day:time.month}) for x in daylightFrames] # This way we only identify days that have frames during the daylight
 
-        
         # Determine the size of the figure and create it
         num_rows = 3 + len(days) # First pic rows, 1 hour, 2 hour, then 1 row for each unique day
         axes = [] # Hold axes in lis
@@ -63,141 +89,57 @@ class DriveUpdater:
             axes[3*i + 0] = fig.add_subplot(num_rows, 3, 3*i + 0) # Filtered Absolute Depth
             axes[3*i + 1] = fig.add_subplot(num_rows, 3, 3*i + 1) # Relative Depth Change
             axes[3*i + 2] = fig.add_subplot(num_rows, 3, 3*i + 2) # Bower changes
-        ### TITLES ###
+       
+        # Set titles of each plot, strating with the first three rows
         axes[0].set_title('Kinect RGB Picture')
         axes[1].set_title('PiCamera RGB Picture')
         axes[2].set_title('Total Depth Change' + t_change)
-        axes[3].set_title('Filtered Hour ago Depth')
+        axes[3].set_title('Hour ago Depth')
         axes[4].set_title('Last hour change\n'+h_change)
         axes[5].set_title('Last hour bower\n')
-        axes[6].set_title('Filtered 2 Hour ago Depth')
+        axes[6].set_title('2 Hour ago Depth')
         axes[7].set_title('Last 2 hours change\n'+th_change)
         axes[8].set_title('Last 2 hours bower\n')
         
-        for i in range(3, len(num_rows)):
-            day_num=str(i-3)
-            axes[3*i].set_title('Raw Day'+day_num+' Depth')
-            axes[3*i+1].set_title(day_num+' Day change\n')
-            axes[3*i+2].set_title(day_num+' bower\n')
+        # Now set titles of the unknown number of days
+        for day in list(day.keys()).reverse():
+            axes[3*i].set_title(str(days[day] + '/' + str(day) + ' Depth Data'))
+            axes[3*i].set_title(str(days[day] + '/' + str(day) + ' Daytime Depth Change'))
+            axes[3*i].set_title(str(days[day] + '/' + str(day) + ' Identified Bower'))
         
-        
-        # Identify bad pixels
-        std_template = np.load(self.projectDirectory + daylightFrames[0].std_file)
-        stds = np.zeros(shape = (min(len(days), 10), std_template.shape[0], std_template.shape[1]), dtype = std_template.dtype())
-        # Read in std deviation data to determine threshold
-        #moved
-        dpth_dif = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-        median_height = np.nanmedian(dpth_3)
-        
-        for i,day in enumerate(days.keys()):
-            daylightFrames_day = [x for x in daylightFrames if x.time.day == day] # frames during daylight
-            #stds[i] = np.load(self.projectDirectory + daylightFrames_day[0].std_file)
-            dpth_day = np.load(self.projectDirectory + daylightFrames_day[0].npy_file)
-            axes[3*i+9].imshow(dpth_day.copy(), vmin = median_height - 8, vmax = median_height + 8)
-            daily_change = dpth_day - dpth_dif
-            axes[3*i+10].imshow(daily_change.copy(), vmin = -1, vmax = 1)
-            daily_bower = daily_change.copy()
-            thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
-            thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
-            daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
-            axes[3*i+11].imshow(daily_bower.copy(), vmin = -1, vmax = 1)
-            dpth_dif=dpth_day.copy()
-
-        #stds = (stds > stdcutoff).astype(int)
-        #stds = np.sum(stds, axis = 0)
-
-        # Read data for row 1,2,3 and plot it
+        # Plot data  for first two rows
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
         try:
             img_2 = img.imread(self.projectDirectory + self.lp.movies[-1].pic_file)
         except:
             img_2 = img_1
         
-        depth_last = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-        depth_first = np.load(self.projectDirectory + daylightFrames[0].npy_file)
-        depth_hour = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
-        dpth_twohours = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
+        depth_last = self._filterPixels(np.load(self.projectDirectory + self.lp.frames[-1].npy_file))
+        depth_first = self._filterPixels(np.load(self.projectDirectory + daylightFrames[0].npy_file))
+        depth_hour = self._filterPixels(np.load(self.projectDirectory + lastHourFrames[0].npy_file))
+        dpth_twohours = self._filterPixels(np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file))
 
-
-        dpth_3 = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-        dpth_4 = np.load(self.projectDirectory + daylightFrames[0].npy_file)
-        #dpth_5 = np.load(self.projectDirectory + lastDayFrames[0].npy_file)
-        dpth_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file)
-        dpth_7 = np.load(self.projectDirectory + lastHourFrames[0].npy_file)
-
-        
-        #not showing standard deviation anymore
-        std_3 = np.load(self.projectDirectory + self.lp.frames[-1].std_file)
-        std_4 = np.load(self.projectDirectory + daylightFrames[0].std_file)
-        #std_5 = np.load(self.projectDirectory + lastDayFrames[0].std_file)
-        std_6 = np.load(self.projectDirectory + lastTwoHourFrames[0].std_file)
-        std_7 = np.load(self.projectDirectory + lastHourFrames[0].std_file)
-        # Plot before filtering
-        #removed non-filtered plots
-        #ax10.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
-        #ax11.imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
-        #ax12.imshow(dpth_7, vmin = median_height - 8, vmax = median_height + 8)
-
-        # Filter out data thaat has a bad stdev
-        #this part may need to be adjusted for 48-72 change
-        bad_data_count = (std_3 > stdcutoff).astype(int) + (std_4 > stdcutoff).astype(int) + (std_6 > stdcutoff).astype(int) + (std_7 > stdcutoff).astype(int)
-        dpth_3[bad_data_count > 3] = np.nan
-        dpth_4[bad_data_count > 3] = np.nan
-        #dpth_5[bad_data_count > 3] = np.nan
-        dpth_6[bad_data_count > 3] = np.nan
-        dpth_7[bad_data_count > 3] = np.nan
-        
-
-        # Filter out data that has bad initial height
-        dpth_3[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        #dpth_5[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_6[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_7[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        dpth_4[(dpth_4 > median_height + 4) | (dpth_4 < median_height - 4)] = np.nan # Filter out data 4cm lower and 8cm higher than tray
-        
-
-
-        total_change = dpth_4 - dpth_3
-        #daily_change = dpth_5 - dpth_3
-        two_hourly_change = dpth_6 - dpth_3
-        hourly_change = dpth_7 - dpth_3
+        median_height = np.nanmedian(depth_first)
 
         axes[0].imshow(img_1)
         axes[1].imshow(img_2)
-        axes[2].imshow(total_change, vmin = -2, vmax = 2)
-        #ax11.imshow(daily_change, vmin = -1, vmax = 1) # +- 2 cms
-        axes[7].imshow(two_hourly_change, vmin = -.5, vmax = .5)
-        axes[4].imshow(hourly_change, vmin = -.5, vmax = .5)
+        axes[2].imshow(depth_last - depth_first, vmin = -2, vmax = 2)
+        axes[3].imshow(depth_hour, vmin = median_height - 8, vmax = median_height + 8)
+        axes[4].imshow(depth_last - depth_hour, vmin = -0.5, vmax = 0.5)
+        axes[5].imshow(self._calculateBower(depth_last - depth_hour), vmin = -1, vmax = 1)
+        axes[6].imshow(depth_twohours, vmin = median_height - 8, vmax = median_height + 8)
+        axes[7].imshow(depth_last - depth_twohours, vmin = -0.5, vmax = 0.5)
+        axes[8].imshow(self._calculateBower(depth_last - depth_twohours), vmin = -0.5, vmax = 0.5)
 
+        for i,day in enumerate(days.keys()):
+            daylightFrames_day = [x for x in daylightFrames if x.time.day == day] # frames during daylight
+            depth_start = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[0].npy_file))
+            depth_stop = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[-1].npy_file))
 
-        #daily_bower = daily_change.copy()
-        #thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
-        #thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
-        #daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
-
-        two_hourly_bower = two_hourly_change.copy()
-        thresholded_change = np.where((two_hourly_change >= 0.3) | (two_hourly_change <= -0.3), True, False)
-        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
-        two_hourly_bower[(thresholded_change == 0) & (~np.isnan(two_hourly_change))] = 0
-
-        hourly_bower = hourly_change.copy()
-        thresholded_change = np.where((hourly_change >= 0.3) | (hourly_change <= -0.3), True, False)
-        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
-        hourly_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
-        
-
-
-        #ax12.imshow(daily_bower, vmin = -1, vmax = 1) # +- 2 cms
-        axes[8].imshow(two_hourly_bower, vmin = -.5, vmax = .5)
-        axes[5].imshow(hourly_bower, vmin = -.5, vmax = .5) # +- 1 cms
-        #ax10.imshow(dpth_5, vmin = median_height - 8, vmax = median_height + 8)
-        axes[6].imshow(dpth_6, vmin = median_height - 8, vmax = median_height + 8)
-        axes[3].imshow(dpth_7, vmin = median_height - 8, vmax = median_height + 8)
-
-        #ax16.imshow(std_5, vmin = 0, vmax = .25)
-        #ax17.imshow(std_6, vmin = 0, vmax = .25)
-        #ax18.imshow(std_7, vmin = 0, vmax = .25)
-
+            axes[3*i+9].imshow(depth_start, vmin = median_height - 8, vmax = median_height + 8)
+            axes[3*i+10].imshow(depth_stop - depth_start, vmin = -1, vmax = 1)
+            axes[3*i+11].imshow(self._calculateBower(depth_stop - depth_start), vmin = -1, vmax = 1)
+            
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
         #return self.graph_summary_fname
@@ -206,11 +148,11 @@ class DriveUpdater:
         fig.tight_layout()
         ax1 = fig.add_subplot(1, 2, 1) #Pic from Kinect
         ax2 = fig.add_subplot(1, 2, 2) #Pic from Camera
-        ax1.imshow(two_hourly_change, vmin = -.75, vmax = .75)
+        ax1.imshow(depth_last - depth_twohours, vmin = -.75, vmax = .75)
         ax1.axes.get_xaxis().set_visible(False)
         ax1.axes.get_yaxis().set_visible(False)
 
-        ax2.imshow(hourly_change, vmin = -.75, vmax = .75) # +- 1 cms
+        ax2.imshow(depth_last - depth_hour, vmin = -.75, vmax = .75) # +- 1 cms
         ax2.axes.get_xaxis().set_visible(False)
         ax2.axes.get_yaxis().set_visible(False)
 
