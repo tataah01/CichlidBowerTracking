@@ -88,7 +88,7 @@ class DriveUpdater:
         
         # Create subplots
         for i in range(num_rows):
-            pdb.set_trace()
+            #pdb.set_trace()
             axes[3*i + 0] = fig.add_subplot(num_rows, 3, 3*i + 0) # Filtered Absolute Depth
             axes[3*i + 1] = fig.add_subplot(num_rows, 3, 3*i + 1) # Relative Depth Change
             axes[3*i + 2] = fig.add_subplot(num_rows, 3, 3*i + 2) # Bower changes
