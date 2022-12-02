@@ -108,7 +108,7 @@ class DriveUpdater:
         
         pdb.set_trace()
         # Now set titles of the unknown number of days
-        for i, day in enumerate(list(days.keys()).reverse()):
+        for i, day in enumerate(([x for x in days.keys()]).reverse()):
             axes[3*i+9].set_title(str(days[day] + '/' + str(day) + ' Depth Data'))
             axes[3*i+10].set_title(str(days[day] + '/' + str(day) + ' Daytime Depth Change'))
             axes[3*i+11].set_title(str(days[day] + '/' + str(day) + ' Identified Bower'))
@@ -137,7 +137,7 @@ class DriveUpdater:
         axes[7].imshow(depth_last - depth_twohours, vmin = -0.5, vmax = 0.5)
         axes[8].imshow(self._calculateBower(depth_last - depth_twohours), vmin = -0.5, vmax = 0.5)
 
-        for i,day in enumerate(days.keys().reverse()):
+        for i,day in enumerate(([x for x in days.keys()]).reverse()):
             daylightFrames_day = [x for x in daylightFrames if x.time.day == day] # frames during daylight
             depth_start = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[0].npy_file))
             depth_stop = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[-1].npy_file))
