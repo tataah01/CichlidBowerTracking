@@ -89,9 +89,9 @@ class DriveUpdater:
         # Create subplots
         for i in range(num_rows):
             #pdb.set_trace()
-            axes[3*i + 0] = fig.add_subplot(num_rows, 3, 3*i + 0) # Filtered Absolute Depth
-            axes[3*i + 1] = fig.add_subplot(num_rows, 3, 3*i + 1) # Relative Depth Change
-            axes[3*i + 2] = fig.add_subplot(num_rows, 3, 3*i + 2) # Bower changes
+            axes[3*i + 0] = fig.add_subplot(num_rows, 3, 3*i + 1) # Filtered Absolute Depth
+            axes[3*i + 1] = fig.add_subplot(num_rows, 3, 3*i + 2) # Relative Depth Change
+            axes[3*i + 2] = fig.add_subplot(num_rows, 3, 3*i + 3) # Bower changes
        
         # Set titles of each plot, strating with the first three rows
         axes[0].set_title('Kinect RGB Picture')
