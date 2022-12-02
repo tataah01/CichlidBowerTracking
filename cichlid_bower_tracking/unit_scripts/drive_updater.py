@@ -109,9 +109,9 @@ class DriveUpdater:
         #pdb.set_trace()
         # Now set titles of the unknown number of days
         for i, day in enumerate([x for x in days.keys()][::-1]):
-            axes[3*i+9].set_title(str(days[day] + '/' + str(day) + ' Depth Data'))
-            axes[3*i+10].set_title(str(days[day] + '/' + str(day) + ' Daytime Depth Change'))
-            axes[3*i+11].set_title(str(days[day] + '/' + str(day) + ' Identified Bower'))
+            axes[3*i+9].set_title(str(days[day]) + '/' + str(day) + ' Depth Data')
+            axes[3*i+10].set_title(str(days[day]) + '/' + str(day) + ' Daytime Depth Change')
+            axes[3*i+11].set_title(str(days[day]) + '/' + str(day) + ' Identified Bower')
         
         # Plot data  for first two rows
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
