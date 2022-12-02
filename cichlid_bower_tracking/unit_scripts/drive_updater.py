@@ -106,6 +106,7 @@ class DriveUpdater:
         axes[7].set_title('Last 2 hours change\n'+th_change)
         axes[8].set_title('Last 2 hours bower\n')
         
+        pdb.set_trace()
         # Now set titles of the unknown number of days
         for i, day in enumerate(list(days.keys()).reverse()):
             axes[3*i+9].set_title(str(days[day] + '/' + str(day) + ' Depth Data'))
