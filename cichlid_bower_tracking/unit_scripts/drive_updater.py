@@ -81,7 +81,7 @@ class DriveUpdater:
 
         # Determine the size of the figure and create it
         num_rows = 3 + len(days) # First pic rows, 1 hour, 2 hour, then 1 row for each unique day
-        axes = [] # Hold axes in lis
+        axes = [0]*3*num_rows # Hold axes in lis
         
         fig = plt.figure(figsize=(14,4*num_rows + 1))
         fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
