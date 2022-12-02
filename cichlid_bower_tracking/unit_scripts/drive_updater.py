@@ -78,7 +78,7 @@ class DriveUpdater:
         # Dictionary to hold all the unique days that have daylight frames
         days={}
         pdb.set_trace()
-        [days.update({x.time.day:time.month}) for x in daylightFrames] # This way we only identify days that have frames during the daylight
+        [days.update({x.time.day:x.time.month}) for x in daylightFrames] # This way we only identify days that have frames during the daylight
 
         # Determine the size of the figure and create it
         num_rows = 3 + len(days) # First pic rows, 1 hour, 2 hour, then 1 row for each unique day
