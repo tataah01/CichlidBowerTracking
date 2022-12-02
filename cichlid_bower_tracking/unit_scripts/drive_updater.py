@@ -38,33 +38,35 @@ class DriveUpdater:
         self.credentialDrive = self.fileManager.localCredentialDrive
 
         self._uploadImage(self.projectDirectory + self.lp.tankID + '.jpg', self.projectDirectory + self.lp.tankID + '_2.jpg', self.lp.tankID, self.lp.tankID + '_2.jpg')
-
-    def _filterPixels(self):
-        pass
-        """
-        try:
-            self.badPixels
-        except AttributeError:
-            # Identify bad pixels
-            std_template = np.load(self.projectDirectory + daylightFrames[0].std_file)
-            stds = np.zeros(shape = (min(len(days), 10), std_template.shape[0], std_template.shape[1]), dtype = std_template.dtype())
-            # Read in std deviation data to determine threshold
-            #moved
-            dpth_dif = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
-            median_height = np.nanmedian(dpth_3)
-        """
-
+    
+    def _filterPixels(self, pixels):
+            """
+            try:
+                self.badPixels
+            except AttributeError:
+                # Identify bad pixels
+                std_template = np.load(self.projectDirectory + daylightFrames[0].std_file)
+                stds = np.zeros(shape = (min(len(days), 10), std_template.shape[0], std_template.shape[1]), dtype = std_template.dtype())
+                # Read in std deviation data to determine threshold
+                #moved
+                dpth_dif = np.load(self.projectDirectory + self.lp.frames[-1].npy_file)
+                median_height = np.nanmedian(dpth_3)
+            """
+            return pixels
+        
     def _calculateBower(self, depthChange):
-        pass
         """
         daily_bower = daily_change.copy()
         thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
         """
-
-
-
+        daily_bower = depthChange.copy()
+        thresholded_change = np.where((depthChange >= 0.4) | (depthChange <= -0.4), True, False)
+        thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
+        daily_bower[(thresholded_change == 0) & (~np.isnan(depthChange))] = 0
+        return daily_bower
+    
     def _createImage(self, stdcutoff = 0.1):
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
@@ -93,7 +95,7 @@ class DriveUpdater:
         # Set titles of each plot, strating with the first three rows
         axes[0].set_title('Kinect RGB Picture')
         axes[1].set_title('PiCamera RGB Picture')
-        axes[2].set_title('Total Depth Change' + t_change)
+        axes[2].set_title('Total Depth Change' )
         axes[3].set_title('Hour ago Depth')
         axes[4].set_title('Last hour change\n'+h_change)
         axes[5].set_title('Last hour bower\n')
@@ -102,10 +104,10 @@ class DriveUpdater:
         axes[8].set_title('Last 2 hours bower\n')
         
         # Now set titles of the unknown number of days
-        for day in list(day.keys()).reverse():
-            axes[3*i].set_title(str(days[day] + '/' + str(day) + ' Depth Data'))
-            axes[3*i].set_title(str(days[day] + '/' + str(day) + ' Daytime Depth Change'))
-            axes[3*i].set_title(str(days[day] + '/' + str(day) + ' Identified Bower'))
+        for i, day in enumerate(list(days.keys()).reverse()):
+            axes[3*i+9].set_title(str(days[day] + '/' + str(day) + ' Depth Data'))
+            axes[3*i+10].set_title(str(days[day] + '/' + str(day) + ' Daytime Depth Change'))
+            axes[3*i+11].set_title(str(days[day] + '/' + str(day) + ' Identified Bower'))
         
         # Plot data  for first two rows
         img_1 = img.imread(self.projectDirectory + self.lp.frames[-1].pic_file)
@@ -117,7 +119,7 @@ class DriveUpdater:
         depth_last = self._filterPixels(np.load(self.projectDirectory + self.lp.frames[-1].npy_file))
         depth_first = self._filterPixels(np.load(self.projectDirectory + daylightFrames[0].npy_file))
         depth_hour = self._filterPixels(np.load(self.projectDirectory + lastHourFrames[0].npy_file))
-        dpth_twohours = self._filterPixels(np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file))
+        depth_twohours = self._filterPixels(np.load(self.projectDirectory + lastTwoHourFrames[0].npy_file))
 
         median_height = np.nanmedian(depth_first)
 
@@ -131,7 +133,7 @@ class DriveUpdater:
         axes[7].imshow(depth_last - depth_twohours, vmin = -0.5, vmax = 0.5)
         axes[8].imshow(self._calculateBower(depth_last - depth_twohours), vmin = -0.5, vmax = 0.5)
 
-        for i,day in enumerate(days.keys()):
+        for i,day in enumerate(days.keys().reverse()):
             daylightFrames_day = [x for x in daylightFrames if x.time.day == day] # frames during daylight
             depth_start = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[0].npy_file))
             depth_stop = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[-1].npy_file))
