@@ -144,7 +144,7 @@ class DriveUpdater:
             day=date.split(' ')[0]
             month=date.split(' ')[1]
             daylightFrames_month = [x for x in daylightFrames if x.time.month == int(month) ]
-            daylightFrames_day = [x for x in ddaylightFrames_month if x.time.day == int(day) ]
+            daylightFrames_day = [x for x in daylightFrames_month if x.time.day == int(day) ]
             
             if daylightFrames_day==[]:
                 print(date)
