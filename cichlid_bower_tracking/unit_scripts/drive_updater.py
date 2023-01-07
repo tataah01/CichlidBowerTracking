@@ -143,7 +143,10 @@ class DriveUpdater:
         for i,date in enumerate([x for x in days.keys()][::-1]):
             day=date.split(' ')[0]
             month=date.split(' ')[1]
-            daylightFrames_day = [x for x in daylightFrames if x.time.day == int(day) & x.time.month == int(month) ] # frames during daylight
+            daylightFrames_day = [x for x in daylightFrames if x.time.day == int(day) & x.time.month == int(month) ]
+            if daylightFrames_day==[]:
+                print(date)
+                # frames during daylight
             depth_start = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[0].npy_file))
             depth_stop = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[-1].npy_file))
 
