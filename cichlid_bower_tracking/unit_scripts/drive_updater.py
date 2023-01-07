@@ -143,7 +143,9 @@ class DriveUpdater:
         for i,date in enumerate([x for x in days.keys()][::-1]):
             day=date.split(' ')[0]
             month=date.split(' ')[1]
-            daylightFrames_day = [x for x in daylightFrames if x.time.day == int(day) & x.time.month == int(month) ]
+            daylightFrames_month = [x for x in daylightFrames if x.time.month == int(month) ]
+            daylightFrames_day = [x for x in ddaylightFrames_month if x.time.day == int(day) ]
+            
             if daylightFrames_day==[]:
                 print(date)
                 # frames during daylight
