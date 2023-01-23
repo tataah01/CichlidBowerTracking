@@ -68,7 +68,10 @@ class DriveUpdater:
         return daily_bower
     
     def _createImage(self, stdcutoff = 0.1):
-        print(self.lp.frames[-1].std)
+        if len(self.lp.frames) > 1 and self.lp.frames[-1].std< 0.00001 and self.lp.frames[-1].gp==self.lp.frames[-2].gp:
+            self.googleController.modifyPiGS('DataDuplicated', 'Yes')
+        else: 
+            self.googleController.modifyPiGS('DataDuplicated', 'No')
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 17] # frames during daylight
