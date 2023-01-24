@@ -310,7 +310,7 @@ class CichlidTracker:
 
             # Capture a frame and background if necessary
             if self.realsense and not self._video_recording(): 
-                self.realsense==False
+                self.realsense=False
                 try:
                     if self.device == 'realsense':
                         self.pipeline.stop()
