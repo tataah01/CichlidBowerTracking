@@ -309,17 +309,31 @@ class CichlidTracker:
                     self.videoCounter += 1
 
             # Capture a frame and background if necessary
-            if self.device != 'None':
-                if now > current_background_time:
-                    out = self._captureFrame(current_frame_time)
-                    if out is not None:
-                        current_background_time += datetime.timedelta(seconds = 60 * background_delta)
-                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
+            if self.realsense and not self._video_recording(): 
+                self.realsense==False
+                try:
+                    if self.device == 'realsense':
+                        self.pipeline.stop()
+                except Exception as e:
+                    self._print('ErrorStopping kinect: ' + str(e))
+            elif self._video_recording() and not self.realsense:
+                self._start_kinect()
+                self._diagnose_speed()
+                
+                
+                
+            if self.realsense and self._video_recording():
+                if self.device != 'None':
+                    if now > current_background_time:
+                        out = self._captureFrame(current_frame_time)
+                        if out is not None:
+                            current_background_time += datetime.timedelta(seconds = 60 * background_delta)
+                        subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
+                    else:
+                        out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
                 else:
-                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
-            else:
-                while datetime.datetime.now() < current_frame_time:
-                    time.sleep(5)
+                    while datetime.datetime.now() < current_frame_time:
+                        time.sleep(5)
 
             current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
@@ -432,7 +446,7 @@ class CichlidTracker:
             # Create a context object. This object owns the handles to all connected realsense devices
             self.pipeline = rs.pipeline()
             self.align = rs.align(rs.stream.color)
-
+            
             # Configure streams
             config = rs.config()
             config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
@@ -447,6 +461,7 @@ class CichlidTracker:
             frames = self.pipeline.wait_for_frames(1000)
             depth = frames.get_depth_frame()
             self.r = (0,0,depth.width,depth.height)
+            self.realsense=True
 
     def _diagnose_speed(self, time = 10):
         print('Diagnosing speed for ' + str(time) + ' seconds.', file = sys.stderr)
