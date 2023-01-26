@@ -544,9 +544,6 @@ class CichlidTracker:
         outstring += 'CPUUsage: ' + str(psutil.cpu_percent()) + ',,'
         outstring += 'RAMUsage: ' + str(psutil.virtual_memory()[2])
 
-        self._print('UnknownExceptionExit: Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ', str(cpu_use) + ',,RAMUse: ' + str(ram_use))
-
-
         self._print(outstring)
         np.save(self.projectDirectory + 'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
         np.save(self.projectDirectory + 'Frames/Frame_std_' + str(self.frameCounter).zfill(6) + '.npy', std)
