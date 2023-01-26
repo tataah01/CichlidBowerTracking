@@ -145,7 +145,7 @@ class DriveUpdater:
             axes[3*i+9].imshow(depth_start, vmin = median_height - 8, vmax = median_height + 8)
             axes[3*i+10].imshow(depth_stop - depth_start, vmin = -1, vmax = 1)
             axes[3*i+11].imshow(self._calculateBower(depth_stop - depth_start), vmin = -1, vmax = 1)
-            
+
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
         #return self.graph_summary_fname

@@ -20,6 +20,8 @@ parser.add_argument('AnalysisID', type = str, help = 'Video framerate')
 args = parser.parse_args()
 
 fileManager = FM(projectID = args.ProjectID, analysisID = args.AnalysisID)
+lf = open(fileManager.localLogfile, 'a', buffering = 1) # line buffered
+
 
 if '.h264' not in args.VideoFile:
 	logPrinter(args.VideoFile + ' not an h264 file', indent = False)
@@ -32,6 +34,7 @@ if os.path.exists(args.VideoFile.replace('.h264', '.mp4')):
 command = ['ffmpeg', '-r', str(args.Framerate), '-i', args.VideoFile, '-threads', '1', '-c:v', 'copy', '-r', str(args.Framerate), args.VideoFile.replace('.h264', '.mp4')]
 logPrinter('Beginning conversion of video: ' + args.VideoFile.split('/')[-1], indent = False)
 logPrinter(command)
+print('ProcessVideoInfo: Task: Converting ' + args.VideoFile + ' into mp4,,Time: ' + str(datetime.datetime.now()), file = lf)
 ffmpeg_output = subprocess.run(command, capture_output = True)
 
 try:
@@ -43,6 +46,7 @@ except:
 
 # Sync with cloud (will return error if something goes wrong)
 logPrinter('Beginning upload of mp4 file')
+print('ProcessVideoInfo: Task: Uploading ' + args.VideoFile.replace('.h264', '.mp4') + ' to cloud,,Time: ' + str(datetime.datetime.now()), file = lf)
 for i in [1,2,3]:
 	try:
 		fileManager.uploadData(args.VideoFile.replace('.h264', '.mp4'))
@@ -52,6 +56,7 @@ for i in [1,2,3]:
 		if i == 3:
 			raise Exception
 logPrinter('Upload successful')
+print('ProcessVideoInfo: Task: Deleting ' + args.VideoFile.replace('.h264', '.mp4') + ',,Time: ' + str(datetime.datetime.now()), file = lf)
 
 logPrinter('Deleting videos')
 subprocess.run(['rm', '-f', args.VideoFile])

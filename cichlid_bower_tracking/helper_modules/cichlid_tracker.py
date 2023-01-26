@@ -1,4 +1,4 @@
-import platform, sys, os, shutil, datetime, subprocess, pdb, time, sendgrid
+import platform, sys, os, shutil, datetime, subprocess, pdb, time, sendgrid, psutil
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 from cichlid_bower_tracking.helper_modules.googleController import GoogleController as GC
@@ -83,13 +83,20 @@ class CichlidTracker:
             # Get a JSON-ready representation of the Mail object
             # Send an HTTP POST request to /mail/send
             response = self.sg.send(new_email)
-            print(response.status_code)
-            print(response.headers)
+
+            current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
+            harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)
+            cpu_use = psutil.cpu_percent()
+            ram_use = psutil.virtual_memory()[2]
+
+            self._print('UnknownExceptionExit: Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ', str(cpu_use) + ',,RAMUse: ' + str(ram_use))
+
+
 
         if self.piCamera:
             if self.camera.recording:
                 self.camera.stop_recording()
-                self._print('PiCameraStopped: Time=' + str(datetime.datetime.now()) + ', File=Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
+                self._print('PiCameraStopped: Time=' + str(datetime.datetime.now()) + ',,File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
 
 
         if self.device == 'realsense':
@@ -526,8 +533,15 @@ class CichlidTracker:
         outstring = 'FrameCaptured: NpyFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,'
         outstring += 'Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,'
         outstring += 'GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,AllPixelsBad: ' + str(bad_all_pixels) + ',,AllPixelsGood: ' + str(good_all_pixels) + ',,'
-        outstring += 'LOF: ' + str(self._video_recording(time = endtime))
-        
+        outstring += 'LOF: ' + str(self._video_recording(time = endtime)) + ',,'
+        outstring += 'Temperature: ' + psutil.sensors_temperatures()['cpu_thermal'][0][1] + ',,'
+        outstring += 'HardDriveUsage: ' + psutil.disk_usage(self.fileManager.localMasterDir) + ',,'
+        outstring += 'CPUUsage: ' + psutil.cpu_percent() + ',,'
+        outstring += 'RAMUsage: ' + psutil.virtual_memory()[2]
+
+        self._print('UnknownExceptionExit: Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ', str(cpu_use) + ',,RAMUse: ' + str(ram_use))
+
+
         self._print(outstring)
         np.save(self.projectDirectory + 'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
         np.save(self.projectDirectory + 'Frames/Frame_std_' + str(self.frameCounter).zfill(6) + '.npy', std)
