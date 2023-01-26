@@ -540,7 +540,7 @@ class CichlidTracker:
         outstring += 'GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,AllPixelsBad: ' + str(bad_all_pixels) + ',,AllPixelsGood: ' + str(good_all_pixels) + ',,'
         outstring += 'LOF: ' + str(self._video_recording(time = endtime)) + ',,'
         outstring += 'Temperature: ' + str(psutil.sensors_temperatures()['cpu_thermal'][0][1]) + ',,'
-        outstring += 'HardDriveUsage: ' + str(psutil.disk_usage(self.fileManager.localMasterDir)) + ',,'
+        outstring += 'HardDriveUsage: ' + str(psutil.disk_usage(self.fileManager.localMasterDir)[3]) + ',,'
         outstring += 'CPUUsage: ' + str(psutil.cpu_percent()) + ',,'
         outstring += 'RAMUsage: ' + str(psutil.virtual_memory()[2])
 
