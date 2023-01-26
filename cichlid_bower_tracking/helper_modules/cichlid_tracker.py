@@ -89,7 +89,7 @@ class CichlidTracker:
             cpu_use = psutil.cpu_percent()
             ram_use = psutil.virtual_memory()[2]
 
-            self._print('UnknownExceptionExit: Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ', str(cpu_use) + ',,RAMUse: ' + str(ram_use))
+            self._print('UnknownExceptionExit: Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ' + str(cpu_use) + ',,RAMUse: ' + str(ram_use))
 
 
 
@@ -539,10 +539,10 @@ class CichlidTracker:
         outstring += 'Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1) + ',,AvgMed: '+ '%.2f' % np.nanmean(med) + ',,AvgStd: ' + '%.2f' % np.nanmean(std) + ',,'
         outstring += 'GP: ' + str(np.count_nonzero(~np.isnan(med))) + ',,AllPixelsBad: ' + str(bad_all_pixels) + ',,AllPixelsGood: ' + str(good_all_pixels) + ',,'
         outstring += 'LOF: ' + str(self._video_recording(time = endtime)) + ',,'
-        outstring += 'Temperature: ' + psutil.sensors_temperatures()['cpu_thermal'][0][1] + ',,'
-        outstring += 'HardDriveUsage: ' + psutil.disk_usage(self.fileManager.localMasterDir) + ',,'
-        outstring += 'CPUUsage: ' + psutil.cpu_percent() + ',,'
-        outstring += 'RAMUsage: ' + psutil.virtual_memory()[2]
+        outstring += 'Temperature: ' + str(psutil.sensors_temperatures()['cpu_thermal'][0][1]) + ',,'
+        outstring += 'HardDriveUsage: ' + str(psutil.disk_usage(self.fileManager.localMasterDir)) + ',,'
+        outstring += 'CPUUsage: ' + str(psutil.cpu_percent()) + ',,'
+        outstring += 'RAMUsage: ' + str(psutil.virtual_memory()[2])
 
         self._print('UnknownExceptionExit: Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ', str(cpu_use) + ',,RAMUse: ' + str(ram_use))
 
