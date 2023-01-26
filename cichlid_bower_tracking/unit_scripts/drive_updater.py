@@ -1,4 +1,4 @@
-import argparse, datetime, gspread, time, pdb, warnings
+import argparse, datetime, gspread, time, pdb, warnings, psutil
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 from cichlid_bower_tracking.helper_modules.googleController import GoogleController as GC
@@ -72,6 +72,15 @@ class DriveUpdater:
             self.googleController.modifyPiGS('DataDuplicated', 'Yes')
         else: 
             self.googleController.modifyPiGS('DataDuplicated', 'No')
+
+        #Update PiStatus
+        current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
+        harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)
+        cpu_use = psutil.cpu_percent()
+        ram_use = psutil.virtual_memory()[2]
+
+        self.googleController.modifyPiGS('PiStatus','Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ' + str(cpu_use) + ',,RAMUse: ' + str(ram_use))
+
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 17] # frames during daylight
