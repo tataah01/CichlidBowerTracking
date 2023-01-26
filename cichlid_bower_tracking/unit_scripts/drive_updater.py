@@ -73,13 +73,6 @@ class DriveUpdater:
         else: 
             self.googleController.modifyPiGS('DataDuplicated', 'No')
 
-        #Update PiStatus
-        current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
-        harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)
-        cpu_use = psutil.cpu_percent()
-        ram_use = psutil.virtual_memory()[2]
-
-        self.googleController.modifyPiGS('PiStatus','Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ' + str(cpu_use) + ',,RAMUse: ' + str(ram_use))
 
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
@@ -188,6 +181,15 @@ class DriveUpdater:
         fig.tight_layout()
 
         fig.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
+
+        #Update PiStatus
+        current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
+        harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)[3]
+        cpu_use = psutil.cpu_percent()
+        ram_use = psutil.virtual_memory()[2]
+
+        self.googleController.modifyPiGS('PiStatus','Temperature: ' + str(current_temp) + ',,HardDriveUsage: ' + str(harddrive_use) + ',,CPUUsage: ' + str(cpu_use) + ',,RAMUse: ' + str(ram_use))
+
     
     def _uploadImage(self, image_file1, image_file2, name1, name2): #name should have format 't###_icon' or 't###_link'
         self._authenticateGoogleDrive()

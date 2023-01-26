@@ -85,7 +85,7 @@ class CichlidTracker:
             response = self.sg.send(new_email)
 
             current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
-            harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)
+            harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)[3]
             cpu_use = psutil.cpu_percent()
             ram_use = psutil.virtual_memory()[2]
 
