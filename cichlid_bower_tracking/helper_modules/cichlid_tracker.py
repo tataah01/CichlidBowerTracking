@@ -316,6 +316,11 @@ class CichlidTracker:
                     self.videoCounter += 1
 
             # Capture a frame and background if necessary
+           
+                
+                
+                
+       
             if self.device != 'None':
                 if now > current_background_time:
                     out = self._captureFrame(current_frame_time)
@@ -439,7 +444,7 @@ class CichlidTracker:
             # Create a context object. This object owns the handles to all connected realsense devices
             self.pipeline = rs.pipeline()
             self.align = rs.align(rs.stream.color)
-
+            
             # Configure streams
             config = rs.config()
             config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)

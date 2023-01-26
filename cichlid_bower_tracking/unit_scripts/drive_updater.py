@@ -68,6 +68,10 @@ class DriveUpdater:
         return daily_bower
     
     def _createImage(self, stdcutoff = 0.1):
+        if len(self.lp.frames) > 1 and self.lp.frames[-1].std< 0.00001 and self.lp.frames[-1].gp==self.lp.frames[-2].gp:
+            self.googleController.modifyPiGS('DataDuplicated', 'Yes')
+        else: 
+            self.googleController.modifyPiGS('DataDuplicated', 'No')
         lastHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 1)] # frames from the last hour
         lastTwoHourFrames = [x for x in self.lp.frames if x.time > self.lastFrameTime - datetime.timedelta(hours = 2)] # frames from the last two hours
         daylightFrames = [x for x in self.lp.frames if x.time.hour >= 8 and x.time.hour <= 17] # frames during daylight
@@ -77,8 +81,9 @@ class DriveUpdater:
 
         # Dictionary to hold all the unique days that have daylight frames
         days={}
+        
         for x in daylightFrames:
-            days.update({x.time.day:x.time.month})
+            days.update({str(x.time.day)+' '+str(x.time.month):x.time.month})
             # This way we only identify days that have frames during the daylight
 
         # Determine the size of the figure and create it
@@ -87,6 +92,8 @@ class DriveUpdater:
         
         fig = plt.figure(figsize=(14,4*num_rows + 1))
         fig.suptitle(self.lp.projectID + ' ' + str(self.lastFrameTime))
+        
+        plt.rcParams.update({'font.size': 18})
         
         # Create subplots
         for i in range(num_rows):
@@ -137,8 +144,15 @@ class DriveUpdater:
         axes[7].imshow(depth_last - depth_twohours, vmin = -0.5, vmax = 0.5)
         axes[8].imshow(self._calculateBower(depth_last - depth_twohours), vmin = -0.5, vmax = 0.5)
 
-        for i,day in enumerate([x for x in days.keys()][::-1]):
-            daylightFrames_day = [x for x in daylightFrames if x.time.day == day] # frames during daylight
+        for i,date in enumerate([x for x in days.keys()][::-1]):
+            day=date.split(' ')[0]
+            month=date.split(' ')[1]
+            daylightFrames_month = [x for x in daylightFrames if x.time.month == int(month) ]
+            daylightFrames_day = [x for x in daylightFrames_month if x.time.day == int(day) ]
+            
+            if daylightFrames_day==[]:
+                print(date)
+                # frames during daylight
             depth_start = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[0].npy_file))
             depth_stop = self._filterPixels(np.load(self.projectDirectory + daylightFrames_day[-1].npy_file))
 
@@ -165,8 +179,7 @@ class DriveUpdater:
         fig.tight_layout()
 
         fig.savefig(self.projectDirectory + self.lp.tankID + '_2.jpg')
-
-
+    
     def _uploadImage(self, image_file1, image_file2, name1, name2): #name should have format 't###_icon' or 't###_link'
         self._authenticateGoogleDrive()
         drive = GoogleDrive(self.gauth)
