@@ -54,7 +54,7 @@ class DriveUpdater:
             """
             return pixels
         
-    def _calculateBower(self, depthChange):
+    def _calculateBower(self, depthChange, th):
         """
         daily_bower = daily_change.copy()
         thresholded_change = np.where((daily_change >= 0.4) | (daily_change <= -0.4), True, False)
@@ -62,7 +62,7 @@ class DriveUpdater:
         daily_bower[(thresholded_change == 0) & (~np.isnan(daily_change))] = 0
         """
         daily_bower = depthChange.copy()
-        thresholded_change = np.where((depthChange >= 0.4) | (depthChange <= -0.4), True, False)
+        thresholded_change = np.where((depthChange >= th) | (depthChange <= -th), True, False)
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         daily_bower[(thresholded_change == 0) & (~np.isnan(depthChange))] = 0
         return daily_bower
@@ -141,10 +141,10 @@ class DriveUpdater:
         axes[2].imshow(depth_last - depth_first, vmin = -2, vmax = 2)
         axes[3].imshow(depth_hour, vmin = median_height - 8, vmax = median_height + 8)
         axes[4].imshow(depth_last - depth_hour, vmin = -0.5, vmax = 0.5)
-        axes[5].imshow(self._calculateBower(depth_last - depth_hour), vmin = -1, vmax = 1)
+        axes[5].imshow(self._calculateBower(depth_last - depth_hour, 0.2), vmin = -1, vmax = 1)
         axes[6].imshow(depth_twohours, vmin = median_height - 8, vmax = median_height + 8)
         axes[7].imshow(depth_last - depth_twohours, vmin = -0.5, vmax = 0.5)
-        axes[8].imshow(self._calculateBower(depth_last - depth_twohours), vmin = -0.5, vmax = 0.5)
+        axes[8].imshow(self._calculateBower(depth_last - depth_twohours, 0.2), vmin = -0.5, vmax = 0.5)
 
         for i,date in enumerate([x for x in days.keys()][::-1]):
             day=date.split(' ')[0]
@@ -160,7 +160,7 @@ class DriveUpdater:
 
             axes[3*i+9].imshow(depth_start, vmin = median_height - 8, vmax = median_height + 8)
             axes[3*i+10].imshow(depth_stop - depth_start, vmin = -1, vmax = 1)
-            axes[3*i+11].imshow(self._calculateBower(depth_stop - depth_start), vmin = -1, vmax = 1)
+            axes[3*i+11].imshow(self._calculateBower(depth_stop - depth_start, 0.4), vmin = -1, vmax = 1)
 
         #plt.subplots_adjust(bottom = 0.15, left = 0.12, wspace = 0.24, hspace = 0.57)
         plt.savefig(self.projectDirectory + self.lp.tankID + '.jpg')
