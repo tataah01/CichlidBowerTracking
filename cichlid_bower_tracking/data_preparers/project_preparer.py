@@ -6,12 +6,9 @@ from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 class ProjectPreparer():
 	# This class takes in a projectID and runs all the appropriate analysis
 
-	def __init__(self, projectID = None, modelID = None, workers = None, analysisID=None):
+	def __init__(self, projectID = None, workers = None, analysisID=None):
 		self.projectID = projectID
-		if modelID == 'None':
-			modelID = None
-		self.fileManager = FM(projectID = projectID, modelID = modelID, analysisID=analysisID)
-		self.modelID = modelID
+		self.fileManager = FM(projectID = projectID, analysisID=analysisID)
 		#if not self._checkProjectID():
 		#	raise Exception(projectID + ' is not valid.')
 		self.workers = workers
@@ -60,14 +57,17 @@ class ProjectPreparer():
 			cp_obj.runClusterAnalysis()
 
 	def runTrackFishAnalysis(self, videoIndexIn):
-		
+		"""
 		import GPUtil
 		from cichlid_bower_tracking.data_preparers.fish_tracking_preparer import FishTrackingPreparer as FTP
+		
+		# Identify videos to process
 		if videoIndexIn is None:
 			videos = list(range(len(self.fileManager.lp.movies)))
 		else:
 			videos = [videoIndexIn]
 		
+		#Loop through videos and track fish
 		ftp_objs = []
 		for videoIndex in videos:
 			ftp_objs.append(FTP(self.fileManager, videoIndex))
@@ -97,24 +97,12 @@ class ProjectPreparer():
 			p1.communicate()
 			if p1.returncode != 0:
 				print('SORT Error')
-
-		# Combine predictions
-		if videoIndexIn is None:
-			for videoIndex in videos:
-				videoObj = self.fileManager.returnVideoObject(videoIndex)
-				new_dt_t = pd.read_csv(videoObj.localFishTracksFile)
-				new_dt_d = pd.read_csv(videoObj.localFishDetectionsFile)
-				try:
-					c_dt_t = c_dt_t.append(new_dt_t)
-					c_dt_d = c_dt_d.append(new_dt_d)
-
-				except NameError:
-					c_dt_t = new_dt_t
-					c_dt_d = new_dt_d
-
-			c_dt_t.to_csv(self.fileManager.localAllFishTracksFile)
-			c_dt_d.to_csv(self.fileManager.localAllFishDetectionsFile)
-
+		"""
+		from cichlid_bower_tracking.data_preparers.cluster_track_association_preparer_new import ClusterTrackAssociationPreparer as CTAP
+		ctap_obj = CTAP(self.fileManager)
+		#ctap_obj.summarizeTracks()
+		#ctap_obj.associateClustersWithTracks()
+		ctap_obj.createMaleFemaleAnnotationVideos()
 
 	def runClusterTrackAssociationAnalysis(self):
 		from cichlid_bower_tracking.data_preparers.cluster_track_association_preparer import ClusterTrackAssociationPreparer as CTAP

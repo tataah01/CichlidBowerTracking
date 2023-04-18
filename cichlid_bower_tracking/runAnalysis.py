@@ -2,39 +2,19 @@ import argparse, subprocess, pdb, datetime, os, sys
 import pandas as pd
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
+# This code ensures that modules can be found in their relative directories
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
     sys.path.append(PROJECT_ROOT)
 
-parser = argparse.ArgumentParser(
-    description='This script is used to manually prepared projects for downstream analysis')
-parser.add_argument('AnalysisType', type=str, choices=['Prep', 'Depth', 'Cluster', 'ClusterClassification', 'TrackFish', 'AssociateClustersWithTracks', 'Summary'],
-                    help='Type of analysis to run')
+# Create arguments for the script
+parser = argparse.ArgumentParser(description='This script is used to manually prepared projects for downstream analysis')
+parser.add_argument('AnalysisType', type=str, choices=['Prep', 'Depth', 'Cluster', 'ClusterClassification', 'TrackFish', 'AssociateClustersWithTracks', 'Summary'], help='Type of analysis to run')
 parser.add_argument('AnalysisID', type = str, help = 'ID of analysis state name')
-parser.add_argument('--ProjectIDs', type=str, nargs='+', help='Name of projectIDs to restrict analysis to')
+parser.add_argument('--ProjectIDs', type=str, nargs='+', help='Optional name of projectIDs to restrict the analysis to')
 parser.add_argument('--Workers', type=int, help='Number of workers')
-parser.add_argument('--ModelID', type=str, help='ModelID to use to classify clusters with')
 args = parser.parse_args()
 
-def get_projects(fm_obj, analysis_type, fil_projectIDs):
-    fm_obj.downloadData(fm_obj.localSummaryFile)
-    dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'TrackFish':str, 'AssociateClustersWithTracks':str, 'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
-
-    # Identify projects to run on:
-    sub_dt = dt[dt.RunAnalysis.str.upper() == 'TRUE'] # Only analyze projects that are indicated
-    if analysis_type == 'Prep':
-        sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
-    elif args.AnalysisType == 'Depth':
-        sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
-
-    projectIDs = list(sub_dt[sub_dt[analysis_type].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
-
-    # Filter out projects if optional argment given
-    if fil_projectIDs is not None:
-        for projectID in projectIDs:
-            if projectID not in fil_projectIDs:
-                projectIDs.remove(projectID)
-    return projectIDs
 
 # Identify projects to run analysis on
 fm_obj = FM(analysisID = args.AnalysisID)
@@ -44,7 +24,7 @@ if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
     sys.exit()
 
 summary_file = fm_obj.localSummaryFile # Shorthand to make it easier to read
-projectIDs = get_projects(fm_obj, args.AnalysisType, args.ProjectIDs)
+projectIDs = fm_obj.identifyProjectsToRun(args.AnalysisType, args.ProjectIDs)
 
 if len(projectIDs) == 0:
     print('No projects to analyze')
@@ -67,7 +47,7 @@ dt.to_csv(summary_file, index = False)
 fm_obj.uploadData(summary_file)
 
 print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
-subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--ModelID', str(args.ModelID), '--AnalysisID', args.AnalysisID])
+subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--AnalysisID', args.AnalysisID])
 while len(projectIDs) != 0:
     projectID = projectIDs[0]
 
@@ -99,12 +79,12 @@ while len(projectIDs) != 0:
 
     # In the meantime, download data for next project in the background
 
-    projectIDs = get_projects(fm_obj, args.AnalysisType, args.ProjectIDs)
+    projectIDs = fm_obj.identifyProjectsToRun(args.AnalysisType, args.ProjectIDs)
 
     if len(projectIDs) != 0:
-        dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
-        dt.to_csv(summary_file, index = False)
-        fm_obj.uploadData(summary_file)
+        #dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
+        #dt.to_csv(summary_file, index = False)
+        #fm_obj.uploadData(summary_file)
 
         print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
         p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0], '--AnalysisID', args.AnalysisID])
@@ -115,6 +95,8 @@ while len(projectIDs) != 0:
         sys.exit()
     try:
         p2.communicate() # Need to catch an exception if only one project is analyzed
+        if p2.returncode != 0:
+            sys.exit()
     except NameError:
         pass
 

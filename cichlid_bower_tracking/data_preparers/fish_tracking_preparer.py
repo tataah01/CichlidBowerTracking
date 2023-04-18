@@ -1,9 +1,10 @@
 import subprocess, os, pdb, datetime
+from shapely.geometry import Point, Polygon
 
 class FishTrackingPreparer():
-	# This class takes in directory information and a logfile containing depth information and performs the following:
-	# 1. Identifies tray using manual input
-	# 2. Interpolates and smooths depth data
+	# This class takes in a yolov5 model + video information and:
+	# 1. Detects fish objects and classifies into normal or reflection using a yolov5 object
+	# 2. 
 	# 3. Automatically identifies bower location
 	# 4. Analyze building, shape, and other pertinent info of the bower
 
@@ -58,6 +59,5 @@ class FishTrackingPreparer():
 
 		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + self.videoObj.baseName + '_trackingerrors.txt', 'w'), stdout=subprocess.DEVNULL)
 		return output
-
 
 

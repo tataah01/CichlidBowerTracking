@@ -1,8 +1,9 @@
 import os, subprocess, pdb, platform, shutil
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
+import pandas as pd 
 
 class FileManager():
-	def __init__(self, projectID = None, modelID = None, analysisID=None, rcloneRemote = 'CichlidPiData:', masterDir = 'McGrath/Apps/CichlidPiData/'):
+	def __init__(self, analysisID, projectID = None, annotationID = None, rcloneRemote = 'CichlidPiData:', masterDir = 'McGrath/Apps/CichlidPiData/'):
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node() or 'sv-' in platform.node():
 			self._identifyPiDirectory()
@@ -26,24 +27,19 @@ class FileManager():
 				#raise Exception('Cant find master directory (' + masterDir + ') in rclone remote (' + rcloneRemote + '')
 
 		self.analysisID = analysisID
-		if analysisID is not None:
-			self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/' + analysisID + '/'
-			self.localSummaryFile = self.localAnalysisStatesDir + analysisID + '.csv'
-		else:
-			self.localEuthData = None
-	
-
+		self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/' + analysisID + '/'
+		self.localSummaryFile = self.localAnalysisStatesDir + analysisID + '.csv'
+		
 		if projectID is not None:
 			self.createProjectData(projectID)
 
-		self.modelID = modelID
-		self.localMLDir = self.localMasterDir + '__MachineLearningModels/'
 		
-		self.createMLData(modelID)
+		self.createMLData()
 
 		# Create file names and parameters
 		self.createPiData()
-		self.createAnnotationData()
+		if annotationID is not None:
+			self.createAnnotationData()
 
 		self._createParameters()
 
@@ -56,6 +52,42 @@ class FileManager():
 	def getAllProjectIDs(self):
 		output = subprocess.run(['rclone', 'lsf', '--dirs-only', self.cloudMasterDir], capture_output = True, encoding = 'utf-8')
 		projectIDs = [x.rstrip('/') for x in output.stdout.split('\n') if x[0:2] != '__']
+		return projectIDs
+
+	def identifyProjectsToRun(self, analysis_type, filtered_projectIDs):
+		self.downloadData(self.localSummaryFile)
+		dt = pd.read_csv(self.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'TrackFish':str, 'AssociateClustersWithTracks':str, 'Summary': str})
+
+		# Identify projects to run on:
+		sub_dt = dt[dt.RunAnalysis.str.upper() == 'TRUE'] # Only analyze projects that are indicated
+		if analysis_type == 'Prep':
+			sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+		elif analysis_type == 'Depth':
+			sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+			sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+		elif analysis_type == 'Cluster':
+			sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+			sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+		elif analysis_type == 'ClusterClassification':
+			sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+			sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+			sub_dt = sub_dt[sub_dt.Cluster.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+		elif analysis_type == 'TrackFish':
+			sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+			sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+		elif analysis_type == 'AssociateClustersWithTracks':
+			sub_dt = sub_dt[sub_dt.StartingFiles.str.upper() == 'TRUE'] # Only analyze projects that have the right starting files
+			sub_dt = sub_dt[sub_dt.Prep.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+			sub_dt = sub_dt[sub_dt.TrackFish.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+			sub_dt = sub_dt[sub_dt.ClusterClassification.str.upper() == 'TRUE'] # Only analyze projects that have been prepped
+
+		projectIDs = list(sub_dt[sub_dt[analysis_type].str.upper() == 'FALSE'].projectID) # Only run analysis on projects that need it
+
+		# Filter out projects if optional argment given
+		if filtered_projectIDs is not None:
+			for projectID in projectIDs:
+				if projectID not in fil_projectIDs:
+					projectIDs.remove(projectID)
 		return projectIDs
 
 	def getProjectStates(self):
@@ -120,18 +152,16 @@ class FileManager():
 		print('Individual file info added to csv file')
 		return row_data
 		
-
-
 	def createProjectData(self, projectID):
 
-
-
-		self.createAnnotationData()
+		self.downloadData(self.localSummaryFile)
+		a_dt = pd.read_csv(self.localSummaryFile)
+		#self.createAnnotationData()
 		self.projectID = projectID
 		if self.analysisID is None:
 			self.localProjectDir = self.localMasterDir + '__ProjectData/' + projectID + '/'
 		else:
-			self.localProjectDir = self.localMasterDir + '__ProjectData/' + self.analysisID + '/' + projectID + '/'
+			self.localProjectDir = self.localMasterDir + '__ProjectData/' + a_dt[a_dt.projectID == projectID].Directory.values[0] + '/' + projectID + '/'
 
 		# Create logfile
 		self.localLogfile = self.localProjectDir + 'Logfile.txt'
@@ -196,8 +226,8 @@ class FileManager():
 		self.localNewLabeledClipsDir = self.localTempDir + 'NewLabeledClips/'
 
 
-		self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
-		self.localLabeledFramesProjectDir = self.localBoxedFishDir + projectID + '/'
+		#self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
+		#self.localLabeledFramesProjectDir = self.localBoxedFishDir + projectID + '/'
 
 		# Files created by summary preparer
 
@@ -210,21 +240,16 @@ class FileManager():
 			#print('No logfile created yet for ' + projectID)
 			pass 
 
-	def createMLData(self, modelID = None):
-		if modelID is None and self.analysisID is None:
-			return
+	def createMLData(self, ):
 
-		self.vModelID = modelID
+		self.localMLDir = self.localMasterDir + '__MachineLearningModels/'
 
-		if modelID is None:
-			self.vModelID = self.analysisID
-			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + self.analysisID + '/best.pt'
 
-		else:
-			self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + modelID + '/best.pt'
+		self.localYolov5WeightsFile = self.localMLDir + 'YOLOV5/' + self.analysisID + '/best.pt'
+		self.localSexClassificationModelFile = self.localMLDir + 'SexClassification/' + self.analysisID + '/best.pt'
 
-		self.local3DModelDir = self.localMLDir + 'VideoModels/' + self.vModelID + '/'
-		self.local3DModelTempDir = self.localMLDir + 'VideoModels/' + self.vModelID + 'Temp/'
+		self.local3DModelDir = self.localMLDir + 'VideoModels/' + self.analysisID + '/'
+		self.local3DModelTempDir = self.local3DModelDir + 'Temp/'
 
 		self.localVideoModelFile = self.local3DModelDir + 'model.pth'
 		self.localVideoClassesFile = self.local3DModelDir + 'classInd.txt'
@@ -232,9 +257,9 @@ class FileManager():
 		self.localVideoProjectsFile = self.local3DModelDir + 'videoToProject.csv'
 		self.localVideoLabels = self.local3DModelDir + 'confusionMatrix.csv'
 
-	def createAnnotationData(self):
-		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/'
-		self.localObjectDetectionDir = self.localAnnotationDir + 'BoxedFish/'
+	def createAnnotationData(self, annotationID):
+		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/' + annotationID + '/'
+		self.localObjectDetectionDir = self.localAnnotationDir + 'ObjectDetection/'
 		self.local3DVideosDir = self.localAnnotationDir + 'LabeledVideos/'
 
 		self.localLabeledClipsFile = self.local3DVideosDir + 'ManualLabels.csv'
@@ -308,6 +333,18 @@ class FileManager():
 			self.createDirectory(self.localTempDir)
 
 			self.downloadData(self.localLogfile)
+			self.downloadData(self.localOldVideoCropFile)
+			self.downloadData(self.localAllLabeledClustersFile)
+			self.downloadData(self.localAllTracksSummaryFile)
+			self.downloadData(self.localAllFishTracksFile)
+
+			return
+
+			for videoIndex in range(len(self.lp.movies)):
+				videoObj = self.returnVideoObject(videoIndex)
+				self.downloadData(videoObj.localFishTracksFile)
+				self.downloadData(videoObj.localFishDetectionsFile)
+
 			self.downloadData(self.localYolov5WeightsFile)
 
 			if videoIndex is not None:
