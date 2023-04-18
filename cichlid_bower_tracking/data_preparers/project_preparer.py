@@ -57,7 +57,6 @@ class ProjectPreparer():
 			cp_obj.runClusterAnalysis()
 
 	def runTrackFishAnalysis(self, videoIndexIn):
-		"""
 		import GPUtil
 		from cichlid_bower_tracking.data_preparers.fish_tracking_preparer import FishTrackingPreparer as FTP
 		
@@ -97,7 +96,7 @@ class ProjectPreparer():
 			p1.communicate()
 			if p1.returncode != 0:
 				print('SORT Error')
-		"""
+				
 		from cichlid_bower_tracking.data_preparers.cluster_track_association_preparer_new import ClusterTrackAssociationPreparer as CTAP
 		ctap_obj = CTAP(self.fileManager)
 		#ctap_obj.summarizeTracks()

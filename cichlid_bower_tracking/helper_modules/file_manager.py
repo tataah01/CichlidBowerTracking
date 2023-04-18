@@ -336,11 +336,6 @@ class FileManager():
 			self.downloadData(self.localOldVideoCropFile)
 			self.downloadData(self.localAllLabeledClustersFile)
 
-			for videoIndex in range(len(self.lp.movies)):
-				videoObj = self.returnVideoObject(videoIndex)
-				self.downloadData(videoObj.localFishTracksFile)
-				self.downloadData(videoObj.localFishDetectionsFile)
-
 			self.downloadData(self.localYolov5WeightsFile)
 
 			if videoIndex is not None:
