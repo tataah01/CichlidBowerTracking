@@ -41,11 +41,6 @@ else:
 # To run analysis efficiently, we download and upload data in the background while the main script runs
 uploadProcesses = [] # Keep track of all of the processes still uploading so we don't quit before they finish
 
-dt = pd.read_csv(fm_obj.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str, 'TrackFish':str, 'AssociateClustersWithTracks': str, 'LabeledVideos':str,'LabeledFrames': str, 'Summary': str})
-dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
-dt.to_csv(summary_file, index = False)
-fm_obj.uploadData(summary_file)
-
 print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--AnalysisID', args.AnalysisID])
 while len(projectIDs) != 0:
@@ -78,13 +73,10 @@ while len(projectIDs) != 0:
                  args.SummaryFile])
 
     # In the meantime, download data for next project in the background
-
+    # Check to make sure the project hasn't already been run
     projectIDs = fm_obj.identifyProjectsToRun(args.AnalysisType, args.ProjectIDs)
 
     if len(projectIDs) != 0:
-        #dt.loc[dt.projectID == projectIDs[0],args.AnalysisType] = 'Running'
-        #dt.to_csv(summary_file, index = False)
-        #fm_obj.uploadData(summary_file)
 
         print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
         p2 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data', args.AnalysisType, '--ProjectID', projectIDs[0], '--AnalysisID', args.AnalysisID])
