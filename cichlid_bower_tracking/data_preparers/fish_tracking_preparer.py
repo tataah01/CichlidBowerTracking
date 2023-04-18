@@ -42,6 +42,7 @@ class FishTrackingPreparer():
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
+		print('bash -c \"' + command + '\"')
 		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + self.videoObj.baseName + '_detectionerrors.txt', 'w'), stdout=subprocess.DEVNULL)
 		#os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		return output
