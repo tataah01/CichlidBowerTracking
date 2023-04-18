@@ -44,7 +44,7 @@ uploadProcesses = [] # Keep track of all of the processes still uploading so we 
 print('Downloading: ' + projectIDs[0] + ' ' + str(datetime.datetime.now()), flush = True)
 subprocess.run(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.download_data',args.AnalysisType, '--ProjectID', projectIDs[0], '--AnalysisID', args.AnalysisID])
 while len(projectIDs) != 0:
-    projectID = projectIDs[0]
+    projectID = projectIDs.pop(0)
 
     print('Running: ' + projectID + ' ' + str(datetime.datetime.now()), flush = True)
 
@@ -71,10 +71,6 @@ while len(projectIDs) != 0:
             p1 = subprocess.Popen(
                 ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.summarize', projectID, '--SummaryFile',
                  args.SummaryFile])
-
-    # In the meantime, download data for next project in the background
-    # Check to make sure the project hasn't already been run
-    projectIDs = fm_obj.identifyProjectsToRun(args.AnalysisType, args.ProjectIDs)
 
     if len(projectIDs) != 0:
 

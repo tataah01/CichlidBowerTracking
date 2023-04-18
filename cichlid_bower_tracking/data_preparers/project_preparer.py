@@ -88,6 +88,8 @@ class ProjectPreparer():
 				p1.communicate()
 				if p1.returncode != 0:
 					print('YOLO Error')
+					pdb.set_trace()
+					
 		processes = []
 		for idx in range(len(videos)):
 			processes.append(ftp_objs[idx].runSORT())
@@ -96,7 +98,8 @@ class ProjectPreparer():
 			p1.communicate()
 			if p1.returncode != 0:
 				print('SORT Error')
-				
+				pdb.set_trace()
+
 		from cichlid_bower_tracking.data_preparers.cluster_track_association_preparer_new import ClusterTrackAssociationPreparer as CTAP
 		ctap_obj = CTAP(self.fileManager)
 		#ctap_obj.summarizeTracks()
