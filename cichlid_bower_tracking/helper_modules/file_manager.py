@@ -335,10 +335,6 @@ class FileManager():
 			self.downloadData(self.localLogfile)
 			self.downloadData(self.localOldVideoCropFile)
 			self.downloadData(self.localAllLabeledClustersFile)
-			self.downloadData(self.localAllTracksSummaryFile)
-			self.downloadData(self.localAllFishTracksFile)
-
-			return
 
 			for videoIndex in range(len(self.lp.movies)):
 				videoObj = self.returnVideoObject(videoIndex)
@@ -475,6 +471,10 @@ class FileManager():
 			if not no_upload:
 				self.uploadData(self.localAllFishTracksFile)
 				self.uploadData(self.localAllFishDetectionsFile)
+				for videoIndex in range(len(self.lp.movies)):
+					videoObj = self.returnVideoObject(videoIndex)
+					self.uploadData(videoObj.localFishTracksFile)
+					self.uploadData(videoObj.localFishDetectionsFile)
 
 			if delete:
 				shutil.rmtree(self.localProjectDir)
