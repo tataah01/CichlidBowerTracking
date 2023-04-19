@@ -4,7 +4,7 @@ import argparse,sys
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
 parser = argparse.ArgumentParser()
-parser.add_argument('DataType', type = str, choices=['Prep','Depth','Cluster','ClusterClassification', 'TrackFish','AddFishSex','Summary','All'], help = 'What type of analysis to perform')
+parser.add_argument('AnalysisType', type = str, choices=['Prep','Depth','Cluster','ClusterClassification', 'TrackFish','AddFishSex','Summary','All'], help = 'What type of analysis to perform')
 parser.add_argument('AnalysisID', type = str, help = 'The ID of the analysis state this project belongs to')
 parser.add_argument('ProjectID', type = str, help = 'Identify the projects you want to analyze.')
 parser.add_argument('--Workers', type = int, help = 'Number of workers to use to analyze data')
