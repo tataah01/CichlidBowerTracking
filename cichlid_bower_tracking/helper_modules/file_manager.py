@@ -3,7 +3,7 @@ from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 import pandas as pd 
 
 class FileManager():
-	def __init__(self, analysisID, projectID = None, annotationID = None, rcloneRemote = 'CichlidPiData:', masterDir = 'McGrath/Apps/CichlidPiData/'):
+	def __init__(self, analysisID, projectID = None, rcloneRemote = 'CichlidPiData:', masterDir = 'McGrath/Apps/CichlidPiData/', check = False):
 		# Identify directory for temporary local files
 		if platform.node() == 'raspberrypi' or 'Pi' in platform.node() or 'bt-' in platform.node() or 'sv-' in platform.node():
 			self._identifyPiDirectory()
@@ -26,34 +26,29 @@ class FileManager():
 				self.cloudMasterDir = self.rcloneRemote + masterDir
 				#raise Exception('Cant find master directory (' + masterDir + ') in rclone remote (' + rcloneRemote + '')
 
+		# Store analysis state information
 		self.analysisID = analysisID
-		self.localAnalysisStatesDir = self.localMasterDir + '__AnalysisStates/' + analysisID + '/'
+		self.localSummaryFile = self.localMasterDir + '__AnalysisStates/' + analysisID + '/' + analysisID + '.csv'
 		self.localSummaryFile = self.localAnalysisStatesDir + analysisID + '.csv'
 		
+		# Create file names and parameters
 		if projectID is not None:
-			self.createProjectData(projectID)
-
+			self.setProjectID(projectID, check_exists = check)
 		
-		self.createMLData()
+		self._createMLData()
 
 		# Create file names and parameters
-		self.createPiData()
-		if annotationID is not None:
-			self.createAnnotationData()
+		self._createPiData()
+
+		self._createAnnotationData()
 
 		self._createParameters()
 
-	def createPiData(self):
-		self.localCredentialDir = self.localMasterDir + '__CredentialFiles/'
-		self.localCredentialSpreadsheet = self.localCredentialDir + 'SAcredentials_1.json'
-		self.localCredentialDrive = self.localCredentialDir +  'DriveCredentials.txt'
-		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/sendgrid_key.secret'
-
-	def getAllProjectIDs(self):
-		output = subprocess.run(['rclone', 'lsf', '--dirs-only', self.cloudMasterDir], capture_output = True, encoding = 'utf-8')
-		projectIDs = [x.rstrip('/') for x in output.stdout.split('\n') if x[0:2] != '__']
-		return projectIDs
-
+	def setProjectID(self, projectID, check_exists = False):
+		self._createProjectData(projectID)
+		if check_exists:
+			assert self.checkFileExists(self.localLogfile)
+				
 	def identifyProjectsToRun(self, analysis_type, filtered_projectIDs):
 		self.downloadData(self.localSummaryFile)
 		dt = pd.read_csv(self.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'RunAnalysis':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'TrackFish':str, 'AssociateClustersWithTracks':str, 'Summary': str})
@@ -89,6 +84,14 @@ class FileManager():
 				if projectID not in fil_projectIDs:
 					projectIDs.remove(projectID)
 		return projectIDs
+
+	def updateSummaryFile(self, projectID, analysis_type):
+	    fm_obj.downloadData(self.localSummaryFile)
+	    dt = pd.read_csv(self.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
+
+	    dt.loc[dt.projectID == projectID, analysis_type] = 'TRUE'
+	    dt.to_csv(self.localSummaryFile, index = False)
+	    fm_obj.uploadData(self.localSummaryFile)
 
 	def getProjectStates(self):
 
@@ -152,16 +155,12 @@ class FileManager():
 		print('Individual file info added to csv file')
 		return row_data
 		
-	def createProjectData(self, projectID):
+	def _createProjectData(self, projectID):
 
+		# Need information from AnalysisStates file to determine where project data is stored
 		self.downloadData(self.localSummaryFile)
 		a_dt = pd.read_csv(self.localSummaryFile)
-		#self.createAnnotationData()
-		self.projectID = projectID
-		if self.analysisID is None:
-			self.localProjectDir = self.localMasterDir + '__ProjectData/' + projectID + '/'
-		else:
-			self.localProjectDir = self.localMasterDir + '__ProjectData/' + a_dt[a_dt.projectID == projectID].Directory.values[0] + '/' + projectID + '/'
+		self.localProjectDir = self.localMasterDir + '__ProjectData/' + a_dt[a_dt.projectID == projectID].Directory.values[0] + '/' + projectID + '/'
 
 		# Create logfile
 		self.localLogfile = self.localProjectDir + 'Logfile.txt'
@@ -240,7 +239,7 @@ class FileManager():
 			#print('No logfile created yet for ' + projectID)
 			pass 
 
-	def createMLData(self, ):
+	def _createMLData(self, ):
 
 		self.localMLDir = self.localMasterDir + '__MachineLearningModels/'
 
@@ -257,7 +256,13 @@ class FileManager():
 		self.localVideoProjectsFile = self.local3DModelDir + 'videoToProject.csv'
 		self.localVideoLabels = self.local3DModelDir + 'confusionMatrix.csv'
 
-	def createAnnotationData(self, annotationID):
+	def _createPiData(self):
+		self.localCredentialDir = self.localMasterDir + '__CredentialFiles/'
+		self.localCredentialSpreadsheet = self.localCredentialDir + 'SAcredentials_1.json'
+		self.localCredentialDrive = self.localCredentialDir +  'DriveCredentials.txt'
+		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/sendgrid_key.secret'
+
+	def _createAnnotationData(self, annotationID):
 		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/' + annotationID + '/'
 		self.localObjectDetectionDir = self.localAnnotationDir + 'ObjectDetection/'
 		self.local3DVideosDir = self.localAnnotationDir + 'LabeledVideos/'
@@ -312,7 +317,6 @@ class FileManager():
 				print('Downloading video ' + self.localVideoDir)
 				self.downloadData(self.localVideoDir)
 
-
 		elif dtype == 'ClusterClassification':
 			self.createDirectory(self.localMasterDir)
 			self.createDirectory(self.localLogfileDir)
@@ -356,28 +360,6 @@ class FileManager():
 			self.downloadData(self.localOldVideoCropFile)
 			self.downloadData(self.localAllLabeledClustersFile)
 
-		elif dtype == 'Train3DResnet':
-			self.createDirectory(self.local3DModelDir)
-			self.createDirectory(self.local3DModelTempDir)
-			self.createDirectory(self.localMasterDir)
-			self.downloadData(self.localLabeledClipsFile)
-			self.downloadData(self.localLabeledClipsDir, tarred_subdirs = True)		
-			
-		elif dtype == 'ManualLabelVideos':
-
-			self.createDirectory(self.localMasterDir)
-			self.createDirectory(self.localAnalysisDir)
-			self.createDirectory(self.localNewLabeledClipsDir)
-			self.downloadData(self.localManualLabelClipsDir, tarred_subdirs = True)
-			self.downloadData(self.localLabeledClipsFile)
-
-		elif dtype == 'ManualLabelFrames':
-			self.createDirectory(self.localMasterDir)
-			self.createDirectory(self.localAnalysisDir)
-			self.createDirectory(self.localNewLabeledFramesDir)
-			self.downloadData(self.localManualLabelFramesDir, tarred_subdirs = True)
-			self.downloadData(self.localBoxedFishFile)
-
 		elif dtype == 'Summary':
 			self.createDirectory(self.localMasterDir)
 			self.createDirectory(self.localSummaryDir)
@@ -387,27 +369,10 @@ class FileManager():
 			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
 			self.downloadData(self.localSummaryDir, allow_errors=True, quiet=True)
 
-		elif dtype == 'All':
-			self.createDirectory(self.localMasterDir)
-			self.createDirectory(self.local3DModelDir)
-			self.createDirectory(self.localAnalysisDir)
-			self.createDirectory(self.localTroubleshootingDir)
-			self.createDirectory(self.localTempDir)
-			self.createDirectory(self.localAllClipsDir)
-			self.createDirectory(self.localManualLabelClipsDir)
-			self.createDirectory(self.localManualLabelFramesDir)
-			self.createDirectory(self.localManualLabelFramesDir[:-1] + '_pngs')
-			self.createDirectory(self.localPaceDir)
-			self.downloadData(self.localLogfile)
-			self.downloadData(self.localVideoDir)
-			self.downloadData(self.localFrameDir, tarred = True)
-			self.downloadData(self.local3DModelDir)
-			self.downloadData(self.localEuthData, allow_errors=True, quiet=True)
-
 		else:
 			raise KeyError('Unknown key: ' + dtype)
 
-	def uploadProjectData(self, dtype, videoIndex, delete, no_upload):
+	def uploadProjectData(self, dtype, videoIndex, delete, no_upload = False):
 		if dtype == 'Prep':
 			if not no_upload:
 				self.uploadData(self.localDepthCropFile)
@@ -475,36 +440,11 @@ class FileManager():
 				shutil.rmtree(self.localProjectDir)
 				#os.remove(self.localYolov5WeightsFile)
 
-		elif dtype == 'Train3DResnet':
-			if not no_upload:
-				self.uploadData(self.local3DModelDir)
-			if delete:
-				shutil.rmtree(self.localTempDir)
-				shutil.rmtree(self.local3DModelTempDir)
-				shutil.rmtree(self.localAnnotationDir)
-
-		elif dtype == 'ManualLabelVideos':
-			if not no_upload:
-				self.uploadAndMerge(self.localNewLabeledVideosFile, self.localLabeledClipsFile, ID = 'LID')
-				self.uploadAndMerge(self.localNewLabeledClipsDir, self.localLabeledClipsProjectDir, tarred = True)
-
-			if delete:
-				shutil.rmtree(self.localProjectDir)
-
-
-		elif dtype == 'ManualLabelFrames':
-			if not no_upload:
-				self.uploadAndMerge(self.localNewLabeledFramesFile, self.localBoxedFishFile, ID = 'LID')
-				self.uploadAndMerge(self.localNewLabeledFramesDir, self.localLabeledFramesProjectDir, tarred = True)
-			if delete:
-				shutil.rmtree(self.localProjectDir)
-
 		elif dtype == 'Summary':
 			self.uploadData(self.localSummaryDir)
 
 		else:
 			raise KeyError('Unknown key: ' + dtype)
-
 
 	def returnVideoObject(self, index):
 		self._createParameters()

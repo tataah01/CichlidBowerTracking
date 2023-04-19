@@ -8,7 +8,7 @@ parser.add_argument('AnalysisID', type = str, help = 'AnalysisID of the set of p
 
 args = parser.parse_args()
 
-fm_obj = FM(analysisID = args.AnalysisID) 
+fm_obj = FM(args.AnalysisID) 
 
 summary_file = fm_obj.localSummaryFile
 fm_obj.downloadData(summary_file)
@@ -25,7 +25,7 @@ for c in columns:
 			dt[c] = 'FALSE'
 
 for projectID in projectIDs:
-	fm_obj.createProjectData(projectID)
+	fm_obj.setProjectID(projectID)
 	
 	out_data = fm_obj.getProjectStates()
 

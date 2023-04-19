@@ -346,7 +346,6 @@ class SortFish:
 
     def run_sort(self, min_track_len=0, max_age=5, min_hits=3):
      
-     
         tracker = Sort(max_age=max_age, min_hits=min_hits)
         curr_frame = 0
 
