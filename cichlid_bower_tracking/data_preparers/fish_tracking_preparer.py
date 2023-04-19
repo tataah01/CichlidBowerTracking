@@ -43,7 +43,7 @@ class FishTrackingPreparer():
 
 		os.chdir(os.getenv('HOME') + '/yolov5')
 		print('bash -c \"' + command + '\"')
-		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = subprocess.PIPE, stdout=subprocess.DEVNULL)
+		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + self.videoObj.baseName + '_detectionerrors.txt', 'w'), stdout=subprocess.DEVNULL)
 		#os.chdir(os.getenv('HOME') + '/CichlidBowerTracking/cichlid_bower_tracking')
 		return output
 
@@ -58,7 +58,7 @@ class FishTrackingPreparer():
 		command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate CichlidSort; " + ' '.join(command)
 		#subprocess.run('bash -c \"' + command + '\"', shell = True)
 
-		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = subprocess.PIPE, stdout=subprocess.DEVNULL)
+		output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + self.videoObj.baseName + '_trackingerrors.txt', 'w'), stdout=subprocess.DEVNULL)
 		return output
 
 
