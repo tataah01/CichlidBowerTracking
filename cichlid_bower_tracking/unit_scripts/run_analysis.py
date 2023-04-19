@@ -16,7 +16,7 @@ fm_obj = FM(args.AnalysisID, projectID = args.ProjectID, check = True)
 
 # Run appropriate analysis script
 if args.AnalysisType == 'Prep':
-    from cichlid_bower_tracking.data_preparers.prep_preparer import PrepPreparer as PrP
+	from cichlid_bower_tracking.data_preparers.prep_preparer import PrepPreparer as PrP
 	prp_obj = PrP(fm_obj)
 	prp_obj.validateInputData()
 	prp_obj.prepData()
@@ -51,7 +51,7 @@ elif args.AnalysisType == 'ClusterClassification':
 	tdcp_obj.createSummaryFile()
 
 elif args.AnalysisType == 'TrackFish':
-    import GPUtil
+	import GPUtil
 	from cichlid_bower_tracking.data_preparers.fish_tracking_preparer import FishTrackingPreparer as FTP
 	
 	# Identify videos to process
@@ -103,9 +103,9 @@ elif args.AnalysisType == 'TrackFish':
 
 
 elif args.AnalysisType == 'AddFishSex':
-    p1 = subprocess.run(
-        ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.add_fish_sex', projectID, args.AnalysisID])
+	p1 = subprocess.run(
+		['python3', '-m', 'cichlid_bower_tracking.unit_scripts.add_fish_sex', projectID, args.AnalysisID])
 elif args.AnalysisType == 'Summary':
-    p1 = subprocess.Popen(
-            ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.summarize', projectID, '--SummaryFile', args.AnalysisID])
+	p1 = subprocess.Popen(
+			['python3', '-m', 'cichlid_bower_tracking.unit_scripts.summarize', projectID, '--SummaryFile', args.AnalysisID])
 
