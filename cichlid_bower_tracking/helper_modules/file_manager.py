@@ -238,7 +238,7 @@ class FileManager():
 			#print('No logfile created yet for ' + projectID)
 			pass 
 
-	def _createMLData(self, ):
+	def _createMLData(self):
 
 		self.localMLDir = self.localMasterDir + '__MachineLearningModels/'
 
@@ -262,7 +262,7 @@ class FileManager():
 		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/sendgrid_key.secret'
 
 	def _createAnnotationData(self):
-		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/' + analysisID + '/'
+		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/' + self.analysisID + '/'
 		self.localObjectDetectionDir = self.localAnnotationDir + 'ObjectDetection/'
 		self.local3DVideosDir = self.localAnnotationDir + 'LabeledVideos/'
 
