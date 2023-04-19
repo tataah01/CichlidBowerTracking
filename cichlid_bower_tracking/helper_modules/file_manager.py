@@ -261,8 +261,8 @@ class FileManager():
 		self.localCredentialDrive = self.localCredentialDir +  'DriveCredentials.txt'
 		self.localEmailCredentialFile = self.localCredentialDir + 'iof_credentials/sendgrid_key.secret'
 
-	def _createAnnotationData(self, annotationID):
-		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/' + annotationID + '/'
+	def _createAnnotationData(self):
+		self.localAnnotationDir = self.localMasterDir + '__AnnotatedData/' + analysisID + '/'
 		self.localObjectDetectionDir = self.localAnnotationDir + 'ObjectDetection/'
 		self.local3DVideosDir = self.localAnnotationDir + 'LabeledVideos/'
 
