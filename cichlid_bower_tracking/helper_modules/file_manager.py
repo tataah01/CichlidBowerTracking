@@ -29,7 +29,6 @@ class FileManager():
 		# Store analysis state information
 		self.analysisID = analysisID
 		self.localSummaryFile = self.localMasterDir + '__AnalysisStates/' + analysisID + '/' + analysisID + '.csv'
-		self.localSummaryFile = self.localAnalysisStatesDir + analysisID + '.csv'
 		
 		# Create file names and parameters
 		if projectID is not None:
