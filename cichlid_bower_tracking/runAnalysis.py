@@ -47,27 +47,7 @@ while len(projectIDs) != 0:
     projectID = projectIDs.pop(0)
 
     print('Running: ' + projectID + ' ' + str(datetime.datetime.now()), flush = True)
-    p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.run_analysis', args.AnalysisType, projectID, args.AnalysisID])
-
-    # Run appropriate analysis script
-    if args.AnalysisType == 'Prep':
-        p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.prep_data', projectID, args.AnalysisID])
-    elif args.AnalysisType == 'Depth':
-        p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.analyze_depth', projectID, args.AnalysisID])
-    elif args.AnalysisType == 'Cluster':
-        p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.analyze_clusters', projectID, args.AnalysisID, '--Workers', str(workers)])
-    elif args.AnalysisType == 'ClusterClassification':
-        p1 = subprocess.Popen(
-            ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.classify_clusters', projectID, args.ModelID])
-    elif args.AnalysisType == 'TrackFish':
-        p1 = subprocess.Popen(
-            ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.track_fish', projectID, args.AnalysisID])
-    elif args.AnalysisType == 'AddFishSex':
-        p1 = subprocess.run(
-            ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.add_fish_sex', projectID, args.AnalysisID])
-    elif args.AnalysisType == 'Summary':
-        p1 = subprocess.Popen(
-                ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.summarize', projectID, '--SummaryFile', args.AnalysisID])
+    p1 = subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.run_analysis', args.AnalysisType, args.AnalysisID, projectID])
 
     # Download data for the next project in the background
     if len(projectIDs) != 0:

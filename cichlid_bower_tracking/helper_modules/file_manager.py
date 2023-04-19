@@ -44,6 +44,7 @@ class FileManager():
 		self._createParameters()
 
 	def setProjectID(self, projectID, check_exists = False):
+		self.projectID = projectID
 		self._createProjectData(projectID)
 		if check_exists:
 			assert self.checkFileExists(self.localLogfile)
