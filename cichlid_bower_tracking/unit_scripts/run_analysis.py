@@ -1,6 +1,6 @@
 # Things to add
 
-import argparse,sys
+import argparse,sys,pdb
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
 parser = argparse.ArgumentParser()
