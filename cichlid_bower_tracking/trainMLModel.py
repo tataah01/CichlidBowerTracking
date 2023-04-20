@@ -24,7 +24,7 @@ if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
 if args.AnalysisType == 'FishDetection':
 	
 	fm_obj.downloadData(fm_obj.localYolov5AnnotationsDir, tarred = True)
-	fm_obj.downloadData(fm_obj.self.localObjectDetectionDir + 'hyp.yaml', tarred = True)
+	fm_obj.downloadData(fm_obj.localObjectDetectionDir + 'hyp.yaml', tarred = True)
 
 	gpu = GPUtil.getAvailable(order = 'first', maxMemory = 0.2, limit = 8)[0]
 
