@@ -1,5 +1,5 @@
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
-import argparse, GPUtil, os
+import argparse, GPUtil, os, sys
 
 # This code ensures that modules can be found in their relative directories
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
