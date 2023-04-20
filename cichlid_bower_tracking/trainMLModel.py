@@ -1,5 +1,5 @@
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
-import argparse, GPUtil, os, sys, subprocess
+import argparse, GPUtil, os, sys, subprocess, yaml, pdb
 
 # This code ensures that modules can be found in their relative directories
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -24,6 +24,10 @@ if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
 if args.AnalysisType == 'FishDetection':
 	
 	fm_obj.downloadData(fm_obj.localYolov5AnnotationsDir, tarred = True)
+	with open(fm_obj.localYolov5AnnotationsDir + 'dataset.yaml', 'r') as file:
+		dataset = yaml.safe_load(file)
+	pdb.set_trace()
+
 	fm_obj.downloadData(fm_obj.localObjectDetectionDir + 'hyp.yaml')
 
 	gpu = GPUtil.getAvailable(order = 'first', maxMemory = 0.2, limit = 8)[0]
