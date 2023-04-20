@@ -26,7 +26,9 @@ if args.AnalysisType == 'FishDetection':
 	fm_obj.downloadData(fm_obj.localYolov5AnnotationsDir, tarred = True)
 	with open(fm_obj.localYolov5AnnotationsDir + 'dataset.yaml', 'r') as file:
 		dataset = yaml.safe_load(file)
-	pdb.set_trace()
+	dataset['path'] = fm_obj.localYolov5AnnotationsDir
+	with open(fm_obj.localYolov5AnnotationsDir + 'dataset.yaml', 'w') as file:
+    	yaml.dump(dataset, file)
 
 	fm_obj.downloadData(fm_obj.localObjectDetectionDir + 'hyp.yaml')
 
