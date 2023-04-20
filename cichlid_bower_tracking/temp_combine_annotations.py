@@ -1,11 +1,12 @@
 import pandas as pd
 import pdb, json, os
 import fiftyone as fo
+import fiftyone.zoo as foz
+import fiftyone.utils.random as four
 
 from helper_modules.file_manager import FileManager as FM
 
-fm_obj = FM()
-fm_obj.createAnnotationData('MC_hindbrain_v1')
+fm_obj = FM('PatrickTesting')
 
 task_folder = fm_obj.localObjectDetectionDir + '1_task_data/'
 fm_obj.downloadData(task_folder)
@@ -45,7 +46,6 @@ for batch in [x for x in os.listdir(task_folder) if x[0] != '.']:
 	except NameError:
 		dt = temp_dt
 
-pdb.set_trace()
 dt['frame_number'] = dt.name.str.split('/', expand = True)[1].str.split('_', expand = True)[7].str.replace('.jpg', '')
 dt['projectID'] = dt.name.str.split('/', expand = True)[1].str.split('vid', expand = True)[0].str[0:-6]
 dt['video_id'] = dt.name.str.split('/', expand = True)[1].str.split('_', expand = True)[5] + '_vid'
@@ -53,7 +53,6 @@ dt['file_path'] = task_folder + batch + '/data/' + dt.name
 
 width = frames.width[0]
 height = frames.height[0]
-
 
 samples = []
 for frame in set(dt.file_path):
@@ -75,12 +74,13 @@ for frame in set(dt.file_path):
 
 dataset = fo.Dataset("my-detection-dataset")
 dataset.add_samples(samples)
-pdb.set_trace()
+four.random_split(dataset, {'train': 0.9, 'val': 0.1})
 
+for split in ['train','val']:
+	split_view = dataset.match_tags('val')
+	split_view.export(export_dir=fm_obj.localYolov5AnnotationsDir, dataset_type=fo.types.YOLOv5Dataset,label_field="ground_truth", split = split, classes=['Fish','Reflection'])
 
-
-#https://docs.voxel51.com/user_guide/dataset_creation/index.html
-
+fm_obj.uploadData(fm_obj.localYolov5AnnotationsDir, tarred = True)
 #1 Check coordinate points top left top right
 #2 Add tank add annotator information to sample
 #3 Split into training/validation
