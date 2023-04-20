@@ -4,7 +4,7 @@ import argparse, GPUtil, os, sys, subprocess, yaml, pdb
 # This code ensures that modules can be found in their relative directories
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 if PROJECT_ROOT not in sys.path:
-    sys.path.append(PROJECT_ROOT)
+	sys.path.append(PROJECT_ROOT)
 
 # Create arguments for the script
 parser = argparse.ArgumentParser(description='This script is used to manually prepared projects for downstream analysis')
@@ -18,8 +18,8 @@ args = parser.parse_args()
 fm_obj = FM(args.AnalysisID)
 fm_obj.downloadData(fm_obj.localSummaryFile)
 if not fm_obj.checkFileExists(fm_obj.localSummaryFile):
-    print('Cant find ' + fm_obj.localSummaryFile)
-    sys.exit()
+	print('Cant find ' + fm_obj.localSummaryFile)
+	sys.exit()
 
 if args.AnalysisType == 'FishDetection':
 	
@@ -28,7 +28,7 @@ if args.AnalysisType == 'FishDetection':
 		dataset = yaml.safe_load(file)
 	dataset['path'] = fm_obj.localYolov5AnnotationsDir
 	with open(fm_obj.localYolov5AnnotationsDir + 'dataset.yaml', 'w') as file:
-    	yaml.dump(dataset, file)
+		yaml.dump(dataset, file)
 
 	fm_obj.downloadData(fm_obj.localObjectDetectionDir + 'hyp.yaml')
 
