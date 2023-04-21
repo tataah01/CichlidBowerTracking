@@ -36,7 +36,7 @@ if args.AnalysisType == 'FishDetection':
 
 	command = ['python3', 'train.py']
 	command.extend(['--device', str(gpu)])
-	command.extend(['--epochs', '500'])
+	command.extend(['--epochs', '1000'])
 	command.extend(['--batch-size','-1'])
 	command.extend(['--optimizer','AdamW'])
 	command.extend(['--hyp',fm_obj.localObjectDetectionDir + 'hyp.yaml'])
@@ -49,10 +49,9 @@ if args.AnalysisType == 'FishDetection':
 	os.chdir(os.getenv('HOME') + '/yolov5')
 	print('bash -c \"' + command + '\"')
 	output = subprocess.run('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + 'training_errors.txt', 'w'), stdout=subprocess.DEVNULL)
-	
+	pdb.set_trace()
 	subprocess.run(['cp', '-r', os.getenv('HOME') + '/yolov5/' + args.AnalysisType + '/' + args.AnalysisID, fm_obj.localYolov5InfoDir])
 	subprocess.run(['cp', os.getenv('HOME') + '/yolov5/' + args.AnalysisType + '/' + args.AnalysisID + '/best.pt', fm_obj.localYolov5WeightsFile])
 	fm_obj.uploadData(fm_obj.localYolov5InfoDir)
 	fm_obj.uploadData(fm_obj.localYolov5WeightsFile)
 
-	pdb.set_trace()
