@@ -93,6 +93,7 @@ elif args.AnalysisType == 'TrackFish':
 		if p1.returncode != 0:
 			raise Exception('SORT Error')
 
+	pdb.set_trace()
 	from cichlid_bower_tracking.data_preparers.cluster_track_association_preparer_new import ClusterTrackAssociationPreparer as CTAP
 	ctap_obj = CTAP(fm_obj.fileManager)
 	ctap_obj.summarizeTracks()
