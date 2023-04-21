@@ -36,14 +36,18 @@ if args.AnalysisType == 'FishDetection':
 
 	command = ['python3', 'train.py']
 	command.extend(['--device', str(gpu)])
-	command.extend(['--epochs', '300'])
+	command.extend(['--epochs', '500'])
 	command.extend(['--batch-size','-1'])
 	command.extend(['--optimizer','AdamW'])
 	command.extend(['--hyp',fm_obj.localObjectDetectionDir + 'hyp.yaml'])
 	command.extend(['--data',fm_obj.localYolov5AnnotationsDir + 'dataset.yaml'])
+	command.extend(['--project', args.AnalysisType])
+	command.extend(['--name', args.AnalysisID])
 
 	command = "source " + os.getenv('HOME') + "/anaconda3/etc/profile.d/conda.sh; conda activate yolov5; " + ' '.join(command)
 
 	os.chdir(os.getenv('HOME') + '/yolov5')
 	print('bash -c \"' + command + '\"')
-	output = subprocess.Popen('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + 'training_errors.txt', 'w'), stdout=subprocess.DEVNULL)
+	output = subprocess.run('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + 'training_errors.txt', 'w'), stdout=subprocess.DEVNULL)
+
+	pdb.set_trace()
