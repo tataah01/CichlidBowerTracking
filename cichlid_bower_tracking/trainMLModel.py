@@ -51,7 +51,7 @@ if args.AnalysisType == 'FishDetection':
 	output = subprocess.run('bash -c \"' + command + '\"', shell = True, stderr = open(os.getenv('HOME') + '/' + 'training_errors.txt', 'w'), stdout=subprocess.DEVNULL)
 	pdb.set_trace()
 	subprocess.run(['cp', '-r', os.getenv('HOME') + '/yolov5/' + args.AnalysisType + '/' + args.AnalysisID, fm_obj.localYolov5InfoDir])
-	subprocess.run(['cp', os.getenv('HOME') + '/yolov5/' + args.AnalysisType + '/' + args.AnalysisID + '/best.pt', fm_obj.localYolov5WeightsFile])
+	subprocess.run(['cp', os.getenv('HOME') + '/yolov5/' + args.AnalysisType + '/' + args.AnalysisID + '/weights/best.pt', fm_obj.localYolov5WeightsFile])
 	fm_obj.uploadData(fm_obj.localYolov5InfoDir)
 	fm_obj.uploadData(fm_obj.localYolov5WeightsFile)
 
