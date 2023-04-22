@@ -36,7 +36,7 @@ if args.AnalysisType == 'FishDetection':
 
 	command = ['python3', 'train.py']
 	command.extend(['--device', str(gpu)])
-	command.extend(['--epochs', '1000'])
+	command.extend(['--epochs', '2000'])
 	command.extend(['--batch-size','-1'])
 	command.extend(['--optimizer','AdamW'])
 	command.extend(['--hyp',fm_obj.localObjectDetectionDir + 'hyp.yaml'])
