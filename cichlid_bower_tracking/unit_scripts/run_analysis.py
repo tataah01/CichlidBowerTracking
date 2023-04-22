@@ -68,7 +68,7 @@ elif args.AnalysisType == 'TrackFish':
 
 	available_cards = GPUtil.getAvailable(order = 'first', maxMemory = 0.2, limit = 8)
 
-	"""
+	
 	current_idx = 0
 	while current_idx < len(videos):
 		processes = []
@@ -84,7 +84,7 @@ elif args.AnalysisType == 'TrackFish':
 			if p1.returncode != 0:
 				raise Exception('YOLO Error')
 
-	"""
+	
 	processes = []
 	for idx in range(len(videos)):
 		processes.append(ftp_objs[idx].runSORT())
