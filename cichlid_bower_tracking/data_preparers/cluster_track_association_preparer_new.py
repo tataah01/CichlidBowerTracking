@@ -84,8 +84,7 @@ class ClusterTrackAssociationPreparer():
 				if len(possible_tracks) == 0:
 					continue
 				possible_tracks['delta'] = pow(pow(possible_tracks['yc'] - cluster.X,2) + pow(possible_tracks['xc'] - cluster.Y, 2),0.5)
-				pdb.set_trace()
-				track_id = possible_tracks.idxmin()
+				track_id = possible_tracks.loc[possible_tracks['delta'].idxmin(),'track_id']
 				c_dt.iloc[i]['track_id'] = track_id
 		
 		pdb.set_trace()
