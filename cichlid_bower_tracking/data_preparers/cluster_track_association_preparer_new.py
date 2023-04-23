@@ -45,8 +45,8 @@ class ClusterTrackAssociationPreparer():
 
 			# Combine them into a single master pandas DataFrame
 			try:
-				dt_t = c_dt_t.append(video_dt_t)
-				dt_d = c_dt_d.append(video_dt_d)
+				dt_t = dt_t.append(video_dt_t)
+				dt_d = dt_d.append(video_dt_d)
 			except NameError:
 				dt_t = video_dt_t
 				dt_d = video_dt_d
@@ -67,7 +67,7 @@ class ClusterTrackAssociationPreparer():
 		dt_t.to_csv(self.fileManager.localAllFishTracksFile)
 
 		pdb.set_trace()
-		t_dt = dt_t.groupby(['track_id', 'track_length', 'base_name']).mean()[['class', 'p_value','InBounds']].rename({'class':'Reflection'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
+		t_dt = dt_t.groupby(['track_id', 'track_length', 'base_name']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'Reflection'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
 		t_dt.to_csv(self.fileManaer.localAllTracksSummaryFile, index = False)
 
 	def associateClustersWithTracks(self):
