@@ -36,6 +36,11 @@ class ClusterTrackAssociationPreparer():
 
 			#Read in individual video detection and tracks files
 			video_dt_t = pd.read_csv(videoObj.localFishTracksFile)
+			video_dt_t['xc'] = videoObj.width*video_dt_t['xc']
+			video_dt_t['yc'] = videoObj.height*video_dt_t['yc']
+			video_dt_t['w'] = videoObj.width*video_dt_t['w']
+			video_dt_t['h'] = videoObj.height*video_dt_t['h']
+			
 			video_dt_d = pd.read_csv(videoObj.localFishDetectionsFile)
 
 			# Combine them into a single master pandas DataFrame
@@ -62,7 +67,7 @@ class ClusterTrackAssociationPreparer():
 		dt_t.to_csv(self.fileManager.localAllFishTracksFile)
 
 		pdb.set_trace()
-		t_dt = t_dt.groupby(['track_id', 'track_length', 'base_name']).mean()[['class', 'p_value','InBounds']].rename({'class':'SexCall'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
+		t_dt = dt_t.groupby(['track_id', 'track_length', 'base_name']).mean()[['class', 'p_value','InBounds']].rename({'class':'Reflection'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
 		t_dt.to_csv(self.fileManaer.localAllTracksSummaryFile, index = False)
 
 	def associateClustersWithTracks(self):
