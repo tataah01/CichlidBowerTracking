@@ -28,7 +28,7 @@ class ClusterTrackAssociationPreparer():
 			assert os.path.exists(videoObj.localFishTracksFile)
 			assert os.path.exists(videoObj.localFishDetectionsFile)
 
-	def summarizeTracks(self):
+	def summarizeTracks(self, minimum_frame_number = 30):
 
 		# Loop through videos and combine into a single file
 		for videoIndex in range(len(self.fileManager.lp.movies)):
@@ -61,17 +61,19 @@ class ClusterTrackAssociationPreparer():
 
 		# Determine track lengths (useful for identifing longest tracks for manual annotation)
 		track_lengths = dt_t.groupby(['track_id','base_name']).count()['p_value'].rename('track_length').reset_index()
+		track_lengths[track_lengths.track_length > minimum_frame_number]
 		dt_t = pd.merge(dt_t, track_lengths, left_on = ['track_id','base_name'], right_on = ['track_id','base_name'])
 		#dt_t['binned_track_length'] = dt_t.track_length.apply(bin_tracklength)
 
 		dt_t.to_csv(self.fileManager.localAllFishTracksFile)
 
-		pdb.set_trace()
 		t_dt = dt_t.groupby(['track_id', 'track_length', 'base_name']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'Reflection'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
-		t_dt.to_csv(self.fileManaer.localAllTracksSummaryFile, index = False)
+		t_dt.to_csv(self.fileManager.localAllTracksSummaryFile, index = False)
 
 	def associateClustersWithTracks(self):
-		c_dt = pd.read_csv(self.fm.localAllLabeledClustersFile)
+		c_dt = pd.read_csv(self.fileManager.localAllLabeledClustersFile)
+		c_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
+
 		pdb.set_trace()
 
 	def createMaleFemaleAnnotationVideos(self):
