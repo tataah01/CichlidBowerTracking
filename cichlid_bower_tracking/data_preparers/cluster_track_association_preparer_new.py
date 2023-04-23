@@ -74,13 +74,14 @@ class ClusterTrackAssociationPreparer():
 		c_dt = pd.read_csv(self.fileManager.localAllLabeledClustersFile, index_col = 0)
 		c_dt['track_id'] = ''
 		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
+		t_dt['delta'] = 100000
 
 		for i,cluster in c_dt.iterrows():
 			if i % 250 == 0:
 				print(i)
 			if cluster.ClipCreated == 'Yes':
 
-				possible_tracks = t_dt[(t_dt.base_name == cluster.VideoID) & (t_dt.frame > (cluster.t-0.5)*29) & (t_dt.frame < (cluster.t+0.5)*29) ].copy()
+				possible_tracks = t_dt[(t_dt.base_name == cluster.VideoID) & (t_dt.frame > (cluster.t-0.5)*29) & (t_dt.frame < (cluster.t+0.5)*29) ]
 				#if len(possible_tracks) == 0:
 				#	continue
 				#possible_tracks['delta'] = pow(possible_tracks['yc'] - cluster.X,2) + pow(possible_tracks['xc'] - cluster.Y, 2)
