@@ -65,16 +65,19 @@ class ClusterTrackAssociationPreparer():
 		dt_t = pd.merge(dt_t, track_lengths, left_on = ['track_id','base_name'], right_on = ['track_id','base_name'])
 		#dt_t['binned_track_length'] = dt_t.track_length.apply(bin_tracklength)
 
-		dt_t.to_csv(self.fileManager.localAllFishTracksFile)
+		dt_t.to_csv(self.fileManager.localAllFishTracksFile, index = False)
 
 		t_dt = dt_t.groupby(['track_id', 'track_length', 'base_name']).mean()[['class_id', 'p_value','InBounds']].rename({'class_id':'Reflection'}, axis = 1).reset_index().sort_values(['base_name','track_id'])
 		t_dt.to_csv(self.fileManager.localAllTracksSummaryFile, index = False)
 
 	def associateClustersWithTracks(self):
 		c_dt = pd.read_csv(self.fileManager.localAllLabeledClustersFile)
-		t_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
+		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile)
 
 		for i,cluster in c_dt.iterrows():
+			possible_tracks = t_dt[(t_dt.base_name == cluster.VideoID) & (t_dt.frame > (cluster.t-1)*29) & (t_dt.frame < (cluster.t+1)*29) ].copy()
+			possible_tracks['delta'] = pow(pow(possible_tracks['yc'] - cluster.X,2) + pow(possible_tracks['xc'] - cluster.Y, 2),0.5)
+			track_id = possible_tracks.groupby('track_id')['delta'].mean().idxmin()
 			pdb.set_trace()
 
 

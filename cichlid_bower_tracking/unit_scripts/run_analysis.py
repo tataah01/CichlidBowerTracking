@@ -98,7 +98,7 @@ elif args.AnalysisType == 'TrackFish':
 	"""
 	from cichlid_bower_tracking.data_preparers.cluster_track_association_preparer_new import ClusterTrackAssociationPreparer as CTAP
 	ctap_obj = CTAP(fm_obj)
-	ctap_obj.summarizeTracks()
+	#ctap_obj.summarizeTracks()
 	ctap_obj.associateClustersWithTracks()
 	ctap_obj.createMaleFemaleAnnotationVideos()
 
