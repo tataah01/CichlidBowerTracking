@@ -61,7 +61,7 @@ class ClusterTrackAssociationPreparer():
 
 		# Determine track lengths (useful for identifing longest tracks for manual annotation)
 		track_lengths = dt_t.groupby(['track_id','base_name']).count()['p_value'].rename('track_length').reset_index()
-		track_lengths[track_lengths.track_length > minimum_frame_number]
+		track_lengths = track_lengths[track_lengths.track_length > minimum_frame_number]
 		dt_t = pd.merge(dt_t, track_lengths, left_on = ['track_id','base_name'], right_on = ['track_id','base_name'])
 		#dt_t['binned_track_length'] = dt_t.track_length.apply(bin_tracklength)
 
@@ -72,9 +72,11 @@ class ClusterTrackAssociationPreparer():
 
 	def associateClustersWithTracks(self):
 		c_dt = pd.read_csv(self.fileManager.localAllLabeledClustersFile)
-		c_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
+		t_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
 
-		pdb.set_trace()
+		for i,cluster in c_dt.iterrows():
+			pdb.set_trace()
+
 
 	def createMaleFemaleAnnotationVideos(self):
 		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
