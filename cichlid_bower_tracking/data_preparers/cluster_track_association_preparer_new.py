@@ -76,14 +76,15 @@ class ClusterTrackAssociationPreparer():
 
 		for i,cluster in c_dt.iterrows():
 			if cluster.ClipCreated == 'Yes':
-				pdb.set_trace()
 
 				possible_tracks = t_dt[(t_dt.base_name == cluster.VideoID) & (t_dt.frame > (cluster.t-1)*29) & (t_dt.frame < (cluster.t+1)*29) ].copy()
 				if len(possible_tracks) == 0:
+					print('No label')
 					continue
 				possible_tracks['delta'] = pow(pow(possible_tracks['yc'] - cluster.X,2) + pow(possible_tracks['xc'] - cluster.Y, 2),0.5)
 				track_id = possible_tracks.groupby('track_id')['delta'].mean().idxmin()
-
+				print(track_id)
+				pdb.set_trace()
 
 	def createMaleFemaleAnnotationVideos(self):
 		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
