@@ -83,7 +83,7 @@ class ClusterTrackAssociationPreparer():
 				possible_tracks = t_dt[(t_dt.base_name == cluster.VideoID) & (t_dt.frame > (cluster.t-0.5)*29) & (t_dt.frame < (cluster.t+0.5)*29) ].copy()
 				if len(possible_tracks) == 0:
 					continue
-				possible_tracks['delta'] = pow(pow(possible_tracks['yc'] - cluster.X,2) + pow(possible_tracks['xc'] - cluster.Y, 2),0.5)
+				possible_tracks['delta'] = pow(possible_tracks['yc'] - cluster.X,2) + pow(possible_tracks['xc'] - cluster.Y, 2)
 				track_id = possible_tracks.loc[possible_tracks['delta'].idxmin(),'track_id']
 				c_dt.iloc[i]['track_id'] = track_id
 		
