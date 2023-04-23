@@ -55,7 +55,7 @@ class ClusterTrackAssociationPreparer():
 		dt_t['InBounds'] = [poly.contains(Point(x, y)) for x,y in zip(dt_t.xc, dt_t.yc)]
 
 		# Determine track lengths (useful for identifing longest tracks for manual annotation)
-		track_lengths = dt_tt.groupby(['track_id','base_name']).count()['p_value'].rename('track_length').reset_index()
+		track_lengths = dt_t.groupby(['track_id','base_name']).count()['p_value'].rename('track_length').reset_index()
 		dt_t = pd.merge(dt_t, track_lengths, left_on = ['track_id','base_name'], right_on = ['track_id','base_name'])
 		dt_t['binned_track_length'] = dt_t.track_length.apply(bin_tracklength)
 
