@@ -102,7 +102,7 @@ class ClusterTrackAssociationPreparer():
 		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
 
 		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos).iterrows():
-			tracks = t_dt[t_dt.base_name == track.base_name & t_dt.track_id = track.track_id]
+			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
 			pdb.set_trace()
 
 
