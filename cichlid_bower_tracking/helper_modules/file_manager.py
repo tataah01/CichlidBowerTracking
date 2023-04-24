@@ -86,12 +86,12 @@ class FileManager():
 		return projectIDs
 
 	def updateSummaryFile(self, projectID, analysis_type):
-	    fm_obj.downloadData(self.localSummaryFile)
+	    self.downloadData(self.localSummaryFile)
 	    dt = pd.read_csv(self.localSummaryFile, index_col = False, dtype = {'StartingFiles':str, 'Prep':str, 'Depth':str, 'Cluster':str, 'ClusterClassification':str,'LabeledVideos':str,'LabeledFrames': str})
 
 	    dt.loc[dt.projectID == projectID, analysis_type] = 'TRUE'
 	    dt.to_csv(self.localSummaryFile, index = False)
-	    fm_obj.uploadData(self.localSummaryFile)
+	    self.uploadData(self.localSummaryFile)
 
 	def getProjectStates(self):
 
