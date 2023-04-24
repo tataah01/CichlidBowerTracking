@@ -108,7 +108,7 @@ class ClusterTrackAssociationPreparer():
 		candidate_tracks = candidate_tracks[candidate_tracks.w > 100]
 		final_candidates = pd.merge(candidate_tracks, s_dt[(s_dt.track_length > 1800) & (s_dt.InBounds > 0.75)], on = ['base_name','track_id'])
 		pdb.set_trace()
-		for i,track in final_candidates.sample(n = n_videos):
+		for track in final_candidates.sample(n = n_videos):
 			outVideoFile = self.fileManager.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + str(track.track_id) + '.mp4'
 			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
 
