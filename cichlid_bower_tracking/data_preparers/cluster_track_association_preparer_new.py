@@ -100,10 +100,14 @@ class ClusterTrackAssociationPreparer():
 			caps[videoObj.baseName] = cv2.VideoCapture(videoObj.localVideoFile)
 
 		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
-		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
+		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile)
 
-		pdb.set_trace()
-		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos).iterrows():
+
+		mtracks = t_dt[t_dt.track_length > 1000].groupby(['base_name','frame']).count()['xc'].reset_index()
+		candidate_tracks = pd.merge(mtracks[mtracks.xc > 1], t_dt, on=['base_name','frame']).groupby(['base_name','track_id']).count()['w'].reset_index()
+		candidate_tracks = candidate_tracks[candidate_tracks.w > 100]
+		final_candidates = pd.merge(candidate_tracks, s_dt[(s_dt.track_length > 1000) & (s_dt.InBounds > 0.75)], on = ['base_name','track_id'])
+		for i,track in final_candidates.sort_values('track_length', ascending = False).head(n_videos).iterrows():
 			outVideoFile = self.fileManager.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + str(track.track_id) + '.mp4'
 			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
 
