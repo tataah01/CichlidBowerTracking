@@ -91,8 +91,15 @@ class ClusterTrackAssociationPreparer():
 		
 		pdb.set_trace()
 
-	def createMaleFemaleAnnotationVideos(self):
+	def createMaleFemaleAnnotationVideos(self, n_videos = 25):
 		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
 		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile)
+
+		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos):
+			pdb.set_trace()
+
+
+		cap = cv2.VideoCapture(args.Videofile)
+
 		pdb.set_trace()
 		# Group data together to single track
