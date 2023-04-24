@@ -271,7 +271,7 @@ class FileManager():
 		self.localYolov5AnnotationsDir = self.localObjectDetectionDir + 'YOLOV5_Annotations/'
 
 		self.localMaleFemalesVideosDir = self.localAnnotationDir + 'MaleFemale/'
-		
+
 
 		self.localLabeledClipsFile = self.local3DVideosDir + 'ManualLabels.csv'
 		self.localLabeledClipsDir = self.local3DVideosDir + 'Clips/'
@@ -344,6 +344,11 @@ class FileManager():
 			self.downloadData(self.localAllLabeledClustersFile)
 
 			self.downloadData(self.localYolov5WeightsFile)
+
+			try:
+				self.downloadData(self.fileManager.localMaleFemalesVideosDir)
+			except:
+				self.createDirectory(self.fileManager.localMaleFemalesVideosDir)
 
 			if videoIndex is not None:
 				videoObj = self.returnVideoObject(videoIndex)

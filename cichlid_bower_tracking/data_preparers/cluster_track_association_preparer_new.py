@@ -105,11 +105,19 @@ class ClusterTrackAssociationPreparer():
 			outVideoFile = self.fileManager.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + str(track.track_id) + '.mp4'
 			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
 
-			#outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (2*delta_xy, 2*delta_xy))
-			for j,frame in tracks.iterrows():
-				pdb.set_trace()
+			outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (2*delta_xy, 2*delta_xy))
 
-
+			caps[tracks.base_name].set(cv2.CAP_PROP_POS_FRAMES, tracks.frame.min())
+			current_frame = tracks.frame.min()
+			for j,current_track in tracks.iterrows():
+				ret, frame = cap.read()
+				while current_track.frame != current_frame:
+					 ret, frame = cap.read()
+					 current_frame += 1
+				outAll.write(frame[current_track.yc - delta_xy:current_track.yc + delta_xy, current_track.xc - delta_xy:current_track.xc + delta_xy])
+				current_frame += 1
+			outAll.release()
+			pdb.set_trace()
 
 		pdb.set_trace()
 		# Group data together to single track
