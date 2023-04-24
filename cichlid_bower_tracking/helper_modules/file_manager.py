@@ -346,9 +346,9 @@ class FileManager():
 			self.downloadData(self.localYolov5WeightsFile)
 
 			try:
-				self.downloadData(self.fileManager.localMaleFemalesVideosDir)
+				self.downloadData(self.localMaleFemalesVideosDir)
 			except:
-				self.createDirectory(self.fileManager.localMaleFemalesVideosDir)
+				self.createDirectory(self.localMaleFemalesVideosDir)
 
 			if videoIndex is not None:
 				videoObj = self.returnVideoObject(videoIndex)
