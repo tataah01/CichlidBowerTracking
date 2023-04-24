@@ -108,8 +108,7 @@ class ClusterTrackAssociationPreparer():
 
 			outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (2*delta_xy, 2*delta_xy))
 
-			pdb.set_trace()
-			caps[tracks.base_name].set(cv2.CAP_PROP_POS_FRAMES, tracks.frame.min())
+			caps[tracks.base_name.min()].set(cv2.CAP_PROP_POS_FRAMES, tracks.frame.min())
 			current_frame = tracks.frame.min()
 			for j,current_track in tracks.iterrows():
 				ret, frame = cap.read()
