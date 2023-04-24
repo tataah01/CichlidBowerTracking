@@ -105,9 +105,11 @@ class ClusterTrackAssociationPreparer():
 
 		min_length = 1800
 		final_candidates = []
-		pdb.set_trace()
 		while len(final_candidates) < n_videos:
 			mtracks = t_dt[t_dt.track_length > min_length].groupby(['base_name','frame']).count()['xc'].reset_index()
+			if len(mtracks) == 0:
+				min_length -= 300
+				continue
 			candidate_tracks = pd.merge(mtracks[mtracks.xc > 1], t_dt, on=['base_name','frame']).groupby(['base_name','track_id']).count()['w'].reset_index()
 			candidate_tracks = candidate_tracks[candidate_tracks.w > 100]
 			final_candidates = pd.merge(candidate_tracks, s_dt[(s_dt.track_length > min_length) & (s_dt.InBounds > 0.75)], on = ['base_name','track_id'])
