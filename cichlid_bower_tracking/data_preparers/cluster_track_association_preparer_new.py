@@ -111,9 +111,9 @@ class ClusterTrackAssociationPreparer():
 			caps[tracks.base_name.min()].set(cv2.CAP_PROP_POS_FRAMES, tracks.frame.min())
 			current_frame = tracks.frame.min()
 			for j,current_track in tracks.iterrows():
-				ret, frame = cap.read()
+				ret, frame = caps[tracks.base_name.min()].read()
 				while current_track.frame != current_frame:
-					 ret, frame = cap.read()
+					 ret, frame = caps[tracks.base_name.min()].read()
 					 current_frame += 1
 				outAll.write(frame[current_track.yc - delta_xy:current_track.yc + delta_xy, current_track.xc - delta_xy:current_track.xc + delta_xy])
 				current_frame += 1
