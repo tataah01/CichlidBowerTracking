@@ -1,4 +1,4 @@
-import os, subprocess, pdb, platform, shutil, cv2
+import os, subprocess, pdb, platform, shutil
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 import pandas as pd 
 

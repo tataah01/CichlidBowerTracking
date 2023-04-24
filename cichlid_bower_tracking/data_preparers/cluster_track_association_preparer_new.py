@@ -1,4 +1,4 @@
-import os, pdb
+import os, pdb, cv2
 import pandas as pd
 import numpy as np
 from shapely.geometry import Point, Polygon
