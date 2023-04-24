@@ -102,6 +102,7 @@ class ClusterTrackAssociationPreparer():
 		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
 		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
 
+		pdb.set_trace()
 		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos).iterrows():
 			outVideoFile = self.fileManager.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + str(track.track_id) + '.mp4'
 			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
