@@ -91,11 +91,18 @@ class ClusterTrackAssociationPreparer():
 		
 		pdb.set_trace()
 
-	def createMaleFemaleAnnotationVideos(self, n_videos = 25):
-		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
-		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile)
+	def createMaleFemaleAnnotationVideos(self, n_videos = 40):
+
+		caps = {}
+		for videoIndex in range(len(self.fileManager.lp.movies)):
+			videoObj = self.fileManager.returnVideoObject(videoIndex)
+			pdb.set_trace()
+
+		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile, index_col = 0)
+		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
 
 		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos).iterrows():
+			tracks = t_dt[t_dt.base_name == track.base_name & t_dt.track_id = track.track_id]
 			pdb.set_trace()
 
 
