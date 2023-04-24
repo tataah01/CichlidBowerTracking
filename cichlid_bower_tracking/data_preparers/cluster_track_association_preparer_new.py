@@ -98,7 +98,7 @@ class ClusterTrackAssociationPreparer():
 			videoObj = self.fileManager.returnVideoObject(videoIndex)
 			#caps[videoObj.baseName] = cv2.VideoCapture(videoObj.localVideoFile)
 
-		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile, index_col = 0)
+		s_dt = pd.read_csv(self.fileManager.localAllTracksSummaryFile)
 		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
 
 		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos).iterrows():
