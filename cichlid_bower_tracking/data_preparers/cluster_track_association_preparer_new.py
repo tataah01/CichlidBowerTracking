@@ -91,7 +91,7 @@ class ClusterTrackAssociationPreparer():
 		
 		pdb.set_trace()
 
-	def createMaleFemaleAnnotationVideos(self, n_videos = 40):
+	def createMaleFemaleAnnotationVideos(self, n_videos = 40, delta_xy = 75):
 
 		caps = {}
 		for videoIndex in range(len(self.fileManager.lp.movies)):
@@ -102,11 +102,14 @@ class ClusterTrackAssociationPreparer():
 		t_dt = pd.read_csv(self.fileManager.localAllFishTracksFile, index_col = 0)
 
 		for i,track in s_dt.sort_values('track_length', ascending = False).head(n_videos).iterrows():
-			pdb.set_trace()
+=			outVideoFile = self.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + track.track_id + '.mp4'
 			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
 
+			#outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (2*delta_xy, 2*delta_xy))
+			for j,frame in tracks.iterrows():
+				pdb.set_trace()
 
-		cap = cv2.VideoCapture(args.Videofile)
+
 
 		pdb.set_trace()
 		# Group data together to single track

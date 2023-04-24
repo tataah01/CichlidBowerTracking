@@ -270,6 +270,9 @@ class FileManager():
 
 		self.localYolov5AnnotationsDir = self.localObjectDetectionDir + 'YOLOV5_Annotations/'
 
+		self.localMaleFemalesVideosDir = self.localAnnotationDir + 'MaleFemale/'
+		
+
 		self.localLabeledClipsFile = self.local3DVideosDir + 'ManualLabels.csv'
 		self.localLabeledClipsDir = self.local3DVideosDir + 'Clips/'
 
