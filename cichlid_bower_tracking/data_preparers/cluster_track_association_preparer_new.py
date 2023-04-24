@@ -118,7 +118,5 @@ class ClusterTrackAssociationPreparer():
 				outAll.write(frame[int(current_track.yc - delta_xy):int(current_track.yc + delta_xy), int(current_track.xc - delta_xy):int(current_track.xc + delta_xy)])
 				current_frame += 1
 			outAll.release()
-			pdb.set_trace()
 
-		pdb.set_trace()
 		# Group data together to single track

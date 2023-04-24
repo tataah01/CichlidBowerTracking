@@ -443,7 +443,7 @@ class FileManager():
 					videoObj = self.returnVideoObject(videoIndex)
 					self.uploadData(videoObj.localFishTracksFile)
 					self.uploadData(videoObj.localFishDetectionsFile)
-
+				self.uploadData(self.localMaleFemalesVideosDir)
 			if delete:
 				shutil.rmtree(self.localProjectDir)
 				#os.remove(self.localYolov5WeightsFile)
