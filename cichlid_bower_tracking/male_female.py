@@ -49,6 +49,7 @@ class MaleFemaleDataLoader(Dataset):
         self.dt = dt.sample(len(dt)).reset_index()[['label','video_index','video_location','datatype']]
 
     def choose_datatype(self,datatype):
+        pdb.set_trace()
         self.datatype == datatype
         self.sub_dt = self.dt[self.dt.datatype == datatype]
 
