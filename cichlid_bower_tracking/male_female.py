@@ -28,7 +28,7 @@ class MaleFemaleDataLoader(Dataset):
                 new_data['video_index'].append(i)
                 new_data['label'] = 'm'
                 index += 1
-            pdb.set_trace()
+            dt = dt.append(pd.DataFrame(new_data))
         for f_video in female_videos:
             cap = cv2.VideoCapture(main_directory + 'Female/' + f_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
