@@ -1,6 +1,10 @@
-import cv2, os, pdb
+import cv2, os, pdb, sys
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 
+# This code ensures that modules can be found in their relative directories
+PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if PROJECT_ROOT not in sys.path:
+    sys.path.append(PROJECT_ROOT)
 
 class MaleFemaleDataLoader(Dataset):
     def __init__(self, main_directory):
