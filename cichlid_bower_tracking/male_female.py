@@ -23,7 +23,7 @@ class MaleFemaleDataLoader(Dataset):
 
             video_location = main_directory + 'Male/' + m_video
             for i in range(frames):
-                new_data['index'].append('index')
+                new_data['index'].append(index)
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
                 new_data['label'] = 'm'
@@ -36,7 +36,7 @@ class MaleFemaleDataLoader(Dataset):
     
             video_location = main_directory + 'Female/' + f_video
             for i in range(frames):
-                new_data['index'].append('index')
+                new_data['index'].append(index)
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
                 new_data['label'] = 'f'
