@@ -17,25 +17,26 @@ class MaleFemaleDataLoader(Dataset):
         index = 0
         dt = pd.DataFrame(columns = ['video_location','video_index','label'])
         for m_video in male_videos:
-            new_data = {'video_location':[], 'video_index': [], 'label':[]}
+            new_data = {'index':[],'video_location':[], 'video_index': [], 'label':[]}
             cap = cv2.VideoCapture(main_directory + 'Male/' + m_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
             video_location = main_directory + 'Male/' + m_video
             for i in range(frames):
-                print(index)
+                new_data['index'].append('index')
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
                 new_data['label'] = 'm'
                 index += 1
             dt = dt.append(pd.DataFrame(new_data))
         for f_video in female_videos:
-            new_data = {'video_location':[], 'video_index': [], 'label':[]}
+            new_data = {'index': [], 'video_location':[], 'video_index': [], 'label':[]}
             cap = cv2.VideoCapture(main_directory + 'Female/' + f_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
             video_location = main_directory + 'Female/' + f_video
             for i in range(frames):
+                new_data['index'].append('index')
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
                 new_data['label'] = 'f'
