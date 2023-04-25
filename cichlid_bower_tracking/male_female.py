@@ -1,4 +1,4 @@
-import cv2, os, pdb, sys, random
+import cv2, os, pdb, sys, random, torch
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd 
@@ -56,15 +56,19 @@ class MaleFemaleDataLoader(Dataset):
         return len(self.sub_dt)
 
     def __getitem__(self, idx):
-        pdb.set_trace()
 
-        img_path, class_name = self.data[idx]
-        img = cv2.imread(img_path)
-        img = cv2.resize(img, self.img_dim)
-        class_id = self.class_map[class_name]
-        img_tensor = torch.from_numpy(img)
+        frame_info = self.sub_dt.iloc[idx]
+        cap = cv2.VideoCapture(frame_info.video_location)
+        cap.set(cv2.CAP_PROP_POS_FRAMES, frame_info.video_index)
+        ret, frame = cap.read()
+        img_tensor = torch.from_numpy(frame)
         img_tensor = img_tensor.permute(2, 0, 1)
-        class_id = torch.tensor([class_id])
+
+        if frame_info.label == 'm':
+            class_id = torch.tensor([0])
+        else:
+            class_id = torch.tensor([1])
+ 
         return img_tensor, class_id
 
 fm_obj = FM('PatrickTesting')
@@ -72,3 +76,4 @@ fm_obj = FM('PatrickTesting')
 mf_obj = MaleFemaleDataLoader(fm_obj.localMaleFemalesVideosDir)
 mf_obj.choose_datatype('Train')
 mf_obj[0]
+mf_obj[5]
