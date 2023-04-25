@@ -1,5 +1,6 @@
 import cv2, os, pdb, sys
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
+from torch.utils.data import Dataset, DataLoader
 
 # This code ensures that modules can be found in their relative directories
 PROJECT_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
