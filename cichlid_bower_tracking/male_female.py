@@ -16,7 +16,7 @@ class MaleFemaleDataLoader(Dataset):
 
         dt = pd.DataFrame(columns = ['video_location','video_index','label','datatype'])
         for m_video in male_videos:
-            new_data = {'video_location':[], 'video_index': [], 'label':[]}
+            new_data = {'video_location':[], 'video_index': [], 'label':[],'datatype':[]}
             cap = cv2.VideoCapture(main_directory + 'Male/' + m_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
@@ -31,7 +31,7 @@ class MaleFemaleDataLoader(Dataset):
                     new_data['datatype'] == 'Train'
             dt = dt.append(pd.DataFrame(new_data))
         for f_video in female_videos:
-            new_data = {'video_location':[], 'video_index': [], 'label':[]}
+            new_data = {'video_location':[], 'video_index': [], 'label':[],'datatype':[]}
             cap = cv2.VideoCapture(main_directory + 'Female/' + f_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
