@@ -30,14 +30,18 @@ class MaleFemaleDataLoader(Dataset):
                 index += 1
             dt = dt.append(pd.DataFrame(new_data))
         for f_video in female_videos:
+            new_data = {'video_location':[], 'video_index': [], 'label':[]}
             cap = cv2.VideoCapture(main_directory + 'Female/' + f_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
             video_location = main_directory + 'Female/' + f_video
             for i in range(frames):
-                dt.loc[index] = [video_location,i,'f']
+                new_data['video_location'].append(video_location)
+                new_data['video_index'].append(i)
+                new_data['label'] = 'f'
                 index += 1
-        
+            dt = dt.append(pd.DataFrame(new_data))
+
         pdb.set_trace()
 
 
