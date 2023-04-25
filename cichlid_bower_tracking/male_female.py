@@ -1,4 +1,4 @@
-import cv2, os, pdb, sys
+import cv2, os, pdb, sys, random
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from torch.utils.data import Dataset, DataLoader
 import pandas as pd 
