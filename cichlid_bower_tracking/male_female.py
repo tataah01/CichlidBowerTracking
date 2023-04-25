@@ -14,51 +14,50 @@ class MaleFemaleDataLoader(Dataset):
         male_videos = os.listdir(main_directory + 'Male/')
         female_videos = os.listdir(main_directory + 'Female/')
 
-        index = 0
-        dt = pd.DataFrame(columns = ['video_location','video_index','label'])
+        dt = pd.DataFrame(columns = ['video_location','video_index','label','datatype'])
         for m_video in male_videos:
-            new_data = {'index':[],'video_location':[], 'video_index': [], 'label':[]}
+            new_data = {'video_location':[], 'video_index': [], 'label':[]}
             cap = cv2.VideoCapture(main_directory + 'Male/' + m_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
 
             video_location = main_directory + 'Male/' + m_video
             for i in range(frames):
-                new_data['index'].append(index)
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
                 new_data['label'] = 'm'
-                index += 1
+                if random.randint(0,10) == 0:
+                    new_data['datatype'] == 'Validation'
+                else:
+                    new_data['datatype'] == 'Train'
             dt = dt.append(pd.DataFrame(new_data))
         for f_video in female_videos:
-            new_data = {'index': [], 'video_location':[], 'video_index': [], 'label':[]}
+            new_data = {'video_location':[], 'video_index': [], 'label':[]}
             cap = cv2.VideoCapture(main_directory + 'Female/' + f_video)
             frames = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     
             video_location = main_directory + 'Female/' + f_video
             for i in range(frames):
-                new_data['index'].append(index)
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
                 new_data['label'] = 'f'
-                index += 1
+                if random.randint(0,10) == 0:
+                    new_data['datatype'] == 'Validation'
+                else:
+                    new_data['datatype'] == 'Train'
             dt = dt.append(pd.DataFrame(new_data))
 
+        self.dt = dt.sample(len(dt)).reset_index()[['label','video_index','video_location','datatype']]
+
+    def choose_datatype(self,datatype):
+        self.datatype == datatype
+        self.sub_dt = self.dt[self.dt.datatype == datatype]
+
+    def __len__(self):
+        return len(self.sub_dt)
+
+    def __getitem__(self, idx):
         pdb.set_trace()
 
-
-        file_list = glob.glob(self.imgs_path + "*")
-        print(file_list)
-        self.data = []
-        for class_path in file_list:
-            class_name = class_path.split("/")[-1]
-            for img_path in glob.glob(class_path + "/*.jpeg"):
-                self.data.append([img_path, class_name])
-        print(self.data)
-        self.class_map = {"dogs" : 0, "cats": 1}
-        self.img_dim = (416, 416)
-    def __len__(self):
-        return len(self.data)
-    def __getitem__(self, idx):
         img_path, class_name = self.data[idx]
         img = cv2.imread(img_path)
         img = cv2.resize(img, self.img_dim)
@@ -71,3 +70,5 @@ class MaleFemaleDataLoader(Dataset):
 fm_obj = FM('PatrickTesting')
 
 mf_obj = MaleFemaleDataLoader(fm_obj.localMaleFemalesVideosDir)
+mf_obj.choose_datatype('Train')
+mf_obj[0]
