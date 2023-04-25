@@ -24,11 +24,11 @@ class MaleFemaleDataLoader(Dataset):
             for i in range(frames):
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
-                new_data['label'] = 'm'
+                new_data['label'].append('m')
                 if random.randint(0,10) == 0:
-                    new_data['datatype'] == 'Validation'
+                    new_data['datatype'].append('Validation')
                 else:
-                    new_data['datatype'] == 'Train'
+                    new_data['datatype'].append('Train')
             dt = dt.append(pd.DataFrame(new_data))
         for f_video in female_videos:
             new_data = {'video_location':[], 'video_index': [], 'label':[],'datatype':[]}
@@ -39,11 +39,11 @@ class MaleFemaleDataLoader(Dataset):
             for i in range(frames):
                 new_data['video_location'].append(video_location)
                 new_data['video_index'].append(i)
-                new_data['label'] = 'f'
+                new_data['label'].append('f')
                 if random.randint(0,10) == 0:
-                    new_data['datatype'] == 'Validation'
+                    new_data['datatype'].append('Validation')
                 else:
-                    new_data['datatype'] == 'Train'
+                    new_data['datatype'].append('Train')
             dt = dt.append(pd.DataFrame(new_data))
 
         self.dt = dt.sample(len(dt)).reset_index()[['label','video_index','video_location','datatype']]
