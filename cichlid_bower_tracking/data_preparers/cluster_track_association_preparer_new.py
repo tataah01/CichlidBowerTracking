@@ -128,6 +128,9 @@ class ClusterTrackAssociationPreparer():
 				while current_track.frame != current_frame:
 					 ret, frame = caps[tracks.base_name.min()].read()
 					 current_frame += 1
+
+				#cv2.rectangle(frame, (int(current_track.yc - delta_xy), int(current_track.xc - delta_xy)), (int(current_track.yc + delta_xy), int(current_track.xc + delta_xy)), (255,0,0), 2)
+				#outAll.write(frame)
 				outAll.write(frame[int(current_track.yc - delta_xy):int(current_track.yc + delta_xy), int(current_track.xc - delta_xy):int(current_track.xc + delta_xy)])
 				current_frame += 1
 			outAll.release()

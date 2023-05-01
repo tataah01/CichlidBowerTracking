@@ -71,9 +71,8 @@ while len(projectIDs) != 0:
 
     #Upload data and keep track of it
     print('Uploading: ' + projectID + ' ' + str(datetime.datetime.now()), flush = True)
-    uploadProcesses.append(subprocess.Popen(
-        ['python3', '-m', 'cichlid_bower_tracking.unit_scripts.upload_data', args.AnalysisType, args.AnalysisID, projectID]))
-    #uploadProcesses.append(subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.upload_data', args.AnalysisType, '--Delete', args.AnalysisID, projectID]))
+    #uploadProcesses.append(subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.upload_data', args.AnalysisType, args.AnalysisID, projectID]))
+    uploadProcesses.append(subprocess.Popen(['python3', '-m', 'cichlid_bower_tracking.unit_scripts.upload_data', args.AnalysisType, '--Delete', args.AnalysisID, projectID]))
 
 for i,p in enumerate(uploadProcesses):
     print('Finishing uploading process ' + str(i) + ': ' + str(datetime.datetime.now()), flush = True)
