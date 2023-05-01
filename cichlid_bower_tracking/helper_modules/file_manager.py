@@ -342,6 +342,7 @@ class FileManager():
 			self.downloadData(self.localOldVideoCropFile)
 			self.downloadData(self.localAllLabeledClustersFile)
 			self.downloadData(self.localTroubleshootingDir)
+			self.downloadData(self.localAnalysisDir)
 
 			self.downloadData(self.localYolov5WeightsFile)
 
