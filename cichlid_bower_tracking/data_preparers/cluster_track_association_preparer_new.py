@@ -119,7 +119,8 @@ class ClusterTrackAssociationPreparer():
 			outVideoFile = self.fileManager.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + str(track.track_id) + '.mp4'
 			tracks = t_dt[(t_dt.base_name == track.base_name) & (t_dt.track_id == track.track_id)]
 
-			outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (2*delta_xy, 2*delta_xy))
+			outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (videoObj.width, videoObj.height))
+#			outAll = cv2.VideoWriter(outVideoFile , cv2.VideoWriter_fourcc(*"mp4v"), 30, (2*delta_xy, 2*delta_xy))
 
 			caps[tracks.base_name.min()].set(cv2.CAP_PROP_POS_FRAMES, tracks.frame.min())
 			current_frame = tracks.frame.min()
@@ -129,9 +130,9 @@ class ClusterTrackAssociationPreparer():
 					 ret, frame = caps[tracks.base_name.min()].read()
 					 current_frame += 1
 
-				#cv2.rectangle(frame, (int(current_track.yc - delta_xy), int(current_track.xc - delta_xy)), (int(current_track.yc + delta_xy), int(current_track.xc + delta_xy)), (255,0,0), 2)
-				#outAll.write(frame)
-				outAll.write(frame[int(current_track.yc - delta_xy):int(current_track.yc + delta_xy), int(current_track.xc - delta_xy):int(current_track.xc + delta_xy)])
+				cv2.rectangle(frame, (int(current_track.yc - delta_xy), int(current_track.xc - delta_xy)), (int(current_track.yc + delta_xy), int(current_track.xc + delta_xy)), (255,0,0), 2)
+				outAll.write(frame)
+				#outAll.write(frame[int(current_track.yc - delta_xy):int(current_track.yc + delta_xy), int(current_track.xc - delta_xy):int(current_track.xc + delta_xy)])
 				current_frame += 1
 			outAll.release()
 			self.fileManager.uploadData(self.fileManager.localMaleFemalesVideosDir + self.fileManager.projectID + '__' + track.base_name + '__' + str(track.track_id) + '.mp4')
