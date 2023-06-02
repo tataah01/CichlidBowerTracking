@@ -413,7 +413,10 @@ class CichlidTracker:
         # This function returns a float64 npy array containing one frame of data with all bad data as NaNs
 
         if self.device == 'realsense':
-            frames = self.pipeline.wait_for_frames(1000)
+            start = time.time()
+            frames = self.pipeline.wait_for_frames(5000)#changed from 1000
+            end = time.time()
+            print('_returnDepth pipeline wait time ellapsed '+ str(end-start) + 's', file = sys.stderr)
             frames = self.align.process(frames)
             depth_frame = frames.get_depth_frame().as_depth_frame()
 
