@@ -84,7 +84,7 @@ class CichlidTracker:
             # Send an HTTP POST request to /mail/send
             response = self.sg.send(new_email)
 
-            current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
+            current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1] #record this in the sheet seperately
             harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)[3]
             cpu_use = psutil.cpu_percent()
             ram_use = psutil.virtual_memory()[2]
@@ -413,7 +413,11 @@ class CichlidTracker:
         # This function returns a float64 npy array containing one frame of data with all bad data as NaNs
 
         if self.device == 'realsense':
-            frames = self.pipeline.wait_for_frames(1000)
+            b, frames = self.pipeline.try_wait_for_frames(1000)
+
+            if not b:
+                self.reboot_rs()
+                
             frames = self.align.process(frames)
             depth_frame = frames.get_depth_frame().as_depth_frame()
 
@@ -642,3 +646,19 @@ class CichlidTracker:
        except AttributeError:
            pass
 
+    def reboot_rs(self):  
+        if self.device == 'realsense':     
+            try:
+                print('stopping realsense')
+                self.pipeline.stop()
+            except Exception as e:
+                print('Error stopping realsense: ' + str(e))
+                raise Exception
+            try:
+                print('Starting realsense')
+                self._start_kinect()
+            except Exception as e:
+                print('Error starting realsense: ' + str(e))
+                raise Exception
+
+        
