@@ -294,64 +294,68 @@ class CichlidTracker:
 
         command = ''
         
-        while True:
+        time = datetime.datetime.now().hour
+        if(time >=7) and (time <= 19):
+            if not self.running:
+                self._start_kinect()
+            while True:
 
-            # Grab new time
-            now = datetime.datetime.now()
+                # Grab new time
+                now = datetime.datetime.now()
             
-            # Fix camera if it needs to be
-            if self.piCamera:
-                if self._video_recording() and not self.camera.recording:
-                    self.camera.capture(self.videoDirectory + str(self.videoCounter).zfill(4) + "_pic.jpg")
-                    self._print('PiCameraStarted: FrameRate: ' + str(self.camera.framerate) + ',,Resolution: ' + str(self.camera.resolution) + ',,Time: ' + str(datetime.datetime.now()) + ',,VideoFile: Videos/' + str(self.videoCounter).zfill(4) + '_vid.h264,,PicFile: Videos/' + str(self.videoCounter).zfill(4) + '_pic.jpg')
-                    self.camera.start_recording(self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264", bitrate=7500000)
-                elif not self._video_recording() and self.camera.recording:
-                    self._print('PiCameraStopped: Time: ' + str(datetime.datetime.now()) + ',, File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
-                    self.camera.stop_recording()
-                    #self._print(['rclone', 'copy', self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264"])
-                    command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
-                    command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
-                    self._print(command)
-                    self.processes.append(subprocess.Popen(command))
-                    self.videoCounter += 1
+                # Fix camera if it needs to be
+                if self.piCamera:
+                    if self._video_recording() and not self.camera.recording:
+                        self.camera.capture(self.videoDirectory + str(self.videoCounter).zfill(4) + "_pic.jpg")
+                        self._print('PiCameraStarted: FrameRate: ' + str(self.camera.framerate) + ',,Resolution: ' + str(self.camera.resolution) + ',,Time: ' + str(datetime.datetime.now()) + ',,VideoFile: Videos/' + str(self.videoCounter).zfill(4) + '_vid.h264,,PicFile: Videos/' + str(self.videoCounter).zfill(4) + '_pic.jpg')
+                        self.camera.start_recording(self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264", bitrate=7500000)
+                    elif not self._video_recording() and self.camera.recording:
+                        self._print('PiCameraStopped: Time: ' + str(datetime.datetime.now()) + ',, File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
+                        self.camera.stop_recording()
+                        #self._print(['rclone', 'copy', self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264"])
+                        command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
+                        command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
+                        self._print(command)
+                        self.processes.append(subprocess.Popen(command))
+                        self.videoCounter += 1
 
-            # Capture a frame and background if necessary
+                # Capture a frame and background if necessary
            
-                
-                
-                
-       
-            if self.device != 'None':
-                if now > current_background_time:
-                    out = self._captureFrame(current_frame_time)
-                    if out is not None:
-                        current_background_time += datetime.timedelta(seconds = 60 * background_delta)
-                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
+                if self.device != 'None':
+                    if now > current_background_time:
+                        out = self._captureFrame(current_frame_time)
+                        if out is not None:
+                            current_background_time += datetime.timedelta(seconds = 60 * background_delta)
+                        subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
+                    else:
+                        out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
                 else:
-                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
-            else:
-                while datetime.datetime.now() < current_frame_time:
-                    time.sleep(5)
+                    while datetime.datetime.now() < current_frame_time:
+                        time.sleep(5)
 
-            current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
+                current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
-            # Check google doc to determine if recording has changed.
-            try:
-                command, projectID, analysisID = self._returnCommand()
-            except KeyError:
-                continue
-            if command == 'TankResetStart':
-                self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
-                self.googleController.modifyPiGS('Command', 'None', ping = False)
+                # Check google doc to determine if recording has changed.
+                try:
+                    command, projectID, analysisID = self._returnCommand()
+                except KeyError:
+                    continue
+                if command == 'TankResetStart':
+                    self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
+                    self.googleController.modifyPiGS('Command', 'None', ping = False)
 
-            elif command == 'TankResetStop':
-                self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
-                self.googleController.modifyPiGS('Command', 'None', ping = False)
+                elif command == 'TankResetStop':
+                    self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
+                    self.googleController.modifyPiGS('Command', 'None', ping = False)
 
-            elif command != 'None' and command is not None:
-                break
-            else:
-                self.googleController.modifyPiGS('Error', '')
+                elif command != 'None' and command is not None:
+                    break
+                else:
+                    self.googleController.modifyPiGS('Error', '')
+        else:
+            if self.running:
+                self.pipeline.stop()
+            self.googleController.modifyPiGS('Command','Sleeping', ping = True)
 
     def _identifyDevice(self):
 
