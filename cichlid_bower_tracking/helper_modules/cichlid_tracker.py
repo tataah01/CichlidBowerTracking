@@ -355,7 +355,7 @@ class CichlidTracker:
         else:
             if self.running:
                 self.pipeline.stop()
-            self.googleController.modifyPiGS('Command','Sleeping', ping = True)
+            self.googleController.modifyPiGS('Error','Purposeful Sleeping', ping = True)
 
     def _identifyDevice(self):
 
