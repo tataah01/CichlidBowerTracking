@@ -293,15 +293,16 @@ class CichlidTracker:
         current_frame_time = current_background_time + datetime.timedelta(seconds = 60 * frame_delta)
 
         command = ''
-        
-        time = datetime.datetime.now().hour
-        if(time >=7) and (time <= 19):
-            if not self.running:
-                self._start_kinect()
-            while True:
-
-                # Grab new time
-                now = datetime.datetime.now()
+        while True:
+            # Grab new time
+            now = datetime.datetime.now()
+            if(now.hour <= 7) or (now.hour >= 19):
+                if self.running:
+                    self.pipeline.stop()
+                self.googleController.modifyPiGS('Error','Purposeful Sleeping', ping = True)       
+            else:
+                if not self.running:
+                    self._start_kinect()
             
                 # Fix camera if it needs to be
                 if self.piCamera:
@@ -352,10 +353,6 @@ class CichlidTracker:
                     break
                 else:
                     self.googleController.modifyPiGS('Error', '')
-        else:
-            if self.running:
-                self.pipeline.stop()
-            self.googleController.modifyPiGS('Error','Purposeful Sleeping', ping = True)
 
     def _identifyDevice(self):
 
@@ -457,7 +454,7 @@ class CichlidTracker:
             config.enable_stream(rs.stream.depth, 640, 480, rs.format.z16, 30)
             config.enable_stream(rs.stream.color, 640, 480, rs.format.rgb8, 30)
 
-            # Start streaming
+            # Start streaming  
             self.profile = self.pipeline.start(config)
             #device = self.profile.get_device()
             #depth_sensor = device.first_depth_sensor()
