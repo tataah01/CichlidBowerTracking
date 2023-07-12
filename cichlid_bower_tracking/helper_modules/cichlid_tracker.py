@@ -411,12 +411,14 @@ class CichlidTracker:
             
     def _returnDepth(self):
         # This function returns a float64 npy array containing one frame of data with all bad data as NaNs
-
         if self.device == 'realsense':
-            frames = self.pipeline.wait_for_frames(1000)
+            b, frames = self.pipeline.try_wait_for_frames(3000)
+            
+            if not b:
+                self.reboot_rs()
+                
             frames = self.align.process(frames)
             depth_frame = frames.get_depth_frame().as_depth_frame()
-
             #except RuntimeError:
             #    self._googlePrint('No frame received from Kinect. Restarting')
             #    self._start_kinect()
@@ -425,6 +427,21 @@ class CichlidTracker:
             data = np.asanyarray(depth_frame.data)*depth_frame.get_units()*100 # Convert to centimeters
             data[data==0] = np.nan # 0 indicates bad data from RealSense
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
+    
+    def reboot_rs(self):  
+        if self.device == 'realsense':     
+            try:
+                print('stopping realsense')
+                self.pipeline.stop()
+            except Exception as e:
+                print('Error stopping realsense: ' + str(e))
+                raise Exception
+            try:
+                print('Starting realsense')
+                self._start_kinect()
+            except Exception as e:
+                print('Error starting realsense: ' + str(e))
+                raise Exception
 
     def _returnCommand(self):
 
