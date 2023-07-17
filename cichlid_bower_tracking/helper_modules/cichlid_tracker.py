@@ -415,6 +415,7 @@ class CichlidTracker:
             b, frames = self.pipeline.try_wait_for_frames(3000)
             
             if not b:
+                self._print('realsense error attempting reboot')
                 self.reboot_rs()
                 
             frames = self.align.process(frames)
