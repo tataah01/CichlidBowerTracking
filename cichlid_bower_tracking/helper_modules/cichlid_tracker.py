@@ -661,4 +661,10 @@ class CichlidTracker:
                 self._print('Error starting realsense: ' + str(e))
                 raise Exception
 
-        
+    def reboot_pi(self, reason): 
+        self._print('Rebooting Pi : '+reason)
+        try:
+            os.system('sudo reboot -h now')
+        except Exception as e:
+                self._print('Error rebooting down pi: ' + str(e))
+                raise Exception
