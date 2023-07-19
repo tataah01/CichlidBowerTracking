@@ -2,6 +2,7 @@ import argparse, datetime, gspread, time, pdb, warnings, psutil
 from cichlid_bower_tracking.helper_modules.file_manager import FileManager as FM
 from cichlid_bower_tracking.helper_modules.log_parser import LogParser as LP
 from cichlid_bower_tracking.helper_modules.googleController import GoogleController as GC
+from cichlid_bower_tracking.helper_modules.cichlid_tracker import CichlidTracker as CT
 
 import matplotlib
 matplotlib.use('Pdf')  # Enables creation of pdf without needing to worry about X11 forwarding when ssh'ing into the Pi
@@ -32,7 +33,7 @@ class DriveUpdater:
         
         self.googleController = GC(self.fileManager.localCredentialSpreadsheet)
         self.googleController.addProjectID(self.lp.projectID, self.fileManager.localProjectDir + 'GoogleErrors.txt')
-
+        self.cichlid_tracker = CT()
         self._createImage()
 
         self.credentialDrive = self.fileManager.localCredentialDrive
@@ -66,10 +67,11 @@ class DriveUpdater:
         thresholded_change = morphology.remove_small_objects(thresholded_change,1000).astype(int)
         daily_bower[(thresholded_change == 0) & (~np.isnan(depthChange))] = 0
         return daily_bower
-    
+     
     def _createImage(self, stdcutoff = 0.1):
         if len(self.lp.frames) > 1 and self.lp.frames[-1].std< 0.00001 and self.lp.frames[-1].gp==self.lp.frames[-2].gp:
             self.googleController.modifyPiGS('DataDuplicated', 'Yes')
+            self.cichlid_tracker.reboot_pi(self, 'DataDuplicated')
         else: 
             self.googleController.modifyPiGS('DataDuplicated', 'No')
 
