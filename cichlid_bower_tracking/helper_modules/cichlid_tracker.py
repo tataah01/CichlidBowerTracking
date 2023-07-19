@@ -413,7 +413,7 @@ class CichlidTracker:
     def _returnDepth(self):
         # This function returns a float64 npy array containing one frame of data with all bad data as NaNs
         if self.device == 'realsense':
-            b, frames = self.pipeline.try_wait_for_frames(1000)
+            b, frames = self.pipeline.try_wait_for_frames(3000)
             
             if not b:
                 self.reboot_rs()
@@ -648,16 +648,17 @@ class CichlidTracker:
     def reboot_rs(self):  
         if self.device == 'realsense':     
             try:
-                print('stopping realsense')
+                self._print('stopping realsense')
                 self.pipeline.stop()
             except Exception as e:
-                print('Error stopping realsense: ' + str(e))
+                self._print('Error stopping realsense: ' + str(e))
                 raise Exception
             try:
-                print('Starting realsense')
+                self._print('Starting realsense')
                 self._start_kinect()
+                self._returnDepth()
             except Exception as e:
-                print('Error starting realsense: ' + str(e))
+                self._print('Error starting realsense: ' + str(e))
                 raise Exception
 
         
