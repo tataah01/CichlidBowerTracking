@@ -5,6 +5,8 @@ from cichlid_bower_tracking.helper_modules.googleController import GoogleControl
 import pandas as pd
 from picamera import PiCamera
 import numpy as np
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import *
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -55,10 +57,10 @@ class CichlidTracker:
             my_api_key = [x.strip() for x in f.readlines()][0]
 
         self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
-        self.personalization = sendgrid.Personalization()
-        self.personalization.add_to(sendgrid.To('pmcgrath7@gatech.edu'))
-        for email in ['bshi42@gatech.edu', 'bhegarty6@gatech.edu', 'zjohnson37@gatech.edu']:
-            self.personalization.add_bcc(sendgrid.Bcc(email))
+        #self.personalization = sendgrid.Personalization()
+        #self.personalization.add_to(sendgrid.To('pmcgrath7@gatech.edu'))
+        #for email in ['bshi42@gatech.edu', 'bhegarty6@gatech.edu', 'zjohnson37@gatech.edu']:
+        #    self.personalization.add_bcc(sendgrid.Bcc(email))
 
         # 9: Await instructions
         print('Monitoring commands')
@@ -668,3 +670,16 @@ class CichlidTracker:
         except Exception as e:
                 self._print('Error rebooting down pi: ' + str(e))
                 raise Exception
+    
+    def send_email(self, message):
+        
+        from_email=Email("themcgrathlab@gmail.com")
+        to_email=To("pmcgrath7@gatech.edu","bshi42@gatech.edu", "bhegarty6@gatech.edu", "zjohnson37@gatech.edu", "jtata6@gatech.edu")
+        subject= self.tankID + " has rebooted"
+        content=Content("text/plain", message)
+        new_email = Mail(from_email,to_email,subject,content)
+        
+        response = self.sg.send(new_email)
+        self._print(response.status_code)
+        self._print(response.body)
+        self.print(response.headers)
