@@ -75,16 +75,16 @@ class CichlidTracker:
         self.googleController.modifyPiGS('Error','UnknownError', ping = False)
 
         if self.running:
-            new_email = sendgrid.Mail(
-                from_email='themcgrathlab@gmail.com', 
-                subject= self.tankID + ' has stopped running', 
-                html_content= 'Check the Controller sheet'
-            )
-            new_email.add_personalization(self.personalization)
+          #  new_email = sendgrid.Mail(
+          #      from_email='themcgrathlab@gmail.com', 
+          #      subject= self.tankID + ' has stopped running', 
+          #      html_content= 'Check the Controller sheet'
+          #  )
+          #  new_email.add_personalization(self.personalization)
 
             # Get a JSON-ready representation of the Mail object
             # Send an HTTP POST request to /mail/send
-            response = self.sg.send(new_email)
+           # response = self.sg.send(new_email)
 
             current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1] #record this in the sheet seperately
             harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)[3]
