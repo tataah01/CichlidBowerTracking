@@ -418,7 +418,8 @@ class CichlidTracker:
             b, frames = self.pipeline.try_wait_for_frames(3000)
             
             if not b:
-                self.reboot_rs()
+                self.reboot_rs() #we could also change this to reboot pi
+                self._returnDepth()
                 
             frames = self.align.process(frames)
             depth_frame = frames.get_depth_frame().as_depth_frame()
@@ -648,7 +649,8 @@ class CichlidTracker:
            pass
 
     def reboot_rs(self):  
-        if self.device == 'realsense':     
+        if self.device == 'realsense':
+            self.send_email('wait for frames error. The rs is attempting reboot.')     
             try:
                 self._print('stopping realsense')
                 self.pipeline.stop()
@@ -658,13 +660,13 @@ class CichlidTracker:
             try:
                 self._print('Starting realsense')
                 self._start_kinect()
-                self._returnDepth()
             except Exception as e:
                 self._print('Error starting realsense: ' + str(e))
                 raise Exception
 
-    def reboot_pi(self, reason): 
-        self._print('Rebooting Pi : '+reason)
+    def reboot_pi(self):
+        self.send_email('wait for frames error. The pi will reboot.')
+        self._print('Rebooting Pi : ')
         try:
             os.system('sudo reboot -h now')
         except Exception as e:
@@ -672,13 +674,11 @@ class CichlidTracker:
                 raise Exception
     
     def send_email(self, message):
-        
         from_email=Email("themcgrathlab@gmail.com")
-        to_email=To("pmcgrath7@gatech.edu","bshi42@gatech.edu", "bhegarty6@gatech.edu", "zjohnson37@gatech.edu", "jtata6@gatech.edu")
-        subject= self.tankID + " has rebooted"
-        content=Content("text/plain", message)
+        to_email=[To("bshi42@gatech.edu"),To("jtata6@gatech.edu")]
+        subject= self.tankID + " encountered an error"
+        content=Content("text/plain","The error was "+message)
         new_email = Mail(from_email,to_email,subject,content)
-        
         response = self.sg.send(new_email)
         self._print(response.status_code)
         self._print(response.body)
