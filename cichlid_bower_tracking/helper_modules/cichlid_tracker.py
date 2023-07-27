@@ -435,7 +435,7 @@ class CichlidTracker:
     def reboot_rs(self):  
         if self.device == 'realsense': 
             self.send_email('wait for frames error. The rs is attempting reboot.')
-                        try:
+            try:
                 self._print('stopping realsense')
                 self.pipeline.stop()
             except Exception as e:
