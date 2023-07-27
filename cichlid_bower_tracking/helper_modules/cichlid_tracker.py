@@ -5,6 +5,8 @@ from cichlid_bower_tracking.helper_modules.googleController import GoogleControl
 import pandas as pd
 from picamera import PiCamera
 import numpy as np
+from sendgrid import SendGridAPIClient
+from sendgrid.helpers.mail import *
 
 import warnings
 warnings.filterwarnings('ignore')
@@ -55,10 +57,10 @@ class CichlidTracker:
             my_api_key = [x.strip() for x in f.readlines()][0]
 
         self.sg = sendgrid.SendGridAPIClient(api_key=my_api_key)
-        self.personalization = sendgrid.Personalization()
-        self.personalization.add_to(sendgrid.To('pmcgrath7@gatech.edu'))
-        for email in ['bshi42@gatech.edu', 'bhegarty6@gatech.edu', 'zjohnson37@gatech.edu']:
-            self.personalization.add_bcc(sendgrid.Bcc(email))
+        #self.personalization = sendgrid.Personalization()
+        #self.personalization.add_to(sendgrid.To('pmcgrath7@gatech.edu'))
+        #for email in ['bshi42@gatech.edu', 'bhegarty6@gatech.edu', 'zjohnson37@gatech.edu']:
+            #self.personalization.add_bcc(sendgrid.Bcc(email))
 
         # 9: Await instructions
         print('Monitoring commands')
@@ -73,16 +75,16 @@ class CichlidTracker:
         self.googleController.modifyPiGS('Error','UnknownError', ping = False)
 
         if self.running:
-            new_email = sendgrid.Mail(
-                from_email='themcgrathlab@gmail.com', 
-                subject= self.tankID + ' has stopped running', 
-                html_content= 'Check the Controller sheet'
-            )
-            new_email.add_personalization(self.personalization)
+            #new_email = sendgrid.Mail(
+                #from_email='themcgrathlab@gmail.com', 
+                #subject= self.tankID + ' has stopped running', 
+                #html_content= 'Check the Controller sheet'
+            #)
+            #new_email.add_personalization(self.personalization)
 
             # Get a JSON-ready representation of the Mail object
             # Send an HTTP POST request to /mail/send
-            response = self.sg.send(new_email)
+            #response = self.sg.send(new_email)
 
             current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
             harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)[3]
@@ -417,6 +419,7 @@ class CichlidTracker:
             if not b:
                 self._print('realsense error attempting reboot')
                 self.reboot_rs()
+                self._returnDepth()
                 
             frames = self.align.process(frames)
             depth_frame = frames.get_depth_frame().as_depth_frame()
@@ -430,19 +433,40 @@ class CichlidTracker:
             return data[self.r[1]:self.r[1]+self.r[3], self.r[0]:self.r[0]+self.r[2]]
     
     def reboot_rs(self):  
-        if self.device == 'realsense':     
-            try:
-                print('stopping realsense')
+        if self.device == 'realsense': 
+            self.send_email('wait for frames error. The rs is attempting reboot.')
+                        try:
+                self._print('stopping realsense')
                 self.pipeline.stop()
             except Exception as e:
-                print('Error stopping realsense: ' + str(e))
+                self._print('Error stopping realsense: ' + str(e))
                 raise Exception
             try:
-                print('Starting realsense')
+                self._print('Starting realsense')
                 self._start_kinect()
             except Exception as e:
-                print('Error starting realsense: ' + str(e))
+                self._print('Error starting realsense: ' + str(e))
                 raise Exception
+    def reboot_pi(self):
+        self.send_email('wait for frames error. The pi will reboot.')
+        self._print('Rebooting Pi : ')
+        try:
+            os.system('sudo reboot -h now')
+        except Exception as e:
+                self._print('Error rebooting down pi: ' + str(e))
+                raise Exception
+
+
+    def send_email(self, message):
+        from_email=Email("themcgrathlab@gmail.com")
+        to_email=[To("bshi42@gatech.edu"),To("jtata6@gatech.edu")]
+        subject= self.tankID + " encountered an error"
+        content=Content("text/plain","The error was "+message)
+        new_email = Mail(from_email,to_email,subject,content)
+        response = self.sg.send(new_email)
+        self._print(response.status_code)
+        self._print(response.body)
+        self.print(response.headers)
 
     def _returnCommand(self):
 
