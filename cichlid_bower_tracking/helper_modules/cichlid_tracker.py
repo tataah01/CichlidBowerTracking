@@ -466,7 +466,7 @@ class CichlidTracker:
         response = self.sg.send(new_email)
         self._print(response.status_code)
         self._print(response.body)
-        self.print(response.headers)
+        self._print(response.headers)
 
     def _returnCommand(self):
 
