@@ -295,66 +295,71 @@ class CichlidTracker:
         current_frame_time = current_background_time + datetime.timedelta(seconds = 60 * frame_delta)
 
         command = ''
+        
         while True:
+
             # Grab new time
             now = datetime.datetime.now()
-            if(now.hour <= 7) or (now.hour >= 19):
-                if self.running:
-                    self.pipeline.stop()
-                self.googleController.modifyPiGS('Error','Purposeful Sleeping', ping = True)       
-            else:
-                if not self.running:
-                    self._start_kinect()
             
-                # Fix camera if it needs to be
-                if self.piCamera:
-                    if self._video_recording() and not self.camera.recording:
-                        self.camera.capture(self.videoDirectory + str(self.videoCounter).zfill(4) + "_pic.jpg")
-                        self._print('PiCameraStarted: FrameRate: ' + str(self.camera.framerate) + ',,Resolution: ' + str(self.camera.resolution) + ',,Time: ' + str(datetime.datetime.now()) + ',,VideoFile: Videos/' + str(self.videoCounter).zfill(4) + '_vid.h264,,PicFile: Videos/' + str(self.videoCounter).zfill(4) + '_pic.jpg')
-                        self.camera.start_recording(self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264", bitrate=7500000)
-                    elif not self._video_recording() and self.camera.recording:
-                        self._print('PiCameraStopped: Time: ' + str(datetime.datetime.now()) + ',, File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
-                        self.camera.stop_recording()
-                        #self._print(['rclone', 'copy', self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264"])
-                        command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
-                        command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
-                        self._print(command)
-                        self.processes.append(subprocess.Popen(command))
-                        self.videoCounter += 1
+            # Fix camera if it needs to be
+            if self.piCamera:
+                if self._video_recording() and not self.camera.recording:
+                    self.camera.capture(self.videoDirectory + str(self.videoCounter).zfill(4) + "_pic.jpg")
+                    self._print('PiCameraStarted: FrameRate: ' + str(self.camera.framerate) + ',,Resolution: ' + str(self.camera.resolution) + ',,Time: ' + str(datetime.datetime.now()) + ',,VideoFile: Videos/' + str(self.videoCounter).zfill(4) + '_vid.h264,,PicFile: Videos/' + str(self.videoCounter).zfill(4) + '_pic.jpg')
+                    self.camera.start_recording(self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264", bitrate=7500000)
+                elif not self._video_recording() and self.camera.recording:
+                    self._print('PiCameraStopped: Time: ' + str(datetime.datetime.now()) + ',, File: Videos/' + str(self.videoCounter).zfill(4) + "_vid.h264")
+                    self.camera.stop_recording()
+                    #self._print(['rclone', 'copy', self.videoDirectory + str(self.videoCounter).zfill(4) + "_vid.h264"])
+                    command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
+                    command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
+                    self._print(command)
+                    self.processes.append(subprocess.Popen(command))
+                    self.videoCounter += 1
 
-                # Capture a frame and background if necessary
+            # Capture a frame and background if necessary
            
-                if self.device != 'None':
-                    if now > current_background_time:
-                        out = self._captureFrame(current_frame_time)
-                        if out is not None:
-                            current_background_time += datetime.timedelta(seconds = 60 * background_delta)
-                        subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
-                    else:
-                        out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
+            logObj = LP(self.fileManager.localLogfile)
+                
+            if self.device != 'None':
+                if now > current_background_time:
+                    out = self._captureFrame(current_frame_time)
+                    if out is not None:
+                        current_background_time += datetime.timedelta(seconds = 60 * background_delta)
+                    subprocess.Popen(['python3', 'unit_scripts/drive_updater.py', self.loggerFile])
                 else:
-                    while datetime.datetime.now() < current_frame_time:
-                        time.sleep(5)
+                    out = self._captureFrame(current_frame_time, stdev_threshold = stdev_threshold)
+                if len(logObj.frames) > 1 and logObj.frames[-1].std< 0.00001 and logObj.frames[-1].gp==logObj.frames[-2].gp:
+                   #print('New and old are same') #for debugging
+                  # self.old_string = ''
+                   self.reboot_rs('Duplicate Error')
+                   self.captureFrames()
+                #else:
+                   # print('new and old are not the same') #for debugging'
+                   # self.old_string = new
+            else:
+                while datetime.datetime.now() < current_frame_time:
+                    time.sleep(5)
 
-                current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
+            current_frame_time += datetime.timedelta(seconds = 60 * frame_delta)
 
-                # Check google doc to determine if recording has changed.
-                try:
-                    command, projectID, analysisID = self._returnCommand()
-                except KeyError:
-                    continue
-                if command == 'TankResetStart':
-                    self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
-                    self.googleController.modifyPiGS('Command', 'None', ping = False)
+            # Check google doc to determine if recording has changed.
+            try:
+                command, projectID, analysisID = self._returnCommand()
+            except KeyError:
+                continue
+            if command == 'TankResetStart':
+                self._print('TankResetStart: Time: ' + str(datetime.datetime.now()))
+                self.googleController.modifyPiGS('Command', 'None', ping = False)
 
-                elif command == 'TankResetStop':
-                    self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
-                    self.googleController.modifyPiGS('Command', 'None', ping = False)
+            elif command == 'TankResetStop':
+                self._print('TankResetStop: Time: ' + str(datetime.datetime.now()))
+                self.googleController.modifyPiGS('Command', 'None', ping = False)
 
-                elif command != 'None' and command is not None:
-                    break
-                else:
-                    self.googleController.modifyPiGS('Error', '')
+            elif command != 'None' and command is not None:
+                break
+            else:
+                self.googleController.modifyPiGS('Error', '')
 
     def _identifyDevice(self):
 
@@ -664,14 +669,14 @@ class CichlidTracker:
                 self._print('Error starting realsense: ' + str(e))
                 raise Exception
 
-    def reboot_pi(self):
-        self.send_email('wait for frames error. The pi will reboot.')
-        self._print('Rebooting Pi : ')
-        try:
-            os.system('sudo reboot -h now')
-        except Exception as e:
-                self._print('Error rebooting down pi: ' + str(e))
-                raise Exception
+#    def reboot_pi(self):
+#        self.send_email('wait for frames error. The pi will reboot.')
+#        self._print('Rebooting Pi : ')
+#        try:
+#            os.system('sudo reboot -h now')
+#        except Exception as e:
+#                self._print('Error rebooting down pi: ' + str(e))
+#                raise Exception
     
     def send_email(self, message):
         from_email=Email("themcgrathlab@gmail.com")
