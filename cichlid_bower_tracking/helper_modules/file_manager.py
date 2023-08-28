@@ -224,6 +224,7 @@ class FileManager():
 		self.localNewLabeledVideosFile = self.localTempDir + 'NewLabeledVideos.csv'
 		self.localNewLabeledClipsDir = self.localTempDir + 'NewLabeledClips/'
 
+		self.localPiErrorFile = self.localTempDir + 'PiErrors.csv'
 
 		#self.localLabeledClipsProjectDir = self.localLabeledClipsDir + projectID + '/'
 		#self.localLabeledFramesProjectDir = self.localBoxedFishDir + projectID + '/'

@@ -7,7 +7,7 @@ from picamera import PiCamera
 import numpy as np
 from sendgrid import SendGridAPIClient
 from sendgrid.helpers.mail import *
-
+import csv
 import warnings
 warnings.filterwarnings('ignore')
 from PIL import Image
@@ -423,7 +423,8 @@ class CichlidTracker:
             b, frames = self.pipeline.try_wait_for_frames(3000)
             
             if not b:
-                self.reboot_rs() #we could also change this to reboot pi
+                self._print('realsense error attempting reboot')
+                self.reboot_rs('Error in try wait for frame') #we could also change this to reboot pi
                 self._returnDepth()
                 
             frames = self.align.process(frames)
@@ -653,9 +654,10 @@ class CichlidTracker:
        except AttributeError:
            pass
 
-    def reboot_rs(self):  
+    def reboot_rs(self,reason):  
         if self.device == 'realsense':
-            self.send_email('wait for frames error. The rs is attempting reboot.')     
+            self.write_restart_to_logs(reason)
+            self.send_email(reason)     
             try:
                 self._print('stopping realsense')
                 self.pipeline.stop()
@@ -668,7 +670,14 @@ class CichlidTracker:
             except Exception as e:
                 self._print('Error starting realsense: ' + str(e))
                 raise Exception
-
+            
+    def write_restart_to_logs(self,reason):
+        time = time.time()
+        data = [time, reason, '0']
+        with open(self.fileManager.localPiErrorFile, 'w', encoding='UTF8', newline='') as f:
+            writer = csv.writer(f)
+            writer.writerow(data)
+        
 #    def reboot_pi(self):
 #        self.send_email('wait for frames error. The pi will reboot.')
 #        self._print('Rebooting Pi : ')
