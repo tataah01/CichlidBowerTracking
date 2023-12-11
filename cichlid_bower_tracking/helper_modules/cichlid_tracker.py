@@ -87,6 +87,7 @@ class CichlidTracker:
             # Get a JSON-ready representation of the Mail object
             # Send an HTTP POST request to /mail/send
             #response = self.sg.send(new_email)
+            self.send_email('UnknownExceptionExit. Pi is stopped.')
 
             current_temp = psutil.sensors_temperatures()['cpu_thermal'][0][1]
             harddrive_use = psutil.disk_usage(self.fileManager.localMasterDir)[3]
@@ -439,7 +440,7 @@ class CichlidTracker:
                 self._print('realsense error attempting reboot')
                 message = 'ReturnDepth Error'
                 self.reboot_rs(message)
-                self._returnDepth()
+                self.captureFrames()
                 
             frames = self.align.process(frames)
             depth_frame = frames.get_depth_frame().as_depth_frame()
@@ -498,7 +499,7 @@ class CichlidTracker:
              writer = csv.writer(f)
              writer.writerow(data)
 
-
+ 
     def _returnCommand(self):
 
         command, projectID, analysisID = self.googleController.getPiGS(['Command','ProjectID','AnalysisID'])
@@ -621,7 +622,7 @@ class CichlidTracker:
         self._print(outstring)
         np.save(self.projectDirectory + 'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
         np.save(self.projectDirectory + 'Frames/Frame_std_' + str(self.frameCounter).zfill(6) + '.npy', std)
-        matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
+        matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg',  )
         
         if self.frameCounter % 1000000 == 0:
             self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1))
