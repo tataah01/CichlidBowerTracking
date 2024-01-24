@@ -622,7 +622,7 @@ class CichlidTracker:
         self._print(outstring)
         np.save(self.projectDirectory + 'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.npy', med)
         np.save(self.projectDirectory + 'Frames/Frame_std_' + str(self.frameCounter).zfill(6) + '.npy', std)
-        matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg',  )
+        matplotlib.image.imsave(self.projectDirectory+'Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg', color)
         
         if self.frameCounter % 1000000 == 0:
             self._print('AllDataCaptured: NpyFile: Frames/AllData_' + str(self.frameCounter).zfill(6) + '.npy,,PicFile: Frames/Frame_' + str(self.frameCounter).zfill(6) + '.jpg,,Time: ' + str(endtime)  + ',,NFrames: ' + str(i+1))
