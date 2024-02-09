@@ -317,7 +317,7 @@ class CichlidTracker:
                     command = ['python3', 'unit_scripts/process_video.py', self.videoDirectory + str(self.videoCounter).zfill(4) + '_vid.h264']
                     command += [str(self.camera.framerate[0]), self.projectID, self.analysisID]
                     self._print(command)
-                    self.processes.append(subprocess.Popen(command),close_fds=True) #https://github.com/dropbox/pyannotate/issues/67
+                    self.processes.append(subprocess.Popen(command))
                     self.videoCounter += 1
 
             # Capture a frame and background if necessary
@@ -486,12 +486,14 @@ class CichlidTracker:
         from_email=Email("themcgrathlab@gmail.com")
         to_email=[To("bshi42@gatech.edu"),To("jtata6@gatech.edu")]
         subject= self.tankID + " encountered an error"
-        content=Content("text/plain","The error was "+reason)
-        new_email = Mail(from_email,to_email,subject,content)
-        response = self.sg.send(new_email)
-        self._print(response.status_code)
-        self._print(response.body)
-        self._print(response.headers)
+        #content=Content("text/plain","The error was "+reason)
+        #new_email = Mail(from_email,to_email,subject,content)
+        self._print(str(subject)+' '+str(reason))
+        
+       # response = self.sg.send(new_email)
+       # self._print(response.status_code)
+       # self._print(response.body)
+       # self._print(response.headers)
         
     def write_restart_to_logs(self,reason,isPiReboot):
         restart_time = datetime.datetime.now()
